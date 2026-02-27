@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zaminia – Bücherwelt</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Raleway:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Raleway', sans-serif;
+            background: linear-gradient(to bottom, #e0f7fa, #e3f2fd);
+            color: #0f172a;
+            line-height: 1.6;
+        }
+
+        header {
+            background: linear-gradient(rgba(0, 40, 80, 0.5), rgba(0, 80, 120, 0.3)),
+                        url("Home.jpeg") right /contain no-repeat, url("HomeL.jpeg") left /contain no-repeat;
+            color: white;
+            text-align: center;
+            padding: 7rem 2rem;
+        }
+
+        header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        header p {
+            font-size: 1.2rem;
+            font-weight: 300;
+        }
+
+        nav {
+            background: white;
+            padding: 1rem;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        nav a {
+            text-decoration: none;
+            color: #0284c7;
+            margin: 0 1.5rem;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        nav a:hover {
+            color: #06b6d4;
+        }
+
+        section {
+            max-width: 1000px;
+            margin: 4rem auto;
+            padding: 0 2rem;
+        }
+
+        .welcome {
+            background: white;
+            padding: 3rem;
+            border-radius: 25px;
+            box-shadow: 0 10px 30px rgba(2,132,199,0.1);
+            text-align: center;
+        }
+
+        .welcome h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.2rem;
+            margin-bottom: 1.5rem;
+            color: #0284c7;
+        }
+
+        .books {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .book-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 25px;
+            box-shadow: 0 8px 25px rgba(6,182,212,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .book-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 35px rgba(6,182,212,0.2);
+        }
+
+        .book-card h3 {
+            font-family: 'Playfair Display', serif;
+            margin-bottom: 1rem;
+            color: #0891b2;
+        }
+
+        .button {
+            display: inline-block;
+            margin-top: 1.5rem;
+            padding: 0.9rem 1.6rem;
+            border-radius: 50px;
+            background: linear-gradient(135deg, #0284c7, #06b6d4);
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        .button:hover {
+            opacity: 0.85;
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            margin-top: 4rem;
+            background: #dbeafe;
+            font-size: 0.9rem;
+            color: #0369a1;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>Zaminia</h1>
+    <p>Willkommen in meiner blau-türkisen Bücherwelt 🌊</p>
+</header>
+
+<nav>
+    <a href="#willkommen">Willkommen</a>
+    <a href="#buecher">Meine Bücher</a>
+    <a href="#kontakt">Kontakt</a>
+</nav>
+
+<section id="willkommen">
+    <div class="welcome">
+        <h2>Ein Gruß von Zami</h2>
+        <p>
+            Hallo, ich bin Zaminia – Künstlerin, Suchende und Liebhaberin des Himmels
+            und des Meeres. Meine Geschichten entstehen aus stillen Momenten,
+            aus Lichtreflexionen auf Wasser und aus Gedanken über Sterne und Seele.
+        </p>
+        <br>
+        <p>
+            In meinen Büchern findest du Ruhe und Tiefe,
+            Inspiration und Herz. Schön, dass du hier bist –
+            möge dich jedes Wort ein Stück weiter in dein eigenes Licht führen.
+        </p>
+        <a href="#buecher" class="button">Zu meinen Büchern</a>
+    </div>
+</section>
+
+<section id="buecher">
+    <h2 style="text-align:center; font-family:'Playfair Display', serif; color:#0284c7;">
+        Meine Bücher
+    </h2>
+
+    <div class="books">
+        <div class="book-card">
+            <h3>Buchtitel 1</h3>
+            <p>Eine Reise durch innere Weite und stille Erkenntnis.</p>
+        </div>
+
+        <div class="book-card">
+            <h3>Buchtitel 2</h3>
+            <p>Zwischen Himmelblau und Meeresrauschen – eine Geschichte über Mut.</p>
+        </div>
+
+        <div class="book-card">
+            <h3>Buchtitel 3</h3>
+            <p>Gedanken über Sterne, Herz und das leise Flüstern der Seele.</p>
+        </div>
+    </div>
+</section>
+
+<section id="kontakt" style="text-align:center;">
+    <h2 style="font-family:'Playfair Display', serif; color:#0891b2;">
+        Kontakt
+    </h2>
+    <p>Du möchtest mir schreiben oder mehr erfahren?</p>
+    <a href="mailto:zaminia@email.com" class="button">Nachricht senden</a>
+</section>
+
+<footer>
+    © 2026 Zaminia – geschrieben im Klang von Blau & Türkis 💙
+</footer>
+
+</body>
+</html>
