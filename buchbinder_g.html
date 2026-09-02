@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Buchbinder – HTML zu Buch</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --wood-0:#171310; --wood-1:#211a14; --wood-2:#2b2119; --wood-3:#3a2c20;
+    --brass:#b5883f; --brass-dim:#8a683a;
+    --paper-text:#ece3d2; --paper-text-dim:#a99d87;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    background:radial-gradient(ellipse at 50% -10%, #382a1e 0%, transparent 55%), linear-gradient(180deg, var(--wood-1), var(--wood-0) 70%);
+    color:var(--paper-text);
+    font-family:'Inter', sans-serif;
+    display:flex; flex-direction:column; min-height:100%; overflow:hidden;
+  }
+  header.toolbar{
+    display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;
+    padding:14px 22px;
+    background:linear-gradient(180deg, var(--wood-2), var(--wood-1));
+    border-bottom:1px solid #000;
+    box-shadow:0 1px 0 rgba(181,136,63,.12), 0 6px 18px rgba(0,0,0,.35);
+    z-index:20;
+  }
+  .brand{ display:flex; align-items:baseline; gap:10px; font-family:'Fraunces', serif; }
+  .brand .mark{ font-size:22px; color:var(--brass); }
+  .brand h1{ font-size:19px; font-weight:600; margin:0; color:var(--paper-text); }
+  .brand .sub{ font-size:12.5px; color:var(--paper-text-dim); font-family:'Inter',sans-serif; }
+  .controls{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .btn{
+    appearance:none; border:1px solid #000;
+    background:linear-gradient(180deg, var(--wood-3), var(--wood-2));
+    color:var(--paper-text); font-family:'Inter',sans-serif; font-size:13px; font-weight:500;
+    padding:9px 14px; border-radius:3px; cursor:pointer;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.06), 0 1px 2px rgba(0,0,0,.4);
+    transition:border-color .15s, color .15s, transform .1s;
+    display:inline-flex; align-items:center; gap:7px; white-space:nowrap;
+  }
+  .btn:hover{ border-color:var(--brass-dim); color:#fff; }
+  .btn:active{ transform:translateY(1px); }
+  .btn.primary{ background:linear-gradient(180deg, #c99a52, var(--brass)); color:#211a10; border-color:#000; font-weight:600; }
+  .btn.primary:hover{ filter:brightness(1.08); }
+  .btn:disabled{ opacity:.4; cursor:not-allowed; }
+  .btn:disabled:hover{ border-color:#000; color:var(--paper-text); }
+  .divider{ width:1px; align-self:stretch; background:rgba(181,136,63,.2); margin:0 2px; }
+  main.stage{ flex:1; position:relative; display:flex; align-items:center; justify-content:center; padding:26px; min-height:0; }
+
+  .empty-state{
+    width:min(640px, 100%);
+    background:linear-gradient(180deg, var(--wood-2), var(--wood-1));
+    border:1px solid #000; border-radius:6px; padding:34px 34px 28px;
+    box-shadow:0 20px 60px rgba(0,0,0,.5);
+  }
+  .empty-state h2{ font-family:'Fraunces', serif; font-weight:600; font-size:23px; margin:0 0 8px; }
+  .empty-state p{ color:var(--paper-text-dim); font-size:14px; line-height:1.55; margin:0 0 20px; }
+  .dropzone{
+    border:1.5px dashed rgba(181,136,63,.4); border-radius:5px; padding:22px; text-align:center;
+    color:var(--paper-text-dim); font-size:13.5px; margin-bottom:16px;
+    transition:border-color .15s, background .15s;
+  }
+  .dropzone.drag{ border-color:var(--brass); background:rgba(181,136,63,.06); }
+  .dropzone .btn{ margin-top:12px; }
+  textarea#pasteArea{
+    width:100%; min-height:110px; resize:vertical;
+    background:var(--wood-0); border:1px solid #000; border-radius:4px; color:var(--paper-text);
+    font-family:ui-monospace, 'SFMono-Regular', Menlo, monospace; font-size:12.5px; padding:12px; margin-bottom:14px;
+  }
+  .empty-actions{ display:flex; justify-content:flex-end; gap:10px; }
+  .hint{ font-size:11.5px; color:var(--paper-text-dim); margin-top:10px; }
+  [hidden]{ display:none !important; }
+
+  /* Modal Style Editor */
+  .bb-modal-overlay{
+    position:fixed; inset:0; background:rgba(0,0,0,.75); z-index:100;
+    display:flex; align-items:center; justify-content:center; padding:20px;
+  }
+  .bb-modal{
+    background:linear-gradient(180deg, var(--wood-2), var(--wood-1));
+    border:1px solid var(--brass-dim); border-radius:6px; padding:24px;
+    width:min(480px, 100%); box-shadow:0 20px 50px rgba(0,0,0,.8);
+    display:flex; flex-direction:column; gap:16px;
+  }
+  .bb-modal h3{ margin:0; font-family:'Fraunces', serif; color:var(--paper-text); font-size:18px; }
+  .bb-field{ display:flex; flex-direction:column; gap:6px; font-size:13px; color:var(--paper-text-dim); }
+  .bb-field label{ color:var(--paper-text); font-weight:500; }
+  .bb-field input[type="color"]{ border:1px solid #000; background:none; height:36px; width:100%; cursor:pointer; border-radius:3px; }
+  .bb-field select, .bb-field input[type="text"]{
+    background:var(--wood-0); border:1px solid #000; color:var(--paper-text);
+    padding:8px; border-radius:3px; font-family:inherit;
+  }
+  .bb-modal-actions{ display:flex; justify-content:flex-end; gap:10px; margin-top:8px; }
+
+  @media (max-width:720px){
+    header.toolbar{ padding:10px 12px; gap:10px; }
+    .brand .sub{ display:none; }
+  }
+</style>
+</head>
+<body>
+
+<header class="toolbar">
+  <div class="brand">
+    <span class="mark">📖</span>
+    <div><h1>Buchbinder</h1><div class="sub">HTML → animiertes Buch</div></div>
+  </div>
+  <div class="controls">
+    <label class="btn" for="fileInput">⇪ HTML laden</label>
+    <input type="file" id="fileInput" accept=".html,.htm,text/html" hidden>
+    <button class="btn" id="editStylesBtn" hidden>✎ Styles editieren</button>
+    <button class="btn" id="newBtn" hidden>Neue Datei</button>
+    <div class="divider"></div>
+    <button class="btn primary" id="saveBtn" disabled>↓ Als Buch speichern</button>
+  </div>
+</header>
+
+<main class="stage">
+  <div class="empty-state" id="emptyState">
+    <h2>Eine HTML-Datei binden</h2>
+    <p>Lade eine HTML-Datei oder füge Quelltext ein. Der Inhalt wird als Buch mit Cover, Doppelseiten und echter Blätter-Animation dargestellt – wählbare Stile, Vollbild, und speicherbar als eigenständige HTML-Datei.</p>
+    <div class="dropzone" id="dropzone">
+      Datei hierher ziehen
+      <div><label class="btn" for="fileInput">⇪ Datei wählen</label></div>
+    </div>
+    <textarea id="pasteArea" placeholder="…oder HTML-Quelltext hier einfügen"></textarea>
+    <div class="empty-actions"><button class="btn primary" id="convertBtn">In Buch verwandeln</button></div>
+    <div class="hint">Enthaltene &lt;script&gt;-Tags werden beim Binden entfernt.</div>
+  </div>
+
+  <div id="bookMount" hidden></div>
+</main>
+
+<div class="bb-modal-overlay" id="styleModal" hidden>
+  <div class="bb-modal">
+    <h3>Buch-Styles anpassen</h3>
+    <div class="bb-field">
+      <label>Papierfarbe (Hintergrund)</label>
+      <input type="color" id="stylePaper">
+    </div>
+    <div class="bb-field">
+      <label>Schriftfarbe</label>
+      <input type="color" id="styleInk">
+    </div>
+    <div class="bb-field">
+      <label>Akzentfarbe (Überschriften / Links)</label>
+      <input type="color" id="styleAccent">
+    </div>
+    <div class="bb-field">
+      <label>Schriftart</label>
+      <select id="styleFont">
+        <option value="'Source Serif 4', Georgia, serif">Serif (Klassisch)</option>
+        <option value="'Inter', system-ui, sans-serif">Sans-Serif (Modern)</option>
+        <option value="'Courier New', Courier, monospace">Monospace</option>
+      </select>
+    </div>
+    <div class="bb-modal-actions">
+      <button class="btn" id="closeModalBtn">Abbrechen</button>
+      <button class="btn primary" id="applyModalBtn">Übernehmen</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var BOOK_CSS = `
+.bb-root{ width:100%; height:100%; display:flex; flex-direction:column; }
+.bb-topbar{
+  display:flex; align-items:center; justify-content:center; gap:14px;
+  padding:10px 16px; flex-wrap:wrap;
+}
+.bb-title{
+  font-family:'Fraunces', serif; font-size:14px; color:var(--paper-text-dim,#a99d87);
+  margin-right:auto; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:38vw;
+}
+.bb-themes{ display:flex; gap:6px; padding:4px; background:var(--wood-0,#171310); border-radius:5px; border:1px solid #000; }
+.bb-swatch{ width:24px; height:24px; border-radius:3px; cursor:pointer; border:2px solid transparent; }
+.bb-swatch[data-theme="classic"]{ background:#efe6d1; }
+.bb-swatch[data-theme="night"]{ background:#232120; }
+.bb-swatch[data-theme="sepia"]{ background:#e8d9b3; }
+.bb-swatch[data-theme="modern"]{ background:#ffffff; }
+.bb-swatch.active{ border-color:var(--brass,#b5883f); }
+.bb-fs{
+  appearance:none; border:1px solid #000; background:linear-gradient(180deg, var(--wood-3,#3a2c20), var(--wood-2,#2b2119));
+  color:var(--paper-text,#ece3d2); font-family:'Inter',sans-serif; font-size:13px; font-weight:500;
+  padding:8px 13px; border-radius:3px; cursor:pointer; white-space:nowrap;
+}
+.bb-fs:hover{ border-color:var(--brass-dim,#8a683a); color:#fff; }
+.bb-slidegroup{ display:flex; align-items:center; gap:7px; background:var(--wood-0,#171310); border:1px solid #000; border-radius:5px; padding:4px 10px; }
+.bb-slide-ic{ font-size:12px; color:var(--paper-text-dim,#a99d87); font-family:'Inter',sans-serif; line-height:1; }
+.bb-range{ -webkit-appearance:none; appearance:none; width:84px; height:3px; background:rgba(181,136,63,.35); border-radius:2px; outline:none; cursor:pointer; }
+.bb-range::-webkit-slider-thumb{ -webkit-appearance:none; appearance:none; width:13px; height:13px; border-radius:50%; background:var(--brass,#b5883f); border:1px solid #000; cursor:pointer; }
+.bb-range::-moz-range-thumb{ width:13px; height:13px; border-radius:50%; background:var(--brass,#b5883f); border:1px solid #000; cursor:pointer; }
+.bb-range::-moz-range-track{ background:rgba(181,136,63,.35); height:3px; border-radius:2px; }
+.bb-stage{ flex:1; position:relative; display:flex; align-items:center; justify-content:center; padding:10px 24px 46px; min-height:0; }
+.bb-wrapper{ position:relative; display:flex; align-items:center; justify-content:center; width:100%; height:100%; perspective:2600px; }
+.bb-book{
+  --bb-paper:#f3ecda; --bb-ink:#2b2318; --bb-accent:#8b5e34; --bb-font:'Source Serif 4', Georgia, serif;
+  position:relative; width:min(84vw, 980px); height:min(80vh, 720px);
+}
+.bb-stack{ position:absolute; inset:6px 0 0 6px; background:#000; opacity:.5; border-radius:2px; }
+.bb-stack.s2{ inset:12px 0 0 12px; opacity:.3; }
+.bb-frame{
+  position:absolute; inset:0; background:#050403; border-radius:2px;
+  box-shadow:0 30px 70px rgba(0,0,0,.55), 0 2px 0 rgba(0,0,0,.6);
+  overflow:hidden; display:flex;
+}
+.bb-spine{
+  position:absolute; left:50%; top:0; bottom:0; width:22px; margin-left:-11px;
+  background:linear-gradient(90deg, rgba(0,0,0,.4), rgba(0,0,0,0) 45%, rgba(0,0,0,0) 55%, rgba(0,0,0,.4));
+  z-index:8; pointer-events:none;
+}
+.bb-slot{ position:relative; width:50%; height:100%; overflow:hidden; cursor:pointer; background:var(--bb-paper); }
+.bb-slot-inner, .bb-slot iframe, .bb-slot .bb-face-plain{ position:absolute; inset:0; width:100%; height:100%; border:0; }
+.bb-slot .bb-face-plain{ display:flex; align-items:center; justify-content:center; text-align:center; }
+.bb-leaf{
+  position:absolute; left:50%; top:0; width:50%; height:100%;
+  transform-origin:left center; transform-style:preserve-3d; transform:rotateY(0deg);
+  display:none; z-index:9;
+}
+.bb-leaf.bb-animating{ transition:transform .7s cubic-bezier(.61,.02,.41,.99); }
+.bb-leaf-face{ position:absolute; inset:0; backface-visibility:hidden; overflow:hidden; background:var(--bb-paper); }
+.bb-leaf-face iframe, .bb-leaf-face .bb-face-plain{ position:absolute; inset:0; width:100%; height:100%; border:0; }
+.bb-leaf-face .bb-face-plain{ display:flex; align-items:center; justify-content:center; text-align:center; }
+.bb-leaf-back{ transform:rotateY(180deg); }
+.bb-leaf-shade{ position:absolute; inset:0; opacity:0; pointer-events:none; z-index:3;
+  background:linear-gradient(90deg, rgba(0,0,0,.32), rgba(0,0,0,0) 55%); }
+.bb-leaf.bb-animating .bb-leaf-shade{ animation:bbShade .7s ease; }
+@keyframes bbShade{ 0%{opacity:0;} 45%{opacity:1;} 100%{opacity:0;} }
+.bb-face-plain{ font-family:var(--bb-font); color:var(--bb-ink); padding:10%; }
+.bb-face-cover{ background:linear-gradient(155deg, var(--bb-accent), color-mix(in srgb, var(--bb-accent) 55%, #000)); color:#f4ead2; flex-direction:column; gap:14px; }
+.bb-face-cover h2{ font-family:'Fraunces', serif; font-size:clamp(18px,2.6vw,30px); font-weight:600; margin:0; line-height:1.25; }
+.bb-cover-orn{ font-size:22px; opacity:.85; }
+.bb-cover-rule{ width:64px; height:2px; background:currentColor; opacity:.55; }
+.bb-face-inner{ background:var(--bb-paper); }
+.bb-face-outer-blank{ background:linear-gradient(155deg, #241c14, #14100b); }
+.bb-face-blank-end{ background:var(--bb-paper); color:var(--bb-ink); flex-direction:column; gap:10px; font-family:'Fraunces', serif; font-size:15px; letter-spacing:.08em; text-transform:uppercase; opacity:.7; }
+.bb-content{ font-family:var(--bb-font); color:var(--bb-ink); }
+.bb-nav{
+  position:absolute; top:50%; transform:translateY(-50%); width:44px; height:64px;
+  background:rgba(20,16,12,.5); border:1px solid rgba(181,136,63,.3); color:var(--brass,#b5883f);
+  font-size:22px; border-radius:4px; cursor:pointer; display:flex; align-items:center; justify-content:center; z-index:15;
+}
+.bb-nav:hover{ background:rgba(181,136,63,.18); }
+.bb-nav:disabled{ opacity:.25; cursor:default; }
+.bb-nav.prev{ left:-6px; } .bb-nav.next{ right:-6px; }
+.bb-pager{
+  position:absolute; bottom:-30px; left:50%; transform:translateX(-50%);
+  font-family:'Fraunces', serif; font-size:12.5px; color:var(--paper-text-dim,#a99d87); white-space:nowrap;
+}
+@media (max-width:720px){
+  .bb-book{ width:92vw; height:64vh; }
+  .bb-nav{ width:34px; height:50px; font-size:18px; }
+}
+`;
+
+function initBook(mount, cfg){
+  var THEME_VARS = {
+    classic:{ paper:'#f3ecda', ink:'#2b2318', accent:'#8b5e34', font:"'Source Serif 4', Georgia, serif" },
+    night:  { paper:'#201d1a', ink:'#e3dccd', accent:'#c79a56', font:"'Source Serif 4', Georgia, serif" },
+    sepia:  { paper:'#e8d9b3', ink:'#4a3623', accent:'#7a4b25', font:"'Source Serif 4', Georgia, serif" },
+    modern: { paper:'#ffffff', ink:'#1a1a1a', accent:'#2f5d50', font:"'Inter', system-ui, sans-serif" }
+  };
+  var DUR = 700;
+  var theme = cfg.theme || 'classic';
+  var customStyles = cfg.customStyles || null;
+  var bodyWidth = cfg.bodyWidth || 100;
+  var content = cfg.content || '';
+  var headExtras = cfg.headExtras || '';
+  var title = cfg.title || 'Buch';
+  var fontSize = cfg.fontSize || 16.5;
+  var bookWidth = cfg.width || null;
+
+  mount.innerHTML =
+    '<div class="bb-root">' +
+      '<div class="bb-topbar">' +
+        '<div class="bb-title"></div>' +
+        '<div class="bb-themes">' +
+          '<div class="bb-swatch" data-theme="classic" title="Klassisch"></div>' +
+          '<div class="bb-swatch" data-theme="night" title="Nacht"></div>' +
+          '<div class="bb-swatch" data-theme="sepia" title="Sepia"></div>' +
+          '<div class="bb-swatch" data-theme="modern" title="Modern"></div>' +
+        '</div>' +
+        '<div class="bb-slidegroup" title="Buchbreite"><span class="bb-slide-ic">↔</span><input type="range" class="bb-range bb-range-width" min="420" max="1200" step="10"></div>' +
+        '<div class="bb-slidegroup" title="Textgröße"><span class="bb-slide-ic">Aa</span><input type="range" class="bb-range bb-range-font" min="12" max="22" step="1"></div>' +
+        '<div class="bb-slidegroup" title="Inhaltsbreite (Body)"><span class="bb-slide-ic">⇥</span><input type="range" class="bb-range bb-range-bodywidth" min="50" max="100" step="5"></div>' +
+        '<button class="bb-fs">⛶ Vollbild</button>' +
+      '</div>' +
+      '<div class="bb-stage"><div class="bb-wrapper">' +
+        '<div class="bb-book">' +
+          '<div class="bb-stack s2"></div><div class="bb-stack"></div>' +
+          '<div class="bb-frame">' +
+            '<div class="bb-slot bb-slot-left"><iframe sandbox="allow-same-origin"></iframe><div class="bb-face-plain"></div></div>' +
+            '<div class="bb-slot bb-slot-right"><iframe sandbox="allow-same-origin"></iframe><div class="bb-face-plain"></div></div>' +
+            '<div class="bb-spine"></div>' +
+            '<div class="bb-leaf">' +
+              '<div class="bb-leaf-face bb-leaf-front"><iframe sandbox="allow-same-origin"></iframe><div class="bb-face-plain"></div></div>' +
+              '<div class="bb-leaf-face bb-leaf-back"><iframe sandbox="allow-same-origin"></iframe><div class="bb-face-plain"></div></div>' +
+              '<div class="bb-leaf-shade"></div>' +
+            '</div>' +
+          '</div>' +
+          '<button class="bb-nav prev" aria-label="Vorherige Seite">‹</button>' +
+          '<button class="bb-nav next" aria-label="Nächste Seite">›</button>' +
+        '</div>' +
+        '<div class="bb-pager"></div>' +
+      '</div></div>' +
+    '</div>';
+
+  var el = {
+    root: mount.querySelector('.bb-root'),
+    titleEl: mount.querySelector('.bb-title'),
+    swatches: mount.querySelectorAll('.bb-swatch'),
+    fsBtn: mount.querySelector('.bb-fs'),
+    widthRange: mount.querySelector('.bb-range-width'),
+    fontRange: mount.querySelector('.bb-range-font'),
+    bodyWidthRange: mount.querySelector('.bb-range-bodywidth'),
+    book: mount.querySelector('.bb-book'),
+    left: wrapSlot(mount.querySelector('.bb-slot-left')),
+    right: wrapSlot(mount.querySelector('.bb-slot-right')),
+    leaf: mount.querySelector('.bb-leaf'),
+    leafFront: wrapSlot(mount.querySelector('.bb-leaf-front')),
+    leafBack: wrapSlot(mount.querySelector('.bb-leaf-back')),
+    prevBtn: mount.querySelector('.bb-nav.prev'),
+    nextBtn: mount.querySelector('.bb-nav.next'),
+    pager: mount.querySelector('.bb-pager'),
+    wrapper: mount.querySelector('.bb-wrapper')
+  };
+  function wrapSlot(rootEl){ return { root: rootEl, iframe: rootEl.querySelector('iframe'), plain: rootEl.querySelector('.bb-face-plain') }; }
+
+  var allFrames = [el.left.iframe, el.right.iframe, el.leafFront.iframe, el.leafBack.iframe];
+  var state = { pageStep:0, pageHeight:0, totalContentPages:1, M:1, T:0, animating:false };
+
+  el.titleEl.textContent = title;
+  if (bookWidth) el.book.style.width = bookWidth + 'px';
+  el.fontRange.value = fontSize;
+  el.bodyWidthRange.value = bodyWidth;
+
+  var remeasureRAF = null;
+  function scheduleRemeasure(){
+    if (remeasureRAF) return;
+    remeasureRAF = requestAnimationFrame(function(){
+      remeasureRAF = null;
+      measureAndPaginate();
+      renderRest();
+    });
+  }
+
+  function getActiveThemeVars(){
+    if (customStyles) return customStyles;
+    return THEME_VARS[theme] || THEME_VARS.classic;
+  }
+
+  function applyThemeVars(){
+    var t = getActiveThemeVars();
+    el.book.style.setProperty('--bb-paper', t.paper);
+    el.book.style.setProperty('--bb-ink', t.ink);
+    el.book.style.setProperty('--bb-accent', t.accent);
+    el.book.style.setProperty('--bb-font', t.font);
+  }
+
+  function contentSrcdoc(){
+    var t = getActiveThemeVars();
+    return '<!DOCTYPE html><html><head><meta charset="utf-8">' +
+      '<style>html,body{margin:0 auto;padding:0;background:' + t.paper + ';width:' + bodyWidth + '%;}' +
+      '#bb-content{font-family:' + t.font + ';color:' + t.ink + ';font-size:' + fontSize + 'px;line-height:1.65;' +
+      'padding:9% 8%;box-sizing:border-box;column-fill:auto;}' +
+      '#bb-content h1,#bb-content h2,#bb-content h3{font-family:' + t.font + ';color:' + t.accent + ';}' +
+      '#bb-content a{color:' + t.accent + ';}#bb-content img{max-width:100%;height:auto;}</style>' +
+      headExtras +
+      '</head><body><div id="bb-content">' + content + '</div></body></html>';
+  }
+
+  function loadAllFrames(){
+    var doc = contentSrcdoc();
+    var loads = allFrames.map(function(f){
+      return new Promise(function(res){
+        f.onload = function(){ res(); };
+        f.srcdoc = doc;
+      });
+    });
+    return Promise.all(loads);
+  }
+
+  function measureAndPaginate(){
+    var rect = el.left.root.getBoundingClientRect();
+    var w = Math.max(1, Math.floor(rect.width));
+    var h = Math.max(1, Math.floor(rect.height));
+    allFrames.forEach(function(f){
+      var d = f.contentDocument;
+      if (!d) return;
+      var c = d.getElementById('bb-content');
+      if (!c) return;
+      c.style.columnWidth = w + 'px';
+      c.style.columnGap = '0px';
+      c.style.width = w + 'px';
+      c.style.height = h + 'px';
+      c.style.transform = 'translateX(0px)';
+      c.style.visibility = 'visible';
+    });
+    var probeDoc = el.left.iframe.contentDocument;
+    if (!probeDoc) return;
+    var probe = probeDoc.getElementById('bb-content');
+    if (!probe) return;
+    var scrollW = probe.scrollWidth;
+    state.pageStep = w;
+    state.pageHeight = h;
+    state.totalContentPages = Math.max(1, Math.round(scrollW / w));
+    state.M = Math.max(1, Math.ceil(state.totalContentPages / 2));
+  }
+
+  function setIframePage(iframe, n){
+    var d = iframe.contentDocument;
+    if (!d) return;
+    var c = d.getElementById('bb-content');
+    if (!c) return;
+    if (n < 1 || n > state.totalContentPages){
+      c.style.visibility = 'hidden';
+    } else {
+      c.style.visibility = 'visible';
+      c.style.transform = 'translateX(-' + ((n - 1) * state.pageStep) + 'px)';
+    }
+  }
+
+  function escapeHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  function plainMarkup(type){
+    if (type === 'cover'){
+      return '<div class="bb-cover-orn">❦</div><h2>' + escapeHtml(title) + '</h2><div class="bb-cover-rule"></div>';
+    }
+    if (type === 'blank-end'){
+      return '<div class="bb-cover-orn">❦</div><span>Ende</span>';
+    }
+    return '';
+  }
+
+  function setFace(slot, ref){
+    if (ref.type === 'content'){
+      slot.iframe.style.zIndex = 2; slot.iframe.style.opacity = 1;
+      slot.plain.style.zIndex = 1; slot.plain.style.opacity = 0;
+      setIframePage(slot.iframe, ref.n);
+    } else {
+      slot.plain.style.zIndex = 2; slot.plain.style.opacity = 1;
+      slot.iframe.style.zIndex = 1; slot.iframe.style.opacity = 0;
+      slot.plain.className = 'bb-face-plain bb-face-' + ref.type;
+      slot.plain.innerHTML = plainMarkup(ref.type);
+    }
+  }
+
+  function leafFace(k, side){
+    if (k === 0) return side === 'front' ? { type:'cover' } : { type:'inner' };
+    var n = side === 'front' ? (2 * k - 1) : (2 * k);
+    if (n > state.totalContentPages) return { type:'blank-end' };
+    return { type:'content', n:n };
+  }
+
+  function restLeft(){ return state.T === 0 ? { type:'outer-blank' } : leafFace(state.T - 1, 'back'); }
+  function restRight(){ return state.T >= state.M ? { type:'blank-end' } : leafFace(state.T, 'front'); }
+
+  function renderRest(){
+    setFace(el.left, restLeft());
+    setFace(el.right, restRight());
+    el.leaf.style.display = 'none';
+    el.leaf.classList.remove('bb-animating');
+    el.leaf.style.transform = 'rotateY(0deg)';
+    updateNav();
+  }
+
+  function updateNav(){
+    el.prevBtn.disabled = state.T <= 0;
+    el.nextBtn.disabled = state.T >= state.M;
+    var label;
+    if (state.T <= 0) label = 'Umschlag';
+    else if (state.T >= state.M) label = 'Ende';
+    else {
+      var a = leafFace(state.T - 1, 'back');
+      var b = leafFace(state.T, 'front');
+      if (a.type === 'content' && b.type === 'content') label = 'Seite ' + a.n + '–' + b.n + ' von ' + state.totalContentPages;
+      else if (b.type === 'content') label = 'Seite ' + b.n + ' von ' + state.totalContentPages;
+      else if (a.type === 'content') label = 'Seite ' + a.n + ' von ' + state.totalContentPages;
+      else label = state.totalContentPages + ' Seiten';
+    }
+    el.pager.textContent = label;
+  }
+
+  function turnForward(){
+    if (state.animating || state.T >= state.M) return;
+    state.animating = true;
+    var k = state.T;
+    var front = leafFace(k, 'front'), back = leafFace(k, 'back');
+    setFace(el.leafFront, front);
+    setFace(el.leafBack, back);
+    el.leaf.style.display = 'block';
+    el.leaf.classList.remove('bb-animating');
+    el.leaf.style.transform = 'rotateY(0deg)';
+    void el.leaf.offsetWidth;
+    var newRight = (k + 1 >= state.M) ? { type:'blank-end' } : leafFace(k + 1, 'front');
+    setFace(el.right, newRight);
+    el.leaf.classList.add('bb-animating');
+    requestAnimationFrame(function(){ el.leaf.style.transform = 'rotateY(-180deg)'; });
+    setTimeout(function(){ setFace(el.left, back); }, DUR * 0.55);
+    setTimeout(function(){
+      state.T += 1;
+      el.leaf.style.display = 'none';
+      el.leaf.classList.remove('bb-animating');
+      el.leaf.style.transform = 'rotateY(0deg)';
+      state.animating = false;
+      updateNav();
+    }, DUR + 40);
+  }
+
+  function turnBackward(){
+    if (state.animating || state.T <= 0) return;
+    state.animating = true;
+    var k = state.T - 1;
+    var front = leafFace(k, 'front'), back = leafFace(k, 'back');
+    setFace(el.leafFront, front);
+    setFace(el.leafBack, back);
+    el.leaf.style.display = 'block';
+    el.leaf.classList.remove('bb-animating');
+    el.leaf.style.transform = 'rotateY(-180deg)';
+    void el.leaf.offsetWidth;
+    var newLeft = (k - 1 < 0) ? { type:'outer-blank' } : leafFace(k - 1, 'back');
+    setFace(el.left, newLeft);
+    el.leaf.classList.add('bb-animating');
+    requestAnimationFrame(function(){ el.leaf.style.transform = 'rotateY(0deg)'; });
+    setTimeout(function(){ setFace(el.right, front); }, DUR * 0.55);
+    setTimeout(function(){
+      state.T -= 1;
+      el.leaf.style.display = 'none';
+      el.leaf.classList.remove('bb-animating');
+      state.animating = false;
+      updateNav();
+    }, DUR + 40);
+  }
+
+  el.right.root.addEventListener('click', function(){ turnForward(); });
+  el.left.root.addEventListener('click', function(){ turnBackward(); });
+  el.prevBtn.addEventListener('click', function(e){ e.stopPropagation(); turnBackward(); });
+  el.nextBtn.addEventListener('click', function(e){ e.stopPropagation(); turnForward(); });
+  document.addEventListener('keydown', function(e){
+    if (mount.hidden || !document.body.contains(mount)) return;
+    if (e.key === 'ArrowRight') turnForward();
+    if (e.key === 'ArrowLeft') turnBackward();
+  });
+  (function(){
+    var startX = null;
+    el.wrapper.addEventListener('touchstart', function(e){ startX = e.touches[0].clientX; }, {passive:true});
+    el.wrapper.addEventListener('touchend', function(e){
+      if (startX === null) return;
+      var dx = e.changedTouches[0].clientX - startX;
+      if (Math.abs(dx) > 40) (dx < 0 ? turnForward() : turnBackward());
+      startX = null;
+    }, {passive:true});
+  })();
+
+  el.swatches.forEach(function(sw){
+    if (sw.dataset.theme === theme && !customStyles) sw.classList.add('active');
+    sw.addEventListener('click', function(){
+      customStyles = null;
+      el.swatches.forEach(function(s){ s.classList.remove('active'); });
+      sw.classList.add('active');
+      theme = sw.dataset.theme;
+      applyThemeVars();
+      if (cfg.onChange) cfg.onChange({ theme: theme, customStyles: null });
+      loadAllFrames().then(function(){
+        measureAndPaginate();
+        renderRest();
+      });
+    });
+  });
+
+  el.widthRange.addEventListener('input', function(){
+    bookWidth = parseInt(this.value, 10);
+    el.book.style.width = bookWidth + 'px';
+    if (cfg.onChange) cfg.onChange({ width: bookWidth });
+    scheduleRemeasure();
+  });
+  el.fontRange.addEventListener('change', function(){
+    fontSize = parseFloat(this.value);
+    if (cfg.onChange) cfg.onChange({ fontSize: fontSize });
+    loadAllFrames().then(function(){ measureAndPaginate(); renderRest(); });
+  });
+  el.bodyWidthRange.addEventListener('change', function(){
+    bodyWidth = parseInt(this.value, 10);
+    if (cfg.onChange) cfg.onChange({ bodyWidth: bodyWidth });
+    loadAllFrames().then(function(){ measureAndPaginate(); renderRest(); });
+  });
+
+  el.fsBtn.addEventListener('click', function(){
+    if (!document.fullscreenElement) mount.requestFullscreen ? mount.requestFullscreen().catch(function(){}) : null;
+    else document.exitFullscreen();
+  });
+  document.addEventListener('fullscreenchange', function(){
+    el.fsBtn.textContent = document.fullscreenElement ? '⛶ Vollbild beenden' : '⛶ Vollbild';
+    setTimeout(function(){ measureAndPaginate(); renderRest(); }, 140);
+  });
+
+  var resizeT;
+  window.addEventListener('resize', function(){
+    clearTimeout(resizeT);
+    resizeT = setTimeout(function(){ measureAndPaginate(); renderRest(); }, 180);
+  });
+
+  applyThemeVars();
+  return loadAllFrames().then(function(){
+    measureAndPaginate();
+    renderRest();
+    var w = Math.round(el.book.getBoundingClientRect().width);
+    el.widthRange.value = Math.min(Math.max(w, +el.widthRange.min), +el.widthRange.max);
+  });
+}
+
+(function(){
+  "use strict";
+  var mainStyle = document.createElement('style');
+  mainStyle.textContent = BOOK_CSS;
+  document.head.appendChild(mainStyle);
+
+  var els = {
+    fileInput: document.getElementById('fileInput'),
+    newBtn: document.getElementById('newBtn'),
+    editStylesBtn: document.getElementById('editStylesBtn'),
+    dropzone: document.getElementById('dropzone'),
+    pasteArea: document.getElementById('pasteArea'),
+    convertBtn: document.getElementById('convertBtn'),
+    emptyState: document.getElementById('emptyState'),
+    bookMount: document.getElementById('bookMount'),
+    saveBtn: document.getElementById('saveBtn'),
+    styleModal: document.getElementById('styleModal'),
+    stylePaper: document.getElementById('stylePaper'),
+    styleInk: document.getElementById('styleInk'),
+    styleAccent: document.getElementById('styleAccent'),
+    styleFont: document.getElementById('styleFont'),
+    closeModalBtn: document.getElementById('closeModalBtn'),
+    applyModalBtn: document.getElementById('applyModalBtn')
+  };
+
+  var current = { content:'', headExtras:'', title:'Buch', theme:'classic', customStyles:null, width:null, fontSize:16.5, bodyWidth:100 };
+
+  function stripScripts(doc){
+    try {
+      doc.querySelectorAll('script').forEach(function(s){ s.remove(); });
+      doc.querySelectorAll('*').forEach(function(elm){
+        for (var i = elm.attributes.length - 1; i >= 0; i--){
+          var name = elm.attributes[i].name;
+          if (name.indexOf('on') === 0) elm.removeAttribute(name);
+        }
+      });
+    } catch(e) {}
+  }
+
+  function parseSource(html){
+    try {
+      var doc = new DOMParser().parseFromString(html, 'text/html');
+      stripScripts(doc);
+      var extras = [];
+      doc.querySelectorAll('head style').forEach(function(s){ extras.push(s.outerHTML); });
+      doc.querySelectorAll('head link[rel="stylesheet"]').forEach(function(l){ extras.push(l.outerHTML); });
+      var titleEl = doc.querySelector('title');
+      return {
+        title: titleEl ? titleEl.textContent.trim() : 'Buch',
+        headExtras: extras.join('\n'),
+        body: doc.body ? doc.body.innerHTML : html
+      };
+    } catch(e) {
+      return { title: 'Buch', headExtras: '', body: html };
+    }
+  }
+
+  function renderBook(){
+    initBook(els.bookMount, {
+      content: current.content,
+      headExtras: current.headExtras,
+      title: current.title,
+      theme: current.theme,
+      customStyles: current.customStyles,
+      width: current.width,
+      fontSize: current.fontSize,
+      bodyWidth: current.bodyWidth,
+      onChange: function(patch){ Object.assign(current, patch); }
+    });
+  }
+
+  function loadHTML(html){
+    if (!html || !html.trim()) return;
+    var parsed = parseSource(html);
+    current.title = parsed.title;
+    current.headExtras = parsed.headExtras;
+    current.content = parsed.body;
+    current.theme = 'classic';
+    current.customStyles = null;
+    current.width = null;
+    current.fontSize = 16.5;
+    current.bodyWidth = 100;
+    els.emptyState.hidden = true;
+    els.bookMount.hidden = false;
+    els.saveBtn.disabled = false;
+    els.newBtn.hidden = false;
+    els.editStylesBtn.hidden = false;
+    renderBook();
+  }
+
+  els.fileInput.addEventListener('change', function(e){
+    var file = e.target.files && e.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(evt){ loadHTML(evt.target.result); };
+    reader.readAsText(file);
+  });
+
+  els.convertBtn.addEventListener('click', function(){
+    var text = els.pasteArea.value;
+    loadHTML(text);
+  });
+
+  ['dragover','dragenter'].forEach(function(evt){
+    els.dropzone.addEventListener(evt, function(e){ e.preventDefault(); els.dropzone.classList.add('drag'); });
+  });
+  ['dragleave','drop'].forEach(function(evt){
+    els.dropzone.addEventListener(evt, function(e){ e.preventDefault(); els.dropzone.classList.remove('drag'); });
+  });
+  els.dropzone.addEventListener('drop', function(e){
+    var file = e.dataTransfer.files && e.dataTransfer.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(evt){ loadHTML(evt.target.result); };
+    reader.readAsText(file);
+  });
+
+  els.newBtn.addEventListener('click', function(){
+    els.bookMount.hidden = true;
+    els.bookMount.innerHTML = '';
+    els.emptyState.hidden = false;
+    els.saveBtn.disabled = true;
+    els.newBtn.hidden = true;
+    els.editStylesBtn.hidden = true;
+    els.pasteArea.value = '';
+    els.fileInput.value = '';
+  });
+
+  els.editStylesBtn.addEventListener('click', function(){
+    var currentStyles = current.customStyles || {
+      paper: '#f3ecda',
+      ink: '#2b2318',
+      accent: '#8b5e34',
+      font: "'Source Serif 4', Georgia, serif"
+    };
+    els.stylePaper.value = currentStyles.paper.length === 7 ? currentStyles.paper : '#f3ecda';
+    els.styleInk.value = currentStyles.ink.length === 7 ? currentStyles.ink : '#2b2318';
+    els.styleAccent.value = currentStyles.accent.length === 7 ? currentStyles.accent : '#8b5e34';
+    els.styleFont.value = currentStyles.font;
+    els.styleModal.hidden = false;
+  });
+
+  els.closeModalBtn.addEventListener('click', function(){
+    els.styleModal.hidden = true;
+  });
+
+  els.applyModalBtn.addEventListener('click', function(){
+    current.customStyles = {
+      paper: els.stylePaper.value,
+      ink: els.styleInk.value,
+      accent: els.styleAccent.value,
+      font: els.styleFont.value
+    };
+    els.styleModal.hidden = true;
+    renderBook();
+  });
+
+  els.saveBtn.addEventListener('click', function(){
+    var html = buildStandaloneBook();
+    var blob = new Blob([html], {type:'text/html'});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    var safeName = (current.title || 'buch').toLowerCase().replace(/[^a-z0-9äöüß-]+/g,'-').replace(/(^-|-$)/g,'') || 'buch';
+    a.href = url; a.download = safeName + '-buch.html';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
+  });
+
+  function buildStandaloneBook(){
+    var titleSafe = (current.title || 'Buch').replace(/</g,'&lt;');
+    return '<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8">' +
+    '<meta name="viewport" content="width=device-width, initial-scale=1">' +
+    '<title>' + titleSafe + '</title>' +
+    '<link rel="preconnect" href="https://fonts.googleapis.com">' +
+    '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>' +
+    '<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">' +
+    '<style>' +
+      ':root{--wood-0:#171310;--wood-1:#211a14;--wood-2:#2b2119;--wood-3:#3a2c20;--brass:#b5883f;--brass-dim:#8a683a;--paper-text:#ece3d2;--paper-text-dim:#a99d87;}' +
+      '*{box-sizing:border-box;}html,body{height:100%;}' +
+      'body{margin:0;background:radial-gradient(ellipse at 50% -10%, #382a1e 0%, transparent 55%), linear-gradient(180deg, var(--wood-1), var(--wood-0) 70%);color:var(--paper-text);font-family:"Inter",sans-serif;display:flex;flex-direction:column;min-height:100%;overflow:hidden;}' +
+      '#bookMount{ flex:1; min-height:0; }' +
+    '</style></head><body>' +
+    '<div id="bookMount"></div>' +
+    '<script>var BOOK_CSS=' + JSON.stringify(BOOK_CSS) + ';\n' +
+    'var s=document.createElement("style");s.textContent=BOOK_CSS;document.head.appendChild(s);\n' +
+    'var initBook=' + initBook.toString() + ';\n' +
+    'initBook(document.getElementById("bookMount"), {' +
+      'content:' + JSON.stringify(current.content) + ',' +
+      'headExtras:' + JSON.stringify(current.headExtras) + ',' +
+      'title:' + JSON.stringify(current.title) + ',' +
+      'theme:' + JSON.stringify(current.theme) + ',' +
+      'customStyles:' + JSON.stringify(current.customStyles) + ',' +
+      'width:' + JSON.stringify(current.width) + ',' +
+      'fontSize:' + JSON.stringify(current.fontSize) + ',' +
+      'bodyWidth:' + JSON.stringify(current.bodyWidth) +
+    '});' +
+    '<' + '/script></body></html>';
+  }
+})();
+</script>
+</body>
+</html>
