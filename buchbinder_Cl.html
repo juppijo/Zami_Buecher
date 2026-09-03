@@ -120,6 +120,7 @@
    Shared verbatim between the live tool and every exported book.
    ============================================================ */
 var BOOK_CSS = `
+[hidden]{ display:none !important; }
 .bb-root{ width:100%; height:100%; display:flex; flex-direction:column; }
 .bb-topbar{
   display:flex; align-items:center; justify-content:center; gap:14px;
@@ -278,7 +279,7 @@ function initBook(mount, cfg){
           '<div class="bb-swatch" data-theme="sepia" title="Sepia"></div>' +
           '<div class="bb-swatch" data-theme="modern" title="Modern"></div>' +
         '</div>' +
-        '<div class="bb-slidegroup" title="Buchbreite"><span class="bb-slide-ic">↔</span><input type="range" class="bb-range bb-range-width" min="420" max="1800" step="10"></div>' +
+        '<div class="bb-slidegroup" title="Buchbreite"><span class="bb-slide-ic">↔</span><input type="range" class="bb-range bb-range-width" min="420" max="1200" step="10"></div>' +
         '<div class="bb-slidegroup" title="Textgröße"><span class="bb-slide-ic">Aa</span><input type="range" class="bb-range bb-range-font" min="12" max="22" step="1"></div>' +
         '<button class="bb-style-btn" title="Styles bearbeiten">✎ Styles</button>' +
         '<button class="bb-fs">⛶ Vollbild</button>' +
@@ -295,12 +296,12 @@ function initBook(mount, cfg){
         '<div class="bb-book">' +
           '<div class="bb-stack s2"></div><div class="bb-stack"></div>' +
           '<div class="bb-frame">' +
-            '<div class="bb-slot bb-slot-left"><iframe sandbox="allow-same-origin"></iframe><div class="bb-face-plain"></div></div>' +
-            '<div class="bb-slot bb-slot-right"><iframe sandbox="allow-same-origin"></iframe><div class="bb-face-plain"></div></div>' +
+            '<div class="bb-slot bb-slot-left"><iframe sandbox="allow-same-origin allow-scripts"></iframe><div class="bb-face-plain"></div></div>' +
+            '<div class="bb-slot bb-slot-right"><iframe sandbox="allow-same-origin allow-scripts"></iframe><div class="bb-face-plain"></div></div>' +
             '<div class="bb-spine"></div>' +
             '<div class="bb-leaf">' +
-              '<div class="bb-leaf-face bb-leaf-front"><iframe sandbox="allow-same-origin"></iframe><div class="bb-face-plain"></div></div>' +
-              '<div class="bb-leaf-face bb-leaf-back"><iframe sandbox="allow-same-origin"></iframe><div class="bb-face-plain"></div></div>' +
+              '<div class="bb-leaf-face bb-leaf-front"><iframe sandbox="allow-same-origin allow-scripts"></iframe><div class="bb-face-plain"></div></div>' +
+              '<div class="bb-leaf-face bb-leaf-back"><iframe sandbox="allow-same-origin allow-scripts"></iframe><div class="bb-face-plain"></div></div>' +
               '<div class="bb-leaf-shade"></div>' +
             '</div>' +
           '</div>' +
@@ -362,24 +363,62 @@ function initBook(mount, cfg){
     el.book.style.setProperty('--bb-font', t.font);
   }
 
+  var hasMath = /\$\$|\\\(|\\\[|\$[^\n$]{1,400}?\$/.test(content);
+
+  function mathJaxBlock(){
+    return "<script>window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],['\\[','\\]']]},svg:{fontCache:'global'}};</" + "script>" +
+      "<script id='MathJax-script' async src='https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js'></" + "script>";
+  }
+
   function contentSrcdoc(){
     var t = THEME_VARS[theme] || THEME_VARS.classic;
     return '<!DOCTYPE html><html><head><meta charset="utf-8">' +
       '<style>html,body{margin:0;padding:0;background:' + t.paper + ';}' +
       '#bb-content{font-family:' + t.font + ';color:' + t.ink + ';font-size:' + fontSize + 'px;line-height:1.65;' +
-      'padding:9% 8%;box-sizing:border-box;column-fill:auto;}' +
+      'padding-top:7%;padding-bottom:7%;box-sizing:border-box;column-fill:auto;overflow-wrap:anywhere;word-break:break-word;}' +
+      '#bb-content *{max-width:100%;box-sizing:border-box;}' +
+      '#bb-content table{width:auto;}' +
       '#bb-content h1,#bb-content h2,#bb-content h3{font-family:' + t.font + ';}' +
       ':where(#bb-content) h1,:where(#bb-content) h2,:where(#bb-content) h3{color:' + t.accent + ';}' +
       ':where(#bb-content) a{color:' + t.accent + ';}#bb-content img{max-width:100%;height:auto;}</style>' +
       headExtras +
+      (hasMath ? mathJaxBlock() : '') +
       '</head><body><div id="bb-content">' + content + '</div></body></html>';
+  }
+
+  function waitForMathJax(f){
+    return new Promise(function(resolve){
+      var settled = false;
+      function done(){ if (!settled){ settled = true; resolve(); } }
+      var doc = f.contentDocument;
+      var win = f.contentWindow;
+      var scriptEl = doc && doc.getElementById('MathJax-script');
+      if (scriptEl) scriptEl.addEventListener('error', done);
+      var waited = 0;
+      function check(){
+        if (settled) return;
+        if (win.MathJax && win.MathJax.startup && win.MathJax.startup.promise){
+          win.MathJax.startup.promise.then(done, done);
+        } else if (waited > 4000) {
+          done();
+        } else {
+          waited += 40;
+          setTimeout(check, 40);
+        }
+      }
+      check();
+    });
   }
 
   function loadAllFrames(){
     var doc = contentSrcdoc();
     var loads = allFrames.map(function(f){
       return new Promise(function(res){
-        f.addEventListener('load', function h(){ f.removeEventListener('load', h); res(); });
+        f.addEventListener('load', function h(){
+          f.removeEventListener('load', h);
+          if (hasMath) waitForMathJax(f).then(res);
+          else res();
+        });
         f.srcdoc = doc;
       });
     });
@@ -390,14 +429,16 @@ function initBook(mount, cfg){
     var rect = el.left.root.getBoundingClientRect();
     var w = Math.max(1, Math.floor(rect.width));
     var h = Math.max(1, Math.floor(rect.height));
+    var margin = Math.max(16, Math.round(w * 0.08));
     allFrames.forEach(function(f){
       var d = f.contentDocument;
       if (!d) return;
       var c = d.getElementById('bb-content');
       if (!c) return;
-      c.style.columnWidth = w + 'px';
-      c.style.columnGap = '0px';
-      c.style.width = w + 'px';
+      c.style.paddingLeft = margin + 'px';
+      c.style.paddingRight = margin + 'px';
+      c.style.columnWidth = (w - 2 * margin) + 'px';
+      c.style.columnGap = (2 * margin) + 'px';
       c.style.height = h + 'px';
       c.style.transform = 'translateX(0px)';
       c.style.visibility = 'visible';

@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML zu Markdown Konverter</title>
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="https://unpkg.com/turndown/dist/turndown.js"></script>
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        header {
+            background-color: #252526;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #3c3c3c;
+        }
+        h1 {
+            font-size: 1.1rem;
+            color: #9cdcfe;
+            font-weight: 500;
+        }
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        button, .file-label {
+            background-color: #0e639c;
+            color: #ffffff;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: background 0.2s;
+            display: inline-block;
+        }
+        button:hover, .file-label:hover {
+            background-color: #1177bb;
+        }
+        input[type="file"] {
+            display: none;
+        }
+        .main-container {
+            display: flex;
+            flex: 1;
+            height: calc(100vh - 50px);
+        }
+        .pane {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid #3c3c3c;
+        }
+        .pane:last-child {
+            border-right: none;
+        }
+        .pane-header {
+            background-color: #2d2d2d;
+            padding: 6px 15px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #cccccc;
+            border-bottom: 1px solid #3c3c3c;
+        }
+        textarea {
+            flex: 1;
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            border: none;
+            padding: 15px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 0.95rem;
+            resize: none;
+            outline: none;
+            line-height: 1.5;
+        }
+        .preview {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            background-color: #252526;
+        }
+        /* Styling für die Rendervorschau */
+        .preview h1, .preview h2, .preview h3 { margin-bottom: 10px; color: #569cd6; }
+        .preview p { margin-bottom: 10px; }
+        .preview code { background-color: #2d2d2d; padding: 2px 4px; border-radius: 3px; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>HTML &xrarr; Markdown Konverter</h1>
+        <div class="toolbar">
+            <label class="file-label" for="loadFile">Datei laden</label>
+            <input type="file" id="loadFile" accept=".html,.txt,.md" onchange="loadFile(event)">
+            <button onclick="convertHTMLToMD()">Zu MD Konvertieren</button>
+            <button onclick="saveFile('markdown.md', document.getElementById('mdOutput').value)">MD Speichern</button>
+            <button onclick="toggleFullscreen()">Vollbild</button>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <div class="pane">
+            <div class="pane-header">HTML Eingabe</div>
+            <textarea id="htmlInput" placeholder="Füge hier deinen HTML-Code ein..." oninput="updatePreview()"><p>Hallo Welt! Hier ist eine Formel: $E = mc^2$</p></textarea>
+        </div>
+
+        <div class="pane">
+            <div class="pane-header">Markdown Ergebnis</div>
+            <textarea id="mdOutput" readonly placeholder="Das konvertierte Markdown erscheint hier..."></textarea>
+        </div>
+
+        <div class="pane">
+            <div class="pane-header">LaTeX / Render Vorschau</div>
+            <div id="preview" class="preview"></div>
+        </div>
+    </div>
+
+    <script>
+        // Turndown Instanz initialisieren
+        const turndownService = new TurndownService({
+            headingStyle: 'atx',
+            codeBlockStyle: 'fenced'
+        });
+
+        // Verhindere, dass Turndown LaTeX-Formeln beschädigt
+        turndownService.keep(['script']);
+
+        function convertHTMLToMD() {
+            const htmlContent = document.getElementById('htmlInput').value;
+            const markdown = turndownService.turndown(htmlContent);
+            document.getElementById('mdOutput').value = markdown;
+        }
+
+        function updatePreview() {
+            const htmlContent = document.getElementById('htmlInput').value;
+            const previewContainer = document.getElementById('preview');
+            previewContainer.innerHTML = htmlContent;
+            
+            // MathJax Formeln neu rendern
+            if (window.MathJax) {
+                MathJax.typesetPromise([previewContainer]).catch((err) => console.log(err));
+            }
+        }
+
+        function saveFile(filename, text) {
+            const element = document.createElement('a');
+            element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+            element.setAttribute('download', filename);
+            element.style.display = 'none';
+            document.body.appendChild(element);
+            element.click();
+            document.body.removeChild(element);
+        }
+
+        function loadFile(event) {
+            const input = event.target;
+            if ('files' in input && input.files.length > 0) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('htmlInput').value = e.target.result;
+                    updatePreview();
+                    convertHTMLToMD();
+                };
+                reader.readAsText(input.files[0]);
+            }
+        }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+        // Initiales Rendern beim Laden
+        window.onload = function() {
+            updatePreview();
+            convertHTMLToMD();
+        };
+    </script>
+</body>
+</html>
