@@ -1,637 +1,709 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interaktiver Buch-Viewer</title>
-    <!-- Page Flip Library -->
-    <script src="https://cdn.jsdelivr.net/npm/page-flip/dist/js/page-flip.browser.js"></script>
-    <!-- JSZip for Save/Load -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <style>
-        :root {
-            --bg-color: #0f172a;
-            --panel-bg: #1e293b;
-            --accent-color: #06b6d4;
-            --accent-hover: #0891b2;
-            --text-color: #f8fafc;
-            --text-dim: #94a3b8;
-            --border-color: #334155;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            user-select: none;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        /* Toolbar / Control Panel */
-        header {
-            background-color: var(--panel-bg);
-            border-bottom: 1px solid var(--border-color);
-            padding: 10px 20px;
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            justify-content: space-between;
-            gap: 15px;
-            z-index: 10;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        }
-
-        .control-group {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn {
-            background-color: #273549;
-            color: var(--text-color);
-            border: 1px solid var(--border-color);
-            padding: 8px 14px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            transition: all 0.2s ease;
-        }
-
-        .btn:hover {
-            background-color: var(--accent-color);
-            border-color: var(--accent-color);
-            color: #000;
-        }
-
-        select {
-            background-color: #273549;
-            color: var(--text-color);
-            border: 1px solid var(--border-color);
-            padding: 8px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            outline: none;
-        }
-
-        select:focus {
-            border-color: var(--accent-color);
-        }
-
-        .page-info {
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--accent-color);
-            min-width: 80px;
-            text-align: center;
-        }
-
-        /* Main Viewport */
-        main {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            padding: 20px;
-            overflow: hidden;
-            background: radial-gradient(circle, #1e293b 0%, #0f172a 100%);
-        }
-
-        #book-wrapper {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 100%;
-            height: 100%;
-        }
-
-        #book-container {
-            position: relative;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
-        }
-
-        .page {
-            background-color: #ffffff;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-        }
-
-        .page img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            pointer-events: none;
-        }
-
-        /* Empty State Placeholder */
-        #placeholder {
-            text-align: center;
-            color: var(--text-dim);
-            border: 2px dashed var(--border-color);
-            padding: 50px;
-            border-radius: 12px;
-            max-width: 500px;
-        }
-
-        #placeholder h2 {
-            color: var(--text-color);
-            margin-bottom: 10px;
-        }
-
-        /* Hidden File Inputs */
-        input[type="file"] {
-            display: none;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interaktiver Buch-Viewer</title>
+  <!-- Page Flip Library -->
+  <script src="https://cdn.jsdelivr.net/npm/page-flip/dist/js/page-flip.browser.js"></script>
+  <!-- JSZip for Save/Load -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <style>
+    :root {
+        --bg-color: #0f172a;
+        --panel-bg: #1e293b;
+        --accent-color: #06b6d4;
+        --accent-hover: #0891b2;
+        --text-color: #f8fafc;
+        --text-dim: #94a3b8;
+        --border-color: #334155;
+    }
+    
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        user-select: none;
+    }
+    
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+    
+    /* Toolbar / Control Panel */
+    header {
+        background-color: var(--panel-bg);
+        border-bottom: 1px solid var(--border-color);
+        padding: 10px 20px;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+        z-index: 10;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    
+    .control-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .btn {
+        background-color: #273549;
+        color: var(--text-color);
+        border: 1px solid var(--border-color);
+        padding: 8px 14px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s ease;
+    }
+    
+    .btn:hover {
+        background-color: var(--accent-color);
+        border-color: var(--accent-color);
+        color: #000;
+    }
+    
+    select {
+        background-color: #273549;
+        color: var(--text-color);
+        border: 1px solid var(--border-color);
+        padding: 8px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        outline: none;
+    }
+    
+    select:focus {
+        border-color: var(--accent-color);
+    }
+    
+    .page-info {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--accent-color);
+        min-width: 80px;
+        text-align: center;
+    }
+    
+    /* Main Viewport */
+    main {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+        padding: 20px;
+        overflow: hidden;
+        background: radial-gradient(circle, #1e293b 0%, #0f172a 100%);
+    }
+    
+    #book-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        height: 100%;
+    }
+    
+    #book-container {
+        position: relative;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+    }
+    
+    .page {
+        background-color: #ffffff;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+    }
+    
+    .page img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        pointer-events: none;
+    }
+    
+    /* Empty State Placeholder */
+    #placeholder {
+        text-align: center;
+        color: var(--text-dim);
+        border: 2px dashed var(--border-color);
+        padding: 50px;
+        border-radius: 12px;
+        max-width: 500px;
+    }
+    
+    #placeholder h2 {
+        color: var(--text-color);
+        margin-bottom: 10px;
+    }
+    
+    /* Hidden File Inputs */
+    input[type="file"] {
+        display: none;
+    }
+  </style>
 </head>
 <body>
 
-    <header id="main-header">
-        <!-- Lade/Speicher Aktionen -->
-        <div class="control-group">
-            <button class="btn" onclick="triggerFileInput('folderInput')">📁 Ordner öffnen</button>
-            <button class="btn" onclick="triggerFileInput('fileInput')">🖼️ Bilder wählen</button>
-            <button class="btn" onclick="triggerFileInput('coverInput')">📘 Cover wählen</button>
-            <button class="btn" onclick="exportReaderHTML()">💾 Buch als HTML speichern</button>
-            <button class="btn" onclick="triggerFileInput('loadProjectInput')">📂 Projekt laden</button>
-        </div>
+  <header id="main-header">
+    <!-- Lade/Speicher Aktionen -->
+    <div class="control-group">
+      <button class="btn" onclick="triggerFileInput('folderInput')">📁 Ordner öffnen</button>
+      <button class="btn" onclick="triggerFileInput('fileInput')">🖼️ Bilder wählen</button>
+      <button class="btn" onclick="triggerFileInput('coverInput')">📘 Cover wählen</button>
+      <button class="btn" onclick="exportReaderHTML()">💾 Buch als HTML speichern</button>
+      <button class="btn" onclick="triggerFileInput('loadProjectInput')">📂 Projekt laden</button>
+    </div>
 
-        <!-- Modus Auswahl -->
-        <div class="control-group">
-            <label for="layoutMode" style="font-size: 14px; color: var(--text-dim);">Modus:</label>
-            <select id="layoutMode" onchange="changeLayoutMode()">
-                <option value="double">2-Seitig (Doppelseite)</option>
-                <option value="single">1-Seitig (Einzelseite)</option>
-                <option value="split">1 Bild auf 2 Seiten (Panorama)</option>
-            </select>
-            <label for="startPage" style="font-size: 14px; color: var(--text-dim); margin-left: 10px;">Start auf:</label>
-            <select id="startPage" onchange="changeStartPage()">
-                <option value="1">Seite 1 (Rechts)</option>
-                <option value="2">Seite 2 (Doppelseite)</option>
-            </select>
-        </div>
+    <!-- Modus Auswahl -->
+    <div class="control-group">
+      <label for="layoutMode" style="font-size: 14px; color: var(--text-dim);">Modus:</label>
+      <select id="layoutMode" onchange="changeLayoutMode()">
+        <option value="double">2-Seitig (Doppelseite)</option>
+        <option value="single">1-Seitig (Einzelseite)</option>
+        <option value="split">1 Bild auf 2 Seiten (Panorama)</option>
+      </select>
+      <label for="startPage" style="font-size: 14px; color: var(--text-dim); margin-left: 10px;">Start auf:</label>
+      <select id="startPage" onchange="changeStartPage()">
+        <option value="1">Seite 1 (Rechts)</option>
+        <option value="2">Seite 2 (Doppelseite)</option>
+      </select>
+    </div>
 
-        <!-- Navigation & Steuerung -->
-        <div class="control-group">
-            <button class="btn" onclick="if(pageFlip) pageFlip.flipPrev()">◀ Zurück</button>
-            <span class="page-info" id="pageInfo">0 / 0</span>
-            <button class="btn" onclick="if(pageFlip) pageFlip.flipNext()">Weiter ▶</button>
-        </div>
+    <!-- Navigation & Steuerung -->
+    <div class="control-group">
+      <button class="btn" onclick="if(pageFlip) pageFlip.flipPrev()">◀ Zurück</button>
+      <span class="page-info" id="pageInfo">0 / 0</span>
+      <button class="btn" onclick="if(pageFlip) pageFlip.flipNext()">Weiter ▶</button>
+    </div>
 
-        <!-- Vollbild -->
-        <div class="control-group">
-            <button class="btn" onclick="toggleFullscreen()">🖵 Vollbild</button>
-        </div>
-    </header>
+    <!-- Vollbild -->
+    <div class="control-group">
+      <button class="btn" onclick="toggleFullscreen()">🖵 Vollbild</button>
+    </div>
+  </header>
 
-    <main id="mainViewport">
-        <div id="placeholder">
-            <h2>Willkommen zu deinem Buch-Viewer</h2>
-            <p>Lade einen Ordner mit Bildern oder eine vorher gespeicherte .book-Datei, um das Lesen zu starten.</p>
-        </div>
-        <div id="book-wrapper">
-            <div id="book-container"></div>
-        </div>
-    </main>
+  <main id="mainViewport">
+    <div id="placeholder">
+      <h2>Willkommen zu deinem Buch-Viewer</h2>
+      <p>Lade einen Ordner mit Bildern oder eine vorher gespeicherte .book-Datei, um das Lesen zu starten.</p>
+    </div>
+    <div id="book-wrapper">
+      <div id="book-container"></div>
+    </div>
+  </main>
 
-    <!-- Versteckte Inputs -->
-    <input type="file" id="folderInput" webkitdirectory directory multiple accept="image/*" onchange="handleFiles(this)">
-    <input type="file" id="fileInput" multiple accept="image/*" onchange="handleFiles(this)">
-    <input type="file" id="coverInput" accept="image/*" onchange="handleCover(this)">
-    <input type="file" id="loadProjectInput" accept=".book,.zip,.html" onchange="loadProject(this)">
+  <!-- Versteckte Inputs -->
+  <input type="file" id="folderInput" webkitdirectory directory multiple accept="image/*" onchange="handleFiles(this)">
+  <input type="file" id="fileInput" multiple accept="image/*" onchange="handleFiles(this)">
+  <input type="file" id="coverInput" accept="image/*" onchange="handleCover(this)">
+  <input type="file" id="loadProjectInput" accept=".book,.zip,.html" onchange="loadProject(this)">
 
-    <script>
-        let pageFlip = null;
-        let originalImages = []; // Array von { name, path, src }
-        let coverImage = null; // { name, path, src }
-        let currentMode = 'double';
-        let startPageNum = 1;
+  <script>
+    let pageFlip = null;
+    let originalImages = []; // Array von { name, path, src }
+    let coverImage = null; // { name, path, src }
+    let currentMode = 'double';
+    let startPageNum = 1;
 
-        function sanitizePath(path) {
-            if (!path) return '';
-            if (path.startsWith('data:')) return path;
-            return encodeURI(path).replace(/#/g, '%23').replace(/\?/g, '%3F');
+    function sanitizePath(path) {
+      if (!path) return '';
+      if (path.startsWith('data:')) return path;
+      return encodeURI(path).replace(/#/g, '%23').replace(/\?/g, '%3F');
+    }
+
+    function triggerFileInput(id) {
+      const el = document.getElementById(id);
+      if (el) {
+        el.value = '';
+        el.click();
+      }
+    }
+
+    function readFileAsDataURL(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function loadImage(src) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.onload = () => resolve(img);
+        img.onerror = (err) => reject(err);
+        img.src = sanitizePath(src);
+      });
+    }
+
+    async function handleFiles(input) {
+      const fileList = input.files;
+      if (!fileList || fileList.length === 0) return;
+
+      const files = Array.from(fileList).filter(f => f.type.startsWith('image/'));
+      if (files.length === 0) {
+        alert("Keine gültigen Bilder gefunden.");
+        return;
+      }
+
+      files.sort((a, b) => a.name.localeCompare(b.name, undefined, {
+        numeric: true,
+        sensitivity: 'base'
+      }));
+
+      originalImages = [];
+      for (const file of files) {
+        try {
+          const src = await readFileAsDataURL(file);
+          const relativePath = file.webkitRelativePath || file.name;
+          originalImages.push({
+            name: file.name,
+            path: relativePath,
+            src: src
+          });
+        } catch (e) {
+          console.error("Fehler beim Lesen der Datei: " + file.name, e);
+        }
+      }
+
+      buildBook();
+    }
+
+    async function handleCover(input) {
+      const fileList = input.files;
+      if (!fileList || fileList.length === 0) return;
+      const file = fileList[0];
+      if (!file.type.startsWith('image/')) {
+        alert("Bitte wähle ein gültiges Bild als Cover aus.");
+        return;
+      }
+
+      try {
+        const src = await readFileAsDataURL(file);
+        const relativePath = file.webkitRelativePath || file.name;
+        coverImage = {
+          name: file.name,
+          path: relativePath,
+          src: src
+        };
+        buildBook();
+      } catch (e) {
+        console.error("Fehler beim Laden des Covers: ", e);
+      }
+    }
+
+    function changeLayoutMode() {
+      const el = document.getElementById('layoutMode');
+      if (el) currentMode = el.value;
+      if (originalImages.length > 0 || coverImage) {
+        buildBook();
+      }
+    }
+
+    function changeStartPage() {
+      const el = document.getElementById('startPage');
+      if (el) startPageNum = parseInt(el.value, 10);
+      if (originalImages.length > 0 || coverImage) {
+        buildBook();
+      }
+    }
+
+    async function buildBook() {
+      const wrapper = document.getElementById('book-wrapper');
+      const placeholder = document.getElementById('placeholder');
+
+      if (pageFlip) {
+        try {
+          pageFlip.destroy();
+        } catch (e) {}
+        pageFlip = null;
+      }
+
+      wrapper.innerHTML = '<div id="book-container"></div>';
+      const container = document.getElementById('book-container');
+
+      let allImages = [];
+      if (coverImage) {
+        allImages.push(coverImage);
+      }
+      allImages = allImages.concat(originalImages);
+
+      if (allImages.length === 0) {
+        if (placeholder) placeholder.style.display = 'block';
+        const info = document.getElementById('pageInfo');
+        if (info) info.innerText = "0 / 0";
+        return;
+      }
+
+      if (placeholder) placeholder.style.display = 'none';
+
+      let pagesToRender = [];
+
+      if (currentMode === 'split') {
+        for (let imgObj of allImages) {
+          try {
+            const [leftPage, rightPage] = await splitImageInHalf(imgObj.src);
+            pagesToRender.push(leftPage);
+            pagesToRender.push(rightPage);
+          } catch (e) {
+            console.error("Fehler beim Teilen des Bildes:", imgObj.src, e);
+            pagesToRender.push(sanitizePath(imgObj.src));
+          }
+        }
+      } else {
+        pagesToRender = allImages.map(img => sanitizePath(img.src));
+      }
+
+      // Korrektur der Seitenausrichtung:
+      // Bei Start auf Seite 2 legen wir KEINE leere Seite am Anfang ein,
+      // sondern steuern die Darstellung primär über die `showCover`-Option der PageFlip-Bibliothek.
+      const isSingle = (currentMode === 'single');
+      const isCoverMode = !isSingle && (startPageNum === 1);
+
+      if (pagesToRender.length === 0) return;
+
+      pagesToRender.forEach((src) => {
+        const pageDiv = document.createElement('div');
+        pageDiv.className = 'page';
+        const imgElem = document.createElement('img');
+        imgElem.src = src;
+        pageDiv.appendChild(imgElem);
+        container.appendChild(pageDiv);
+      });
+
+      let firstImg;
+      try {
+        firstImg = await loadImage(pagesToRender[0]);
+      } catch (e) {
+        firstImg = {
+          naturalWidth: 600,
+          naturalHeight: 800
+        };
+      }
+
+      const viewportWidth = window.innerWidth * 0.90;
+      const viewportHeight = window.innerHeight * 0.90;
+
+      let imgWidth = firstImg.naturalWidth || 600;
+      let imgHeight = firstImg.naturalHeight || 800;
+
+      const targetWidthPerSinglePage = isSingle ? viewportWidth : (viewportWidth / 2);
+      const ratio = Math.min(targetWidthPerSinglePage / imgWidth, viewportHeight / imgHeight);
+
+      const bookWidth = Math.max(200, Math.round(imgWidth * ratio));
+      const bookHeight = Math.max(300, Math.round(imgHeight * ratio));
+
+      pageFlip = new St.PageFlip(container, {
+        width: bookWidth,
+        height: bookHeight,
+        size: "fixed",
+        minWidth: 200,
+        maxWidth: 1500,
+        minHeight: 300,
+        maxHeight: 2000,
+        maxShadowOpacity: 0.4,
+        showCover: isCoverMode, // true = Einzelseite rechts (Cover), false = Direkt als Doppelseite starten
+        mobileScrollSupport: false,
+        usePortrait: isSingle,
+        singlePageMode: isSingle
+      });
+
+      pageFlip.loadFromHTML(container.querySelectorAll('.page'));
+
+      updatePageInfo();
+      pageFlip.on('flip', () => updatePageInfo());
+
+      const modeSelect = document.getElementById('layoutMode');
+      if (modeSelect) modeSelect.value = currentMode;
+      const startSelect = document.getElementById('startPage');
+      if (startSelect) startSelect.value = startPageNum.toString();
+    }
+
+    function updatePageInfo() {
+      if (!pageFlip) return;
+      const info = document.getElementById('pageInfo');
+      if (!info) return;
+      const current = pageFlip.getCurrentPageIndex() + 1;
+      const total = pageFlip.getPageCount();
+      info.innerText = `${current} / ${total}`;
+    }
+
+    async function fetchAsDataURL(url) {
+      const response = await fetch(sanitizePath(url));
+      const blob = await response.blob();
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    }
+
+    function splitImageInHalf(src) {
+      return new Promise(async (resolve, reject) => {
+        let finalSrc = sanitizePath(src);
+
+        if (!finalSrc.startsWith('data:')) {
+          try {
+            finalSrc = await fetchAsDataURL(finalSrc);
+          } catch (err) {
+            console.warn("Fetch als Fallback fehlgeschlagen:", err);
+          }
         }
 
-        function triggerFileInput(id) {
-            const el = document.getElementById(id);
-            if (el) {
-                el.value = '';
-                el.click();
-            }
-        }
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.onload = () => {
+          try {
+            const halfWidth = Math.floor(img.width / 2);
+            const height = img.height;
 
-        function readFileAsDataURL(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = (e) => resolve(e.target.result);
-                reader.onerror = reject;
-                reader.readAsDataURL(file);
+            const canvasLeft = document.createElement('canvas');
+            canvasLeft.width = halfWidth;
+            canvasLeft.height = height;
+            const ctxLeft = canvasLeft.getContext('2d');
+            ctxLeft.drawImage(img, 0, 0, halfWidth, height, 0, 0, halfWidth, height);
+
+            const canvasRight = document.createElement('canvas');
+            canvasRight.width = halfWidth;
+            canvasRight.height = height;
+            const ctxRight = canvasRight.getContext('2d');
+            ctxRight.drawImage(img, halfWidth, 0, halfWidth, height, 0, 0, halfWidth, height);
+
+            resolve([canvasLeft.toDataURL('image/jpeg', 0.92), canvasRight.toDataURL('image/jpeg', 0.92)]);
+          } catch (e) {
+            reject(e);
+          }
+        };
+        img.onerror = reject;
+        img.src = finalSrc;
+      });
+    }
+
+    function toggleFullscreen() {
+      const elem = document.documentElement;
+      if (!document.fullscreenElement) {
+        if (elem.requestFullscreen) elem.requestFullscreen();
+        else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
+      } else {
+        if (document.exitFullscreen) document.exitFullscreen();
+      }
+    }
+
+    async function exportReaderHTML() {
+      if (originalImages.length === 0 && !coverImage) {
+        alert("Es sind keine Bilder geladen zum Speichern.");
+        return;
+      }
+
+      let cloneDoc = document.documentElement.cloneNode(true);
+
+      // Entferne Titelleiste/Header und Dateieingaben
+      const header = cloneDoc.querySelector('#main-header');
+      if (header) header.remove();
+
+      const fileInputs = cloneDoc.querySelectorAll('input[type="file"]');
+      fileInputs.forEach(el => el.remove());
+
+      // Säubere den Wrapper
+      const wrapper = cloneDoc.querySelector('#book-wrapper');
+      if (wrapper) {
+        wrapper.innerHTML = '<div id="book-container"></div>';
+      }
+
+      let linkedOriginalImages = [];
+      let linkedCoverImage = null;
+
+      // Im Panorama-Modus (split) schneiden wir die Bilder vor dem Export fertig
+      // und speichern die beiden Hälften direkt als Base64-Data-URLs ab.
+      if (currentMode === 'split') {
+        if (coverImage) {
+          try {
+            const [left, right] = await splitImageInHalf(coverImage.src);
+            linkedCoverImage = {
+              name: coverImage.name,
+              path: coverImage.path,
+              src: left,
+              isSplitLeft: true
+            };
+            // Das rechte Cover-Bild schieben wir als erstes reguläres Bild ein
+            linkedOriginalImages.push({
+              name: coverImage.name + "_right",
+              path: coverImage.path,
+              src: right
             });
+          } catch (e) {
+            linkedCoverImage = {
+              name: coverImage.name,
+              path: coverImage.path,
+              src: coverImage.path || coverImage.name
+            };
+          }
         }
 
-        function loadImage(src) {
-            return new Promise((resolve, reject) => {
-                const img = new Image();
-                img.crossOrigin = "anonymous";
-                img.onload = () => resolve(img);
-                img.onerror = (err) => reject(err);
-                img.src = sanitizePath(src);
+        for (let img of originalImages) {
+          try {
+            const [left, right] = await splitImageInHalf(img.src);
+            linkedOriginalImages.push({
+              name: img.name + "_left",
+              path: img.path,
+              src: left
             });
-        }
-
-        async function handleFiles(input) {
-            const fileList = input.files;
-            if (!fileList || fileList.length === 0) return;
-
-            const files = Array.from(fileList).filter(f => f.type.startsWith('image/'));
-            if (files.length === 0) {
-                alert("Keine gültigen Bilder gefunden.");
-                return;
-            }
-
-            files.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
-
-            originalImages = [];
-            for (const file of files) {
-                try {
-                    const src = await readFileAsDataURL(file);
-                    const relativePath = file.webkitRelativePath || file.name;
-                    originalImages.push({ name: file.name, path: relativePath, src: src });
-                } catch (e) {
-                    console.error("Fehler beim Lesen der Datei: " + file.name, e);
-                }
-            }
-
-            buildBook();
-        }
-
-        async function handleCover(input) {
-            const fileList = input.files;
-            if (!fileList || fileList.length === 0) return;
-            const file = fileList[0];
-            if (!file.type.startsWith('image/')) {
-                alert("Bitte wähle ein gültiges Bild als Cover aus.");
-                return;
-            }
-
-            try {
-                const src = await readFileAsDataURL(file);
-                const relativePath = file.webkitRelativePath || file.name;
-                coverImage = { name: file.name, path: relativePath, src: src };
-                buildBook();
-            } catch (e) {
-                console.error("Fehler beim Laden des Covers: ", e);
-            }
-        }
-
-        function changeLayoutMode() {
-            const el = document.getElementById('layoutMode');
-            if (el) currentMode = el.value;
-            if (originalImages.length > 0 || coverImage) {
-                buildBook();
-            }
-        }
-
-        function changeStartPage() {
-            const el = document.getElementById('startPage');
-            if (el) startPageNum = parseInt(el.value, 10);
-            if (originalImages.length > 0 || coverImage) {
-                buildBook();
-            }
-        }
-
-        async function buildBook() {
-            const wrapper = document.getElementById('book-wrapper');
-            const placeholder = document.getElementById('placeholder');
-
-            if (pageFlip) {
-                try {
-                    pageFlip.destroy();
-                } catch (e) {}
-                pageFlip = null;
-            }
-
-            wrapper.innerHTML = '<div id="book-container"></div>';
-            const container = document.getElementById('book-container');
-
-            let allImages = [];
-            if (coverImage) {
-                allImages.push(coverImage);
-            }
-            allImages = allImages.concat(originalImages);
-
-            if (allImages.length === 0) {
-                if (placeholder) placeholder.style.display = 'block';
-                const info = document.getElementById('pageInfo');
-                if (info) info.innerText = "0 / 0";
-                return;
-            }
-
-            if (placeholder) placeholder.style.display = 'none';
-
-            let pagesToRender = [];
-
-            if (currentMode === 'split') {
-                for (let imgObj of allImages) {
-                    try {
-                        const [leftPage, rightPage] = await splitImageInHalf(imgObj.src);
-                        pagesToRender.push(leftPage);
-                        pagesToRender.push(rightPage);
-                    } catch (e) {
-                        console.error("Fehler beim Teilen des Bildes:", imgObj.src, e);
-                        pagesToRender.push(sanitizePath(imgObj.src));
-                    }
-                }
-            } else {
-                pagesToRender = allImages.map(img => sanitizePath(img.src));
-            }
-
-            if (startPageNum === 2 && currentMode !== 'single') {
-                const blankCanvas = document.createElement('canvas');
-                blankCanvas.width = 600;
-                blankCanvas.height = 800;
-                const ctx = blankCanvas.getContext('2d');
-                ctx.fillStyle = "#ffffff";
-                ctx.fillRect(0, 0, 600, 800);
-                pagesToRender.unshift(blankCanvas.toDataURL());
-            }
-
-            if (pagesToRender.length === 0) return;
-
-            pagesToRender.forEach((src) => {
-                const pageDiv = document.createElement('div');
-                pageDiv.className = 'page';
-                const imgElem = document.createElement('img');
-                imgElem.src = src;
-                pageDiv.appendChild(imgElem);
-                container.appendChild(pageDiv);
+            linkedOriginalImages.push({
+              name: img.name + "_right",
+              path: img.path,
+              src: right
             });
-
-            let firstImg;
-            try {
-                firstImg = await loadImage(pagesToRender[0]);
-            } catch (e) {
-                firstImg = { naturalWidth: 600, naturalHeight: 800 };
-            }
-            
-            const viewportWidth = window.innerWidth * 0.90;
-            const viewportHeight = window.innerHeight * 0.90;
-
-            let imgWidth = firstImg.naturalWidth || 600;
-            let imgHeight = firstImg.naturalHeight || 800;
-
-            const isSingle = (currentMode === 'single');
-
-            const targetWidthPerSinglePage = isSingle ? viewportWidth : (viewportWidth / 2);
-            const ratio = Math.min(targetWidthPerSinglePage / imgWidth, viewportHeight / imgHeight);
-
-            const bookWidth = Math.max(200, Math.round(imgWidth * ratio));
-            const bookHeight = Math.max(300, Math.round(imgHeight * ratio));
-
-            pageFlip = new St.PageFlip(container, {
-                width: bookWidth,
-                height: bookHeight,
-                size: "fixed",
-                minWidth: 200,
-                maxWidth: 1500,
-                minHeight: 300,
-                maxHeight: 2000,
-                maxShadowOpacity: 0.4,
-                showCover: !isSingle && (startPageNum === 1),
-                mobileScrollSupport: false,
-                usePortrait: isSingle,
-                singlePageMode: isSingle
+          } catch (e) {
+            linkedOriginalImages.push({
+              name: img.name,
+              path: img.path,
+              src: img.path || img.name
             });
-
-            pageFlip.loadFromHTML(container.querySelectorAll('.page'));
-
-            updatePageInfo();
-            pageFlip.on('flip', () => updatePageInfo());
-
-            // Synchronisiere GUI-Auswahl mit dem geladenen Modus
-            const modeSelect = document.getElementById('layoutMode');
-            if (modeSelect) modeSelect.value = currentMode;
-            const startSelect = document.getElementById('startPage');
-            if (startSelect) startSelect.value = startPageNum.toString();
+          }
         }
+      } else {
+        // In den normalen Modi (single/double) genügen die relativen Pfade
+        linkedOriginalImages = originalImages.map(img => ({
+          name: img.name,
+          path: img.path || img.name,
+          src: img.path || img.name
+        }));
 
-        function updatePageInfo() {
-            if (!pageFlip) return;
-            const info = document.getElementById('pageInfo');
-            if (!info) return;
-            const current = pageFlip.getCurrentPageIndex() + 1;
-            const total = pageFlip.getPageCount();
-            info.innerText = `${current} / ${total}`;
-        }
+        linkedCoverImage = coverImage ? {
+          name: coverImage.name,
+          path: coverImage.path || coverImage.name,
+          src: coverImage.path || coverImage.name
+        } : null;
+      }
 
-        async function fetchAsDataURL(url) {
-            const response = await fetch(sanitizePath(url));
-            const blob = await response.blob();
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onloadend = () => resolve(reader.result);
-                reader.onerror = reject;
-                reader.readAsDataURL(blob);
-            });
-        }
+      // Wenn die Panorama-Bilder bereits im Export zugeschnitten wurden,
+      // soll der Viewer im Export im Modus 'double' starten, um sie korrekt anzuzeigen.
+      const exportMode = (currentMode === 'split') ? 'double' : currentMode;
 
-        function splitImageInHalf(src) {
-            return new Promise(async (resolve, reject) => {
-                let finalSrc = sanitizePath(src);
-
-                if (!finalSrc.startsWith('data:')) {
-                    try {
-                        finalSrc = await fetchAsDataURL(finalSrc);
-                    } catch (err) {
-                        console.warn("Fetch als Fallback fehlgeschlagen:", err);
-                    }
-                }
-
-                const img = new Image();
-                img.crossOrigin = "anonymous";
-                img.onload = () => {
-                    try {
-                        const halfWidth = Math.floor(img.width / 2);
-                        const height = img.height;
-
-                        const canvasLeft = document.createElement('canvas');
-                        canvasLeft.width = halfWidth;
-                        canvasLeft.height = height;
-                        const ctxLeft = canvasLeft.getContext('2d');
-                        ctxLeft.drawImage(img, 0, 0, halfWidth, height, 0, 0, halfWidth, height);
-
-                        const canvasRight = document.createElement('canvas');
-                        canvasRight.width = halfWidth;
-                        canvasRight.height = height;
-                        const ctxRight = canvasRight.getContext('2d');
-                        ctxRight.drawImage(img, halfWidth, 0, halfWidth, height, 0, 0, halfWidth, height);
-
-                        resolve([canvasLeft.toDataURL('image/jpeg', 0.92), canvasRight.toDataURL('image/jpeg', 0.92)]);
-                    } catch (e) {
-                        reject(e);
-                    }
-                };
-                img.onerror = reject;
-                img.src = finalSrc;
-            });
-        }
-
-        function toggleFullscreen() {
-            const elem = document.documentElement;
-            if (!document.fullscreenElement) {
-                if (elem.requestFullscreen) elem.requestFullscreen();
-                else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
-            } else {
-                if (document.exitFullscreen) document.exitFullscreen();
-            }
-        }
-
-        function exportReaderHTML() {
-            if (originalImages.length === 0 && !coverImage) {
-                alert("Es sind keine Bilder geladen zum Speichern.");
-                return;
-            }
-
-            let cloneDoc = document.documentElement.cloneNode(true);
-
-            const header = cloneDoc.querySelector('#main-header');
-            if (header) header.remove();
-
-            const fileInputs = cloneDoc.querySelectorAll('input[type="file"]');
-            fileInputs.forEach(el => el.remove());
-
-            const wrapper = cloneDoc.querySelector('#book-wrapper');
-            if (wrapper) {
-                wrapper.innerHTML = '<div id="book-container"></div>';
-            }
-
-            const linkedOriginalImages = originalImages.map(img => ({
-                name: img.name,
-                path: img.path || img.name,
-                src: img.path || img.name
-            }));
-
-            const linkedCoverImage = coverImage ? {
-                name: coverImage.name,
-                path: coverImage.path || coverImage.name,
-                src: coverImage.path || coverImage.name
-            } : null;
-
-            const initScript = document.createElement('script');
-            initScript.textContent = `
+      const initScript = document.createElement('script');
+      initScript.textContent = `
                 window.addEventListener('DOMContentLoaded', () => {
                     originalImages = ${JSON.stringify(linkedOriginalImages)};
                     coverImage = ${JSON.stringify(linkedCoverImage)};
-                    currentMode = '${currentMode}';
+                    currentMode = '${exportMode}';
                     startPageNum = ${startPageNum};
                     if(originalImages.length > 0 || coverImage) buildBook();
                 });
             `;
-            cloneDoc.querySelector('body').appendChild(initScript);
+      cloneDoc.querySelector('body').appendChild(initScript);
 
-            const exportedHTML = "<!DOCTYPE html>\n" + cloneDoc.outerHTML;
+      const exportedHTML = "<!DOCTYPE html>\n" + cloneDoc.outerHTML;
 
-            const blob = new Blob([exportedHTML], { type: 'text/html;charset=utf-8' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = "MeinBuch_Lesen.html";
-            link.click();
+      const blob = new Blob([exportedHTML], {
+        type: 'text/html;charset=utf-8'
+      });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = "MeinBuch_Lesen.html";
+      link.click();
+    }
+
+    async function loadProject(input) {
+      const fileList = input.files;
+      if (!fileList || fileList.length === 0) return;
+      const file = fileList[0];
+
+      try {
+        const zip = await JSZip.loadAsync(file);
+        const metaFile = await zip.file("project.json").async("string");
+        const metadata = JSON.parse(metaFile);
+
+        currentMode = metadata.mode || 'double';
+        startPageNum = metadata.startPageNum || 1;
+
+        coverImage = null;
+        if (metadata.hasCover) {
+          const coverFiles = Object.keys(zip.files).filter(f => f.startsWith('cover.'));
+          if (coverFiles.length > 0) {
+            const coverPath = coverFiles[0];
+            const base64 = await zip.file(coverPath).async("base64");
+            const ext = coverPath.split('.').pop().toLowerCase();
+            let mime = 'image/png';
+            if (ext === 'jpg' || ext === 'jpeg') mime = 'image/jpeg';
+
+            coverImage = {
+              name: metadata.coverName || coverPath,
+              path: metadata.coverName || coverPath,
+              src: `data:${mime};base64,${base64}`
+            };
+          }
         }
 
-        async function loadProject(input) {
-            const fileList = input.files;
-            if (!fileList || fileList.length === 0) return;
-            const file = fileList[0];
-
-            try {
-                const zip = await JSZip.loadAsync(file);
-                const metaFile = await zip.file("project.json").async("string");
-                const metadata = JSON.parse(metaFile);
-
-                currentMode = metadata.mode || 'double';
-                startPageNum = metadata.startPageNum || 1;
-
-                coverImage = null;
-                if (metadata.hasCover) {
-                    const coverFiles = Object.keys(zip.files).filter(f => f.startsWith('cover.'));
-                    if (coverFiles.length > 0) {
-                        const coverPath = coverFiles[0];
-                        const base64 = await zip.file(coverPath).async("base64");
-                        const ext = coverPath.split('.').pop().toLowerCase();
-                        let mime = 'image/png';
-                        if (ext === 'jpg' || ext === 'jpeg') mime = 'image/jpeg';
-
-                        coverImage = { 
-                            name: metadata.coverName || coverPath, 
-                            path: metadata.coverName || coverPath,
-                            src: `data:${mime};base64,${base64}` 
-                        };
-                    }
-                }
-
-                const imgFiles = [];
-                const imagesFolder = zip.folder("images");
-                if (imagesFolder) {
-                    imagesFolder.forEach((relativePath, fileEntry) => {
-                        if (!fileEntry.dir) {
-                            imgFiles.push({ path: relativePath, file: fileEntry });
-                        }
-                    });
-                }
-
-                imgFiles.sort((a, b) => a.path.localeCompare(b.path));
-
-                originalImages = [];
-                for (let i = 0; i < imgFiles.length; i++) {
-                    const item = imgFiles[i];
-                    const base64 = await item.file.async("base64");
-                    const ext = item.path.split('.').pop().toLowerCase();
-                    let mime = 'image/png';
-                    if (ext === 'jpg' || ext === 'jpeg') mime = 'image/jpeg';
-
-                    const origName = (metadata.images && metadata.images[i]) ? metadata.images[i] : item.path;
-                    originalImages.push({ 
-                        name: origName, 
-                        path: origName,
-                        src: `data:${mime};base64,${base64}` 
-                    });
-                }
-
-                buildBook();
-            } catch (err) {
-                alert("Fehler beim Laden der Projektdatei: " + err.message);
+        const imgFiles = [];
+        const imagesFolder = zip.folder("images");
+        if (imagesFolder) {
+          imagesFolder.forEach((relativePath, fileEntry) => {
+            if (!fileEntry.dir) {
+              imgFiles.push({
+                path: relativePath,
+                file: fileEntry
+              });
             }
+          });
         }
 
-        let resizeTimeout;
-        window.addEventListener('resize', () => {
-            clearTimeout(resizeTimeout);
-            resizeTimeout = setTimeout(() => {
-                if (originalImages.length > 0 || coverImage) {
-                    buildBook();
-                }
-            }, 300);
-        });
-    </script>
+        imgFiles.sort((a, b) => a.path.localeCompare(b.path));
+
+        originalImages = [];
+        for (let i = 0; i < imgFiles.length; i++) {
+          const item = imgFiles[i];
+          const base64 = await item.file.async("base64");
+          const ext = item.path.split('.').pop().toLowerCase();
+          let mime = 'image/png';
+          if (ext === 'jpg' || ext === 'jpeg') mime = 'image/jpeg';
+
+          const origName = (metadata.images && metadata.images[i]) ? metadata.images[i] : item.path;
+          originalImages.push({
+            name: origName,
+            path: origName,
+            src: `data:${mime};base64,${base64}`
+          });
+        }
+
+        buildBook();
+      } catch (err) {
+        alert("Fehler beim Laden der Projektdatei: " + err.message);
+      }
+    }
+
+    let resizeTimeout;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        if (originalImages.length > 0 || coverImage) {
+          buildBook();
+        }
+      }, 300);
+    });
+  </script>
 </body>
 </html>

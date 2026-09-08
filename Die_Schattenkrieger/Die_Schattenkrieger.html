@@ -5,6 +5,67 @@
 <title>Bilderbuch Viewer</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&amp;family=Barlow:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/page-flip/dist/js/page-flip.browser.js"></script><style type="text/css">.stf__parent {
+  position: relative;
+  display: block;
+  box-sizing: border-box;
+  transform: translateZ(0);
+
+  -ms-touch-action: pan-y;
+  touch-action: pan-y;
+}
+
+.sft__wrapper {
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.stf__parent canvas {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  left: 0;
+  top: 0;
+}
+
+.stf__block {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  perspective: 2000px;
+}
+
+.stf__item {
+  display: none;
+  position: absolute;
+  transform-style: preserve-3d;
+}
+
+.stf__outerShadow {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.stf__innerShadow {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.stf__hardShadow {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.stf__hardInnerShadow {
+  position: absolute;
+  left: 0;
+  top: 0;
+}</style>
 <style>
 :root{
   --font-display:'Bebas Neue', sans-serif;
@@ -112,10 +173,8 @@ select{ padding:7px 8px; }
 
 #book{
   position:relative;
-  perspective:2400px;
-  width:min(92vw, 1180px);
-  height:min(78vh, 760px);
-  display:flex; align-items:stretch; justify-content:center;
+  width:100%; height:100%;
+  display:flex; align-items:center; justify-content:center;
 }
 #book.hidden{ display:none; }
 
@@ -125,64 +184,20 @@ select{ padding:7px 8px; }
   border-radius:10px;
   box-shadow:0 30px 70px var(--shadow), inset 0 0 0 2px var(--accent-dim);
   padding:22px;
-  display:flex;
-}
-
-#pages{
-  position:relative; flex:1; display:flex; border-radius:4px; overflow:hidden;
-  box-shadow: inset 0 0 40px rgba(0,0,0,.35);
-  background:var(--paper2);
-}
-
-.pageHalf{
-  position:relative; flex:1; height:100%; background:var(--paper);
-  display:flex; align-items:center; justify-content:center; overflow:hidden;
-}
-.pageHalf img{ width:100%; height:100%; object-fit:contain; background:var(--paper); }
-.pageHalf.blank::before{
-  content:"◆"; color:var(--accent-dim); font-size:22px; opacity:.4;
-}
-#pages.mode-single .pageHalf, #pages.mode-span .pageHalf{ flex:1; }
-
-/* spine shadow */
-#gutter{
-  position:absolute; top:0; bottom:0; left:50%; width:36px; transform:translateX(-50%);
-  background:linear-gradient(90deg, rgba(0,0,0,0) 0%, rgba(0,0,0,.35) 50%, rgba(0,0,0,0) 100%);
-  pointer-events:none; z-index:5;
-}
-#pages.mode-single #gutter{ display:none; }
-
-/* outer page edge shading */
-#pages::before, #pages::after{
-  content:""; position:absolute; top:0; bottom:0; width:14px; z-index:4; pointer-events:none;
-}
-#pages::before{ left:0; background:linear-gradient(90deg, rgba(0,0,0,.18), rgba(0,0,0,0)); }
-#pages::after{ right:0; background:linear-gradient(270deg, rgba(0,0,0,.18), rgba(0,0,0,0)); }
-
-/* flip leaf */
-.leaf{
-  position:absolute; top:0; bottom:0; left:0; width:100%; height:100%;
-  transform-style:preserve-3d;
-  backface-visibility:hidden;
-  z-index:10;
-  background:var(--paper);
-  box-shadow:0 0 40px rgba(0,0,0,.4);
-}
-.leaf .leafInner{ position:absolute; inset:0; display:flex; }
-.leaf.animating{ transition:transform .68s cubic-bezier(.45,.05,.2,1); }
-
-/* nav click zones */
-.navZone{ position:absolute; top:0; bottom:0; width:50%; cursor:pointer; z-index:20; }
-.navZone.left{ left:0; } .navZone.right{ right:0; }
-.navZone .arrow{
-  position:absolute; top:50%; transform:translateY(-50%);
-  width:40px; height:40px; border-radius:50%;
-  background:rgba(0,0,0,.35); color:var(--accent);
   display:flex; align-items:center; justify-content:center;
-  font-size:18px; opacity:0; transition:opacity .2s;
 }
-.navZone.left .arrow{ left:10px; } .navZone.right .arrow{ right:10px; }
-.navZone:hover .arrow{ opacity:1; }
+
+#bookContainer{ position:relative; }
+#bookContainer .page{
+  background-color:var(--paper);
+  width:100%; height:100%;
+  display:flex; align-items:center; justify-content:center;
+  overflow:hidden;
+}
+#bookContainer .page img{
+  width:100%; height:100%; object-fit:contain; pointer-events:none; background:var(--paper);
+}
+#bookContainer .stf__parentItem{ box-shadow:0 10px 40px rgba(0,0,0,.5); }
 
 /* ---------- Footer ---------- */
 #footer{
@@ -212,7 +227,7 @@ input[type=file]{ display:none; }
 </style>
 </head>
 <body data-fs="0">
-<script>window.__EMBEDDED_BOOK__={"images":[{"name":"Die Schattenkrieger-01.jpg","dataUrl":"Die%20Schattenkrieger-01.jpg"},{"name":"Die Schattenkrieger-02.jpg","dataUrl":"Die%20Schattenkrieger-02.jpg"},{"name":"Die Schattenkrieger-03.jpg","dataUrl":"Die%20Schattenkrieger-03.jpg"},{"name":"Die Schattenkrieger-04.jpg","dataUrl":"Die%20Schattenkrieger-04.jpg"},{"name":"Die Schattenkrieger-05.jpg","dataUrl":"Die%20Schattenkrieger-05.jpg"},{"name":"Die Schattenkrieger-06.jpg","dataUrl":"Die%20Schattenkrieger-06.jpg"},{"name":"Die Schattenkrieger-07.jpg","dataUrl":"Die%20Schattenkrieger-07.jpg"},{"name":"Die Schattenkrieger-08.jpg","dataUrl":"Die%20Schattenkrieger-08.jpg"},{"name":"Die Schattenkrieger-09.jpg","dataUrl":"Die%20Schattenkrieger-09.jpg"},{"name":"Die Schattenkrieger-10.jpg","dataUrl":"Die%20Schattenkrieger-10.jpg"},{"name":"Die Schattenkrieger-11.jpg","dataUrl":"Die%20Schattenkrieger-11.jpg"},{"name":"Die Schattenkrieger-12.jpg","dataUrl":"Die%20Schattenkrieger-12.jpg"}],"mode":"span","theme":"leder","spreadIdx":7,"folderName":"Die_Schattenkrieger","readerOnly":true};</script>
+<script>window.__EMBEDDED_BOOK__={"images":[{"name":"Die Schattenkrieger-01.jpg","dataUrl":"Die%20Schattenkrieger-01.jpg"},{"name":"Die Schattenkrieger-02.jpg","dataUrl":"Die%20Schattenkrieger-02.jpg"},{"name":"Die Schattenkrieger-03.jpg","dataUrl":"Die%20Schattenkrieger-03.jpg"},{"name":"Die Schattenkrieger-04.jpg","dataUrl":"Die%20Schattenkrieger-04.jpg"},{"name":"Die Schattenkrieger-05.jpg","dataUrl":"Die%20Schattenkrieger-05.jpg"},{"name":"Die Schattenkrieger-06.jpg","dataUrl":"Die%20Schattenkrieger-06.jpg"},{"name":"Die Schattenkrieger-07.jpg","dataUrl":"Die%20Schattenkrieger-07.jpg"},{"name":"Die Schattenkrieger-08.jpg","dataUrl":"Die%20Schattenkrieger-08.jpg"},{"name":"Die Schattenkrieger-09.jpg","dataUrl":"Die%20Schattenkrieger-09.jpg"},{"name":"Die Schattenkrieger-10.jpg","dataUrl":"Die%20Schattenkrieger-10.jpg"},{"name":"Die Schattenkrieger-11.jpg","dataUrl":"Die%20Schattenkrieger-11.jpg"},{"name":"Die Schattenkrieger-12.jpg","dataUrl":"Die%20Schattenkrieger-12.jpg"}],"mode":"span","theme":"leder","spreadIdx":15,"folderName":"Die_Schattenkrieger","readerOnly":true};</script>
 
 
 <div id="toolbar">
@@ -257,13 +272,7 @@ input[type=file]{ display:none; }
 
   <div id="book" class="hidden">
     <div id="frame">
-      <div id="pages" class="mode-double">
-        <div class="pageHalf" id="leftPage"></div>
-        <div id="gutter"></div>
-        <div class="pageHalf" id="rightPage"></div>
-        <div class="navZone left"><div class="arrow">‹</div></div>
-        <div class="navZone right"><div class="arrow">›</div></div>
-      </div>
+      <div id="bookContainer"></div>
     </div>
   </div>
 </div>
@@ -285,19 +294,20 @@ input[type=file]{ display:none; }
   const PRISTINE_HTML = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
 
   const $ = id => document.getElementById(id);
-  const pagesEl=$('pages'), leftPageEl=$('leftPage'), rightPageEl=$('rightPage');
-  const bookEl=$('book'), dropHint=$('dropHint');
+  const bookContainerEl=$('bookContainer');
+  const bookEl=$('book'), dropHint=$('dropHint'), stageWrapEl=$('stageWrap');
   const pageCounter=$('pageCounter'), pageSlider=$('pageSlider');
   const folderInfo=$('folderInfo'), btnResume=$('btnResume');
   const toastEl=$('toast');
 
-  let files = [];           // {name, url}
-  let mode = 'double';       // single | double | span
+  let files = [];            // {name, url, blob}
+  let mode = 'double';        // single | double | span
   let theme = 'leder';
-  let spreadIdx = 0;
-  let animating = false;
+  let spreadIdx = 0;          // current page index (StPageFlip page index)
   let folderName = '';
   let dirHandle = null;
+  let pageFlip = null;
+  let building = false;
 
   // ---------- helpers ----------
   const IMG_RE = /\.(jpe?g|png|gif|webp|bmp|avif)$/i;
@@ -357,7 +367,7 @@ input[type=file]{ display:none; }
 
   // ---------- loading a folder ----------
   async function loadFromEntries(entries, name){
-    files.forEach(f=>URL.revokeObjectURL(f.url));
+    files.forEach(f=>{ if(f.url && f.url.startsWith('blob:')) URL.revokeObjectURL(f.url); });
     files = entries
       .filter(e => IMG_RE.test(e.name))
       .sort((a,b)=>naturalSort(a.name,b.name));
@@ -375,7 +385,7 @@ input[type=file]{ display:none; }
     } else {
       spreadIdx = 0;
     }
-    applyMode(mode, true);
+    await buildBook();
   }
 
   async function readDirHandle(handle){
@@ -437,7 +447,7 @@ input[type=file]{ display:none; }
   }
 
   // ---------- embedded book (loaded from an exported HTML file) ----------
-  function loadEmbedded(data){
+  async function loadEmbedded(data){
     files = (data.images || []).map(im => ({ name: im.name, url: im.dataUrl }));
     folderName = data.folderName || 'Gespeichertes Buch';
     mode = data.mode || mode;
@@ -449,9 +459,7 @@ input[type=file]{ display:none; }
     folderInfo.textContent = `${folderName} · ${files.length} Bilder`;
     dropHint.classList.add('hidden');
     bookEl.classList.remove('hidden');
-    const mx = maxIndex();
-    if(spreadIdx > mx) spreadIdx = mx;
-    applyMode(mode, true);
+    await buildBook();
   }
 
   function jsonForScript(obj){
@@ -478,172 +486,113 @@ input[type=file]{ display:none; }
     toast('✅ Buch als HTML gespeichert — im selben Ordner wie die Bilder ablegen');
   }
 
-  // ---------- spread computation ----------
-  function maxIndex(){
-    const n = files.length;
-    if(n === 0) return 0;
-    if(mode === 'double') return n <= 1 ? 0 : Math.ceil((n - 1) / 2);
-    return n - 1; // single / span
+  // ---------- image helpers ----------
+  function preload(src){
+    return new Promise((resolve,reject)=>{
+      const im = new Image();
+      im.onload = () => resolve(im);
+      im.onerror = reject;
+      im.src = src;
+    });
   }
-  function spreadFor(idx){
-    const n = files.length;
-    if(mode === 'double'){
-      if(idx === 0) return { left:null, right: n>0 ? 0 : null };
-      const l = 2*idx - 1, r = 2*idx;
-      return { left: l < n ? l : null, right: r < n ? r : null };
-    }
-    if(mode === 'span'){
-      return { span: idx < n ? idx : null };
-    }
-    return { single: idx < n ? idx : null };
-  }
-  function halfHTML(i, blankLabel){
-    if(i === null || i === undefined) return `<div class="pageHalf blank"></div>`;
-    return `<div class="pageHalf"><img src="${files[i].url}" alt="Seite ${i+1}" draggable="false"></div>`;
-  }
-  function buildContentEl(idx){
-    const wrap = document.createElement('div');
-    wrap.className = 'leafInner';
-    const sp = spreadFor(idx);
-    if(mode === 'double'){
-      wrap.innerHTML = halfHTML(sp.left) + `<div class="gutterMini" style="position:absolute;top:0;bottom:0;left:50%;width:30px;transform:translateX(-50%);background:linear-gradient(90deg, rgba(0,0,0,0), rgba(0,0,0,.3) 50%, rgba(0,0,0,0));pointer-events:none;"></div>` + halfHTML(sp.right);
-    } else if(mode === 'span'){
-      if(sp.span === null){ wrap.innerHTML = `<div class="pageHalf blank" style="flex:1"></div>`; }
-      else{
-        wrap.innerHTML = `<div class="pageHalf" style="flex:1;position:relative;">
-          <img src="${files[sp.span].url}" style="width:100%;height:100%;object-fit:cover;" draggable="false">
-          <div style="position:absolute;top:0;bottom:0;left:50%;width:26px;transform:translateX(-50%);background:linear-gradient(90deg, rgba(0,0,0,0), rgba(0,0,0,.35) 50%, rgba(0,0,0,0));"></div>
-        </div>`;
-      }
-    } else {
-      wrap.innerHTML = halfHTML(sp.single);
-      wrap.style.justifyContent='center';
-    }
-    return wrap;
+  function splitImageInHalf(url){
+    return new Promise((resolve,reject)=>{
+      const img = new Image();
+      img.onload = () => {
+        const hw = Math.floor(img.width/2), h = img.height;
+        const cl = document.createElement('canvas'); cl.width=hw; cl.height=h;
+        cl.getContext('2d').drawImage(img,0,0,hw,h,0,0,hw,h);
+        const cr = document.createElement('canvas'); cr.width=hw; cr.height=h;
+        cr.getContext('2d').drawImage(img,hw,0,hw,h,0,0,hw,h);
+        resolve([cl.toDataURL('image/jpeg',0.92), cr.toDataURL('image/jpeg',0.92)]);
+      };
+      img.onerror = reject;
+      img.src = url;
+    });
   }
 
-  // ---------- rendering ----------
-  function renderStatic(idx){
-    pagesEl.querySelectorAll('.leaf').forEach(l=>l.remove());
-    const sp = spreadFor(idx);
-    if(mode === 'double'){
-      leftPageEl.innerHTML = sp.left!==null ? `<img src="${files[sp.left].url}" draggable="false">` : '';
-      leftPageEl.className = 'pageHalf' + (sp.left===null?' blank':'');
-      rightPageEl.innerHTML = sp.right!==null ? `<img src="${files[sp.right].url}" draggable="false">` : '';
-      rightPageEl.className = 'pageHalf' + (sp.right===null?' blank':'');
-    } else if(mode === 'span'){
-      const has = sp.span!==null;
-      leftPageEl.style.display='none';
-      $('gutter').style.display='none';
-      rightPageEl.style.display='flex';
-      rightPageEl.style.flex='1';
-      rightPageEl.className = 'pageHalf' + (!has?' blank':'');
-      rightPageEl.innerHTML = has ? `<img src="${files[sp.span].url}" style="object-fit:cover;" draggable="false"><div style="position:absolute;top:0;bottom:0;left:50%;width:26px;transform:translateX(-50%);background:linear-gradient(90deg, rgba(0,0,0,0), rgba(0,0,0,.35) 50%, rgba(0,0,0,0));"></div>` : '';
-    } else {
-      leftPageEl.style.display='none';
-      $('gutter').style.display='none';
-      rightPageEl.style.display='flex';
-      rightPageEl.style.flex='1';
-      const has = sp.single!==null;
-      rightPageEl.className = 'pageHalf' + (!has?' blank':'');
-      rightPageEl.innerHTML = has ? `<img src="${files[sp.single].url}" draggable="false">` : '';
+  // ---------- book building (StPageFlip — realistic page-turn animation) ----------
+  async function buildBook(){
+    if(files.length === 0 || building) return;
+    building = true;
+    try{
+      if(pageFlip){ try{ pageFlip.destroy(); }catch(e){} pageFlip = null; }
+      bookContainerEl.innerHTML = '';
+
+      let pageSources;
+      if(mode === 'span'){
+        pageSources = [];
+        for(const f of files){
+          const [l,r] = await splitImageInHalf(f.url);
+          pageSources.push(l, r);
+        }
+      } else {
+        pageSources = files.map(f => f.url);
+      }
+      if(pageSources.length === 0){ building=false; return; }
+
+      pageSources.forEach(src=>{
+        const div = document.createElement('div');
+        div.className = 'page';
+        const img = document.createElement('img');
+        img.src = src; img.draggable = false;
+        div.appendChild(img);
+        bookContainerEl.appendChild(div);
+      });
+
+      const firstImg = await preload(pageSources[0]);
+      const stageRect = stageWrapEl.getBoundingClientRect();
+      const viewportWidth = Math.max(200, stageRect.width * 0.92);
+      const viewportHeight = Math.max(200, stageRect.height * 0.92);
+      const imgW = firstImg.naturalWidth || 600, imgH = firstImg.naturalHeight || 800;
+      const isSingleLayout = (mode === 'single');
+      const perPageWidth = isSingleLayout ? viewportWidth : viewportWidth / 2;
+      const ratio = Math.min(perPageWidth / imgW, viewportHeight / imgH);
+      const bw = Math.max(200, Math.round(imgW * ratio));
+      const bh = Math.max(260, Math.round(imgH * ratio));
+
+      pageFlip = new St.PageFlip(bookContainerEl, {
+        width: bw, height: bh, size:'fixed',
+        minWidth:200, maxWidth:1600, minHeight:250, maxHeight:2200,
+        maxShadowOpacity:0.5,
+        showCover: !isSingleLayout,
+        mobileScrollSupport:false,
+        usePortrait: isSingleLayout,
+        singlePageMode: isSingleLayout,
+        drawShadow:true,
+        flippingTime:700
+      });
+      pageFlip.loadFromHTML(bookContainerEl.querySelectorAll('.page'));
+
+      const total = pageFlip.getPageCount();
+      if(spreadIdx > total-1) spreadIdx = Math.max(0, total-1);
+      if(spreadIdx > 0) pageFlip.turnToPage(spreadIdx);
+
+      pageFlip.on('flip', (e)=>{ spreadIdx = e.data; updateFooter(); });
+    }catch(err){
+      console.error(err);
+      toast('⚠️ Buch konnte nicht aufgebaut werden');
     }
+    building = false;
     updateFooter();
   }
 
-  function applyMode(newMode, force){
-    mode = newMode;
-    pagesEl.className = 'mode-' + mode;
-    if(mode === 'double'){
-      leftPageEl.style.display='flex'; leftPageEl.style.flex='1';
-      $('gutter').style.display='block';
-    }
-    const mx = maxIndex();
-    if(spreadIdx > mx) spreadIdx = mx;
-    renderStatic(spreadIdx);
-  }
-
   function updateFooter(){
-    const mx = maxIndex();
-    pageSlider.max = mx;
-    pageSlider.value = spreadIdx;
-    pageSlider.disabled = files.length === 0;
-    if(files.length === 0){ pageCounter.textContent = '– / –'; return; }
-    const sp = spreadFor(spreadIdx);
-    let label;
-    if(mode==='double'){
-      const l = sp.left!==null? sp.left+1:'–', r = sp.right!==null? sp.right+1:'–';
-      label = `Seite ${l}–${r} von ${files.length}`;
-    } else {
-      const i = (sp.span ?? sp.single);
-      label = `Bild ${i!==null? i+1 : '–'} von ${files.length}`;
-    }
-    pageCounter.textContent = label;
-    $('btnPrev').disabled = spreadIdx <= 0;
-    $('btnNext').disabled = spreadIdx >= mx;
-    saveProgress(true);
-  }
-
-  // ---------- flip animation ----------
-  function turn(dir){
-    if(animating || files.length===0) return;
-    const mx = maxIndex();
-    const target = spreadIdx + dir;
-    if(target < 0 || target > mx) return;
-    animating = true;
-
-    const outgoing = buildContentEl(spreadIdx);
-    const leaf = document.createElement('div');
-    leaf.className = 'leaf';
-    leaf.appendChild(outgoing);
-
-    if(dir > 0){
-      leaf.style.transformOrigin = 'left center';
-      leaf.style.transform = 'rotateY(0deg)';
-      // show target underneath immediately
-      spreadIdx = target;
-      renderStatic(spreadIdx);
-      pagesEl.appendChild(leaf);
-      requestAnimationFrame(()=>{
-        leaf.classList.add('animating');
-        requestAnimationFrame(()=>{ leaf.style.transform = 'rotateY(-160deg)'; leaf.style.opacity = '0.85'; });
-      });
-    } else {
-      // backward: show old (current) statically, animate the NEW (target) leaf sweeping in from the right
-      const incoming = buildContentEl(target);
-      leaf.innerHTML = '';
-      leaf.appendChild(incoming);
-      leaf.style.transformOrigin = 'right center';
-      leaf.style.transform = 'rotateY(160deg)';
-      pagesEl.appendChild(leaf);
-      requestAnimationFrame(()=>{
-        leaf.classList.add('animating');
-        requestAnimationFrame(()=>{ leaf.style.transform = 'rotateY(0deg)'; });
-      });
-      leaf.addEventListener('transitionend', function done(){
-        leaf.removeEventListener('transitionend', done);
-        spreadIdx = target;
-        renderStatic(spreadIdx);
-        leaf.remove();
-        animating = false;
-      }, {once:true});
+    if(!pageFlip || files.length === 0){
+      pageCounter.textContent = '– / –';
+      pageSlider.disabled = true;
+      $('btnPrev').disabled = true; $('btnNext').disabled = true;
       return;
     }
-
-    leaf.addEventListener('transitionend', function done(){
-      leaf.removeEventListener('transitionend', done);
-      leaf.remove();
-      animating = false;
-    }, {once:true});
-    // safety fallback in case transitionend doesn't fire
-    setTimeout(()=>{ if(leaf.parentNode){ leaf.remove(); animating=false; } }, 900);
-  }
-
-  function jumpTo(idx){
-    if(animating) return;
-    const mx = maxIndex();
-    spreadIdx = Math.max(0, Math.min(mx, idx));
-    renderStatic(spreadIdx);
+    const cur = pageFlip.getCurrentPageIndex();
+    const total = pageFlip.getPageCount();
+    pageCounter.textContent = `Seite ${cur+1} / ${total}`;
+    pageSlider.max = Math.max(0, total-1);
+    pageSlider.value = cur;
+    pageSlider.disabled = false;
+    $('btnPrev').disabled = cur <= 0;
+    $('btnNext').disabled = cur >= total-1;
+    saveProgress(true);
   }
 
   // ---------- theme ----------
@@ -657,19 +606,22 @@ input[type=file]{ display:none; }
   // ---------- events ----------
   $('btnOpenFolder').addEventListener('click', openViaPicker);
   $('btnOpenFolder2').addEventListener('click', openViaPicker);
-  $('btnPrev').addEventListener('click', ()=>turn(-1));
-  $('btnNext').addEventListener('click', ()=>turn(1));
-  $('modeSelect').addEventListener('change', e=>applyMode(e.target.value));
+  $('btnPrev').addEventListener('click', ()=>{ pageFlip && pageFlip.flipPrev(); });
+  $('btnNext').addEventListener('click', ()=>{ pageFlip && pageFlip.flipNext(); });
+  $('modeSelect').addEventListener('change', e=>{ mode = e.target.value; buildBook(); });
   document.querySelectorAll('.swatch').forEach(s=>s.addEventListener('click', ()=>applyTheme(s.dataset.theme)));
   $('btnExportHtml').addEventListener('click', exportAsHtmlFile);
-  pageSlider.addEventListener('input', e=>jumpTo(parseInt(e.target.value,10)));
-
-  pagesEl.querySelector('.navZone.left')?.addEventListener('click', ()=>turn(-1));
-  pagesEl.querySelector('.navZone.right')?.addEventListener('click', ()=>turn(1));
+  pageSlider.addEventListener('input', e=>{
+    if(!pageFlip) return;
+    pageFlip.turnToPage(parseInt(e.target.value,10));
+    spreadIdx = pageFlip.getCurrentPageIndex();
+    updateFooter();
+  });
 
   document.addEventListener('keydown', e=>{
-    if(e.key === 'ArrowRight') turn(1);
-    else if(e.key === 'ArrowLeft') turn(-1);
+    if(!pageFlip) return;
+    if(e.key === 'ArrowRight') pageFlip.flipNext();
+    else if(e.key === 'ArrowLeft') pageFlip.flipPrev();
     else if(e.key.toLowerCase() === 'f') toggleFullscreen();
     else if(e.key === 'Escape' && document.fullscreenElement) document.exitFullscreen();
   });
@@ -684,7 +636,16 @@ input[type=file]{ display:none; }
   $('btnFullscreen').addEventListener('click', toggleFullscreen);
   document.addEventListener('fullscreenchange', ()=>{
     document.body.classList.toggle('fs-hide', false);
+    scheduleRebuild();
   });
+
+  // rebuild (re-size) the book after resize / fullscreen change, preserving current page
+  let rebuildTimer;
+  function scheduleRebuild(){
+    clearTimeout(rebuildTimer);
+    rebuildTimer = setTimeout(()=>{ if(files.length) buildBook(); }, 300);
+  }
+  window.addEventListener('resize', scheduleRebuild);
 
   // auto-hide toolbar in fullscreen after inactivity
   let hideTimer;
