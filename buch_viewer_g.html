@@ -230,7 +230,7 @@
         function triggerFileInput(id) {
             const el = document.getElementById(id);
             if (el) {
-                el.value = ''; // Wert zurücksetzen, damit dasselbe erneut gewählt werden kann
+                el.value = ''; // Input zurücksetzen, damit erneutes Auswählen auslösen kann
                 el.click();
             }
         }
@@ -319,9 +319,10 @@
 
         // Buch rendern & initialisieren
         async function buildBook() {
-            const container = document.getElementById('book-container');
+            const wrapper = document.getElementById('book-wrapper');
             const placeholder = document.getElementById('placeholder');
 
+            // Zerstöre alte PageFlip Instanz
             if (pageFlip) {
                 try {
                     pageFlip.destroy();
@@ -329,7 +330,9 @@
                 pageFlip = null;
             }
 
-            container.innerHTML = '';
+            // Erstelle ein frisches Container-Element, um Altlasten von PageFlip komplett zu entfernen
+            wrapper.innerHTML = '<div id="book-container"></div>';
+            const container = document.getElementById('book-container');
 
             let allImages = [];
             if (coverImage) {
@@ -415,7 +418,7 @@
                 singlePageMode: isSingle
             });
 
-            pageFlip.loadFromHTML(document.querySelectorAll('.page'));
+            pageFlip.loadFromHTML(container.querySelectorAll('.page'));
 
             updatePageInfo();
             pageFlip.on('flip', () => updatePageInfo());
@@ -474,12 +477,17 @@
                 return;
             }
 
-            // Vollständigen HTML-Inhalt des aktuellen Dokuments kopieren
             let cloneDoc = document.documentElement.cloneNode(true);
 
-            // Evtl. früher injizierte Re-Init Skripte entfernen, um Vervielfältigung zu vermeiden
+            // Evtl. früher injizierte Re-Init Skripte entfernen
             const oldInits = cloneDoc.querySelectorAll('.exported-init-script');
             oldInits.forEach(el => el.remove());
+
+            // Container im Export saubermachen
+            const wrapper = cloneDoc.querySelector('#book-wrapper');
+            if (wrapper) {
+                wrapper.innerHTML = '<div id="book-container"></div>';
+            }
 
             const initScript = document.createElement('script');
             initScript.className = 'exported-init-script';
@@ -503,13 +511,6 @@
             link.href = URL.createObjectURL(blob);
             link.download = "MeinBuch_Export.html";
             link.click();
-        }
-
-        // Hilfsfunktion MIME-Typ bestimmen
-        function getMimeType(dataUrl) {
-            if (!dataUrl) return 'image/png';
-            const match = dataUrl.match(/^data:(image\/[a-zA-Z+-]+);base64,/);
-            return match ? match[1] : 'image/png';
         }
 
         // Projekt als .book (ZIP) Speichern
