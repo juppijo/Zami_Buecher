@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PDF → MD/HTML Konverter</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600&display=swap" rel="stylesheet">
+
+<script>
+  MathJax = {
+    tex: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    svg: { fontCache: 'global' }
+  };
+</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/4.1.1/tesseract.min.js"></script>
+
+<style>
+  :root{
+    --bg: #0b0a08;
+    --bg-panel: #141210;
+    --bg-panel-2: #1a1713;
+    --border: #322c20;
+    --border-soft: #241f17;
+    --gold: #d4af37;
+    --gold-bright: #f2d477;
+    --gold-dim: #8a7532;
+    --text: #ece7da;
+    --text-dim: #9a927e;
+    --danger: #c1584a;
+    --ok: #7fae6c;
+    --radius: 3px;
+    --mono: 'Barlow Condensed', monospace;
+  }
+
+  *{ box-sizing: border-box; }
+
+  html,body{
+    height: 100%;
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Barlow', sans-serif;
+  }
+
+  ::selection{ background: var(--gold-dim); color: #000; }
+
+  body{
+    display: flex;
+    flex-direction: column;
+  }
+
+  a{ color: var(--gold-bright); }
+
+  button{
+    font-family: 'Barlow', sans-serif;
+    font-weight: 600;
+    font-size: 0.82rem;
+    letter-spacing: 0.01em;
+    background: var(--bg-panel-2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.45rem 0.7rem;
+    cursor: pointer;
+    transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+    white-space: nowrap;
+  }
+  button:hover{ border-color: var(--gold-dim); color: var(--gold-bright); }
+  button:active{ transform: translateY(1px); }
+  button.primary{ background: var(--gold); color: #16130a; border-color: var(--gold); }
+  button.primary:hover{ background: var(--gold-bright); color: #16130a; }
+  button.ghost{ background: transparent; }
+  button.active{ border-color: var(--gold); color: var(--gold-bright); }
+  button:disabled{ opacity: 0.35; cursor: not-allowed; }
+
+  button:focus-visible, input:focus-visible, textarea:focus-visible, label:focus-within{
+    outline: 2px solid var(--gold-bright);
+    outline-offset: 2px;
+  }
+
+  /* ---------- header ---------- */
+  header{
+    border-bottom: 1px solid var(--border-soft);
+    background: linear-gradient(180deg, #141210, #0e0c0a);
+    padding: 0.9rem 1.2rem 0.7rem;
+    display: flex;
+    align-items: baseline;
+    gap: 0.9rem;
+    flex-wrap: wrap;
+  }
+  header h1{
+    font-family: 'Bebas Neue', sans-serif;
+    font-weight: 400;
+    font-size: 1.7rem;
+    letter-spacing: 0.04em;
+    margin: 0;
+    color: var(--gold-bright);
+  }
+  header .sub{
+    color: var(--text-dim);
+    font-size: 0.82rem;
+  }
+
+  /* ---------- toolbar ---------- */
+  .toolbar{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+    padding: 0.6rem 1.2rem;
+    border-bottom: 1px solid var(--border-soft);
+    background: var(--bg-panel);
+  }
+  .group{
+    display: flex;
+    gap: 0.35rem;
+    padding-right: 0.6rem;
+    border-right: 1px solid var(--border-soft);
+  }
+  .group:last-child{ border-right: none; }
+  .group label.check{
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    padding: 0 0.3rem;
+  }
+  input[type="file"]{ display: none; }
+
+  /* ---------- status ---------- */
+  .status-row{
+    padding: 0 1.2rem;
+    background: var(--bg-panel);
+    border-bottom: 1px solid var(--border-soft);
+    display: none;
+    align-items: center;
+    gap: 0.8rem;
+    height: 0;
+    overflow: hidden;
+    transition: height 0.2s ease, padding 0.2s ease;
+  }
+  .status-row.visible{
+    display: flex;
+    height: 2.4rem;
+    padding: 0 1.2rem;
+  }
+  .status-text{ font-size: 0.8rem; color: var(--text-dim); min-width: 12rem; }
+  .progress-track{
+    flex: 1;
+    height: 6px;
+    background: var(--bg-panel-2);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .progress-fill{
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--gold-dim), var(--gold-bright));
+    transition: width 0.2s ease;
+  }
+
+  /* ---------- main split view ---------- */
+  main{
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: 0;
+    position: relative;
+  }
+  main.editor-only{ grid-template-columns: 1fr; }
+  main.editor-only .preview-pane{ display: none; }
+  main.preview-only{ grid-template-columns: 1fr; }
+  main.preview-only .editor-pane{ display: none; }
+
+  .pane{
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    min-width: 0;
+  }
+  .editor-pane{ border-right: 1px solid var(--border-soft); }
+
+  .pane-label{
+    font-family: 'Barlow Condensed', sans-serif;
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    color: var(--text-dim);
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid var(--border-soft);
+    background: var(--bg-panel);
+  }
+
+  #editor{
+    flex: 1;
+    resize: none;
+    border: none;
+    outline: none;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Barlow Condensed', 'Barlow', monospace;
+    font-size: 0.97rem;
+    line-height: 1.55;
+    padding: 1.1rem 1.3rem;
+    tab-size: 2;
+  }
+  #editor::placeholder{ color: var(--text-dim); }
+
+  .preview-pane{ background: #0d0c0a; }
+  #preview{
+    flex: 1;
+    overflow: auto;
+    padding: 1.4rem 1.8rem 3rem;
+    line-height: 1.65;
+  }
+  #preview h1,#preview h2,#preview h3,#preview h4{
+    font-family: 'Bebas Neue', sans-serif;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    color: var(--gold-bright);
+    line-height: 1.15;
+    margin: 1.4em 0 0.5em;
+  }
+  #preview h1{ font-size: 2rem; border-bottom: 1px solid var(--border-soft); padding-bottom: 0.3rem;}
+  #preview h2{ font-size: 1.55rem; }
+  #preview h3{ font-size: 1.25rem; color: var(--gold); }
+  #preview p{ margin: 0.7em 0; max-width: 74ch; }
+  #preview code{
+    background: var(--bg-panel-2);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 0.1em 0.4em;
+    font-family: 'Barlow Condensed', monospace;
+    font-size: 0.92em;
+    color: var(--gold-bright);
+  }
+  #preview pre{
+    background: var(--bg-panel-2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--gold-dim);
+    border-radius: var(--radius);
+    padding: 0.8rem 1rem;
+    overflow-x: auto;
+  }
+  #preview pre code{ background: none; border: none; padding: 0; color: var(--text); }
+  #preview blockquote{
+    margin: 0.9em 0;
+    padding: 0.4em 1rem;
+    border-left: 3px solid var(--gold);
+    color: var(--text-dim);
+    background: var(--bg-panel);
+  }
+  #preview ul, #preview ol{ padding-left: 1.4em; }
+  #preview li{ margin: 0.3em 0; }
+  #preview img{ max-width: 100%; border: 1px solid var(--border); border-radius: var(--radius); }
+  #preview hr{ border: none; border-top: 1px solid var(--border-soft); margin: 1.6em 0; }
+  #preview table{ border-collapse: collapse; margin: 1em 0; }
+  #preview th, #preview td{ border: 1px solid var(--border); padding: 0.4em 0.7em; }
+  #preview .empty-hint{
+    color: var(--text-dim);
+    font-style: italic;
+  }
+
+  /* ---------- footer ---------- */
+  footer{
+    border-top: 1px solid var(--border-soft);
+    background: var(--bg-panel);
+    padding: 0.4rem 1.2rem;
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  /* ---------- drag overlay ---------- */
+  .drop-overlay{
+    position: fixed;
+    inset: 0;
+    background: rgba(11,10,8,0.88);
+    border: 3px dashed var(--gold);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    pointer-events: none;
+  }
+  .drop-overlay.active{ display: flex; }
+  .drop-overlay span{
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.2rem;
+    letter-spacing: 0.04em;
+    color: var(--gold-bright);
+  }
+
+  /* ---------- fullscreen tweaks ---------- */
+  body:fullscreen header{ padding-top: 0.6rem; }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ transition: none !important; }
+  }
+
+  @media (max-width: 860px){
+    main{ grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; }
+    .editor-pane{ border-right: none; border-bottom: 1px solid var(--border-soft); }
+    header h1{ font-size: 1.4rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>PDF → MD / HTML</h1>
+  <span class="sub">Konvertieren · Bearbeiten · Formeln · Texterkennung</span>
+</header>
+
+<div class="toolbar">
+  <div class="group">
+    <button id="btnImportPdf" title="PDF-Datei importieren und Text extrahieren">📄 PDF importieren</button>
+    <button id="btnLoad" title="Markdown-, Text- oder HTML-Datei laden">📂 Laden</button>
+    <button id="btnSaveMd" title="Als Markdown-Datei speichern">💾 .md</button>
+    <button id="btnSaveHtml" title="Als eigenständige HTML-Datei speichern">💾 .html</button>
+  </div>
+
+  <div class="group">
+    <button data-wrap="**|**" title="Fett">B</button>
+    <button data-wrap="*|*" title="Kursiv"><i>I</i></button>
+    <button data-line="## " title="Überschrift 2">H2</button>
+    <button data-line="### " title="Überschrift 3">H3</button>
+    <button data-line="- " title="Liste">≡</button>
+    <button data-line="> " title="Zitat">❝</button>
+    <button data-wrap="`|`" title="Inline-Code">&lt;/&gt;</button>
+    <button data-wrap="[|](https://)" title="Link">🔗</button>
+    <button data-wrap="$|$" title="Formel (inline)">∑ᵢ</button>
+    <button data-wrap="$$\n|\n$$" title="Formel (Block)">∫dx</button>
+  </div>
+
+  <div class="group">
+    <label class="check"><input type="checkbox" id="chkOcr" checked> Texterkennung (OCR) für Scans</label>
+    <label class="check"><input type="checkbox" id="chkImages" checked> Bilder aus PDF übernehmen</label>
+  </div>
+
+  <div class="group">
+    <button id="btnViewSplit" class="active" title="Editor und Vorschau nebeneinander">⬜⬜ Split</button>
+    <button id="btnViewEditor" title="Nur Editor">⬜ Editor</button>
+    <button id="btnViewPreview" title="Nur Vorschau">Vorschau ⬜</button>
+    <button id="btnFullscreen" title="Vollbild umschalten">⛶ Vollbild</button>
+  </div>
+
+  <div class="group" style="border-right:none;">
+    <button id="btnClear" class="ghost" title="Alles zurücksetzen">↺ Leeren</button>
+  </div>
+
+  <input type="file" id="fileInputPdf" accept="application/pdf">
+  <input type="file" id="fileInputLoad" accept=".md,.markdown,.txt,.html,.htm">
+</div>
+
+<div class="status-row" id="statusRow">
+  <div class="status-text" id="statusText">Bereit</div>
+  <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+</div>
+
+<main id="mainView">
+  <section class="pane editor-pane">
+    <div class="pane-label">Quelltext (Markdown)</div>
+    <textarea id="editor" placeholder="PDF importieren, eine Datei laden oder direkt hier schreiben.
+
+Formeln: $E = mc^2$  oder als Block:
+$$
+\int_0^\infty e^{-x^2}\,dx = \frac{\sqrt{\pi}}{2}
+$$"></textarea>
+  </section>
+  <section class="pane preview-pane">
+    <div class="pane-label">Vorschau</div>
+    <div id="preview"><p class="empty-hint">Die Vorschau erscheint hier, sobald Text vorhanden ist.</p></div>
+  </section>
+</main>
+
+<footer>
+  <span id="wordCount">0 Wörter · 0 Zeichen</span>
+  <span id="fileName">Keine Datei geladen</span>
+</footer>
+
+<div class="drop-overlay" id="dropOverlay"><span>PDF hier ablegen</span></div>
+
+<script>
+(function(){
+  'use strict';
+
+  if (window.pdfjsLib) {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  }
+
+  const editor = document.getElementById('editor');
+  const preview = document.getElementById('preview');
+  const statusRow = document.getElementById('statusRow');
+  const statusText = document.getElementById('statusText');
+  const progressFill = document.getElementById('progressFill');
+  const wordCountEl = document.getElementById('wordCount');
+  const fileNameEl = document.getElementById('fileName');
+  const mainView = document.getElementById('mainView');
+  const dropOverlay = document.getElementById('dropOverlay');
+
+  let currentFileName = null;
+
+  // ---------- status helpers ----------
+  function showStatus(text, percent){
+    statusRow.classList.add('visible');
+    statusText.textContent = text;
+    if (typeof percent === 'number') progressFill.style.width = Math.max(0, Math.min(100, percent)) + '%';
+  }
+  function hideStatus(delayMs){
+    setTimeout(() => {
+      statusRow.classList.remove('visible');
+      progressFill.style.width = '0%';
+    }, delayMs || 600);
+  }
+
+  // ---------- minimal markdown -> html ----------
+  function escapeHtml(s){
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function inlineMd(text){
+    // protect inline/block math from further inline processing
+    const mathStore = [];
+    text = text.replace(/\$\$[\s\S]+?\$\$|\$[^\n$]+?\$/g, (m) => {
+      mathStore.push(m);
+      return '\u0000MATH' + (mathStore.length - 1) + '\u0000';
+    });
+
+    text = escapeHtml(text);
+    text = text.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img alt="$1" src="$2">');
+    text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+    text = text.replace(/`([^`]+)`/g, '<code>$1</code>');
+    text = text.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    text = text.replace(/(?<!\*)\*([^*\n]+)\*(?!\*)/g, '<em>$1</em>');
+
+    text = text.replace(/\u0000MATH(\d+)\u0000/g, (_, i) => mathStore[Number(i)]);
+    return text;
+  }
+
+  function mdToHtml(md){
+    if (!md || !md.trim()) return '<p class="empty-hint">Die Vorschau erscheint hier, sobald Text vorhanden ist.</p>';
+
+    const lines = md.replace(/\r\n/g, '\n').split('\n');
+    let html = '';
+    let i = 0;
+    let inList = null; // 'ul' | 'ol'
+    let inCode = false;
+    let codeBuf = [];
+    let paraBuf = [];
+
+    function flushPara(){
+      if (paraBuf.length){
+        html += '<p>' + inlineMd(paraBuf.join(' ')) + '</p>';
+        paraBuf = [];
+      }
+    }
+    function closeList(){
+      if (inList){ html += '</' + inList + '>'; inList = null; }
+    }
+
+    while (i < lines.length){
+      const line = lines[i];
+
+      if (line.trim().startsWith('```')){
+        flushPara(); closeList();
+        if (!inCode){ inCode = true; codeBuf = []; }
+        else {
+          html += '<pre><code>' + escapeHtml(codeBuf.join('\n')) + '</code></pre>';
+          inCode = false;
+        }
+        i++; continue;
+      }
+      if (inCode){ codeBuf.push(line); i++; continue; }
+
+      if (/^\s*$/.test(line)){
+        flushPara(); closeList(); i++; continue;
+      }
+
+      const h = line.match(/^(#{1,4})\s+(.*)$/);
+      if (h){
+        flushPara(); closeList();
+        const level = h[1].length;
+        html += `<h${level}>${inlineMd(h[2])}</h${level}>`;
+        i++; continue;
+      }
+
+      if (/^>\s?/.test(line)){
+        flushPara(); closeList();
+        let quoteLines = [];
+        while (i < lines.length && /^>\s?/.test(lines[i])){
+          quoteLines.push(lines[i].replace(/^>\s?/, ''));
+          i++;
+        }
+        html += '<blockquote><p>' + inlineMd(quoteLines.join(' ')) + '</p></blockquote>';
+        continue;
+      }
+
+      if (/^\s*[-*]\s+/.test(line)){
+        flushPara();
+        if (inList !== 'ul'){ closeList(); html += '<ul>'; inList = 'ul'; }
+        html += '<li>' + inlineMd(line.replace(/^\s*[-*]\s+/, '')) + '</li>';
+        i++; continue;
+      }
+      if (/^\s*\d+\.\s+/.test(line)){
+        flushPara();
+        if (inList !== 'ol'){ closeList(); html += '<ol>'; inList = 'ol'; }
+        html += '<li>' + inlineMd(line.replace(/^\s*\d+\.\s+/, '')) + '</li>';
+        i++; continue;
+      }
+
+      if (/^\s*(-{3,}|\*{3,})\s*$/.test(line)){
+        flushPara(); closeList();
+        html += '<hr>';
+        i++; continue;
+      }
+
+      closeList();
+      paraBuf.push(line.trim());
+      i++;
+    }
+    flushPara(); closeList();
+    if (inCode) html += '<pre><code>' + escapeHtml(codeBuf.join('\n')) + '</code></pre>';
+    return html;
+  }
+
+  let typesetTimer = null;
+  function updatePreview(){
+    preview.innerHTML = mdToHtml(editor.value);
+    updateWordCount();
+    clearTimeout(typesetTimer);
+    typesetTimer = setTimeout(() => {
+      if (window.MathJax && MathJax.typesetPromise){
+        MathJax.typesetPromise([preview]).catch(() => {});
+      }
+    }, 150);
+  }
+
+  function updateWordCount(){
+    const text = editor.value.trim();
+    const words = text ? text.split(/\s+/).length : 0;
+    wordCountEl.textContent = `${words} Wörter · ${text.length} Zeichen`;
+  }
+
+  editor.addEventListener('input', updatePreview);
+
+  // ---------- toolbar: formatting buttons ----------
+  document.querySelectorAll('button[data-wrap]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const [before, after] = btn.dataset.wrap.split('|');
+      wrapSelection(before, after === undefined ? before : after);
+    });
+  });
+  document.querySelectorAll('button[data-line]').forEach(btn => {
+    btn.addEventListener('click', () => prefixLine(btn.dataset.line));
+  });
+
+  function wrapSelection(before, after){
+    const start = editor.selectionStart;
+    const end = editor.selectionEnd;
+    const val = editor.value;
+    const selected = val.slice(start, end) || 'Text';
+    editor.value = val.slice(0, start) + before + selected + after + val.slice(end);
+    editor.focus();
+    editor.selectionStart = start + before.length;
+    editor.selectionEnd = start + before.length + selected.length;
+    updatePreview();
+  }
+
+  function prefixLine(prefix){
+    const start = editor.selectionStart;
+    const val = editor.value;
+    const lineStart = val.lastIndexOf('\n', start - 1) + 1;
+    editor.value = val.slice(0, lineStart) + prefix + val.slice(lineStart);
+    editor.focus();
+    editor.selectionStart = editor.selectionEnd = start + prefix.length;
+    updatePreview();
+  }
+
+  // ---------- view mode ----------
+  const btnSplit = document.getElementById('btnViewSplit');
+  const btnEditorOnly = document.getElementById('btnViewEditor');
+  const btnPreviewOnly = document.getElementById('btnViewPreview');
+  function setView(mode){
+    mainView.classList.remove('editor-only', 'preview-only');
+    [btnSplit, btnEditorOnly, btnPreviewOnly].forEach(b => b.classList.remove('active'));
+    if (mode === 'editor'){ mainView.classList.add('editor-only'); btnEditorOnly.classList.add('active'); }
+    else if (mode === 'preview'){ mainView.classList.add('preview-only'); btnPreviewOnly.classList.add('active'); }
+    else { btnSplit.classList.add('active'); }
+  }
+  btnSplit.addEventListener('click', () => setView('split'));
+  btnEditorOnly.addEventListener('click', () => setView('editor'));
+  btnPreviewOnly.addEventListener('click', () => setView('preview'));
+
+  // ---------- fullscreen ----------
+  document.getElementById('btnFullscreen').addEventListener('click', () => {
+    if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {});
+    else document.exitFullscreen();
+  });
+
+  // ---------- clear ----------
+  document.getElementById('btnClear').addEventListener('click', () => {
+    if (editor.value.trim() && !confirm('Wirklich den gesamten Inhalt löschen?')) return;
+    editor.value = '';
+    currentFileName = null;
+    fileNameEl.textContent = 'Keine Datei geladen';
+    updatePreview();
+  });
+
+  // ---------- PDF import ----------
+  const fileInputPdf = document.getElementById('fileInputPdf');
+  document.getElementById('btnImportPdf').addEventListener('click', () => fileInputPdf.click());
+  fileInputPdf.addEventListener('change', (e) => {
+    if (e.target.files[0]) handlePdfFile(e.target.files[0]);
+    e.target.value = '';
+  });
+
+  async function handlePdfFile(file){
+    if (!window.pdfjsLib){
+      alert('PDF-Bibliothek konnte nicht geladen werden. Bitte Internetverbindung prüfen.');
+      return;
+    }
+    currentFileName = file.name.replace(/\.pdf$/i, '');
+    fileNameEl.textContent = file.name;
+    showStatus('PDF wird geöffnet …', 2);
+
+    try{
+      const buf = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+      const ocrEnabled = document.getElementById('chkOcr').checked;
+      const imagesEnabled = document.getElementById('chkImages').checked;
+      let out = [];
+
+      for (let p = 1; p <= pdf.numPages; p++){
+        const baseProgress = ((p - 1) / pdf.numPages) * 100;
+        showStatus(`Seite ${p} / ${pdf.numPages} wird gelesen …`, baseProgress);
+        const page = await pdf.getPage(p);
+        const textContent = await page.getTextContent();
+        let pageText = pageTextFromContent(textContent);
+
+        if (ocrEnabled && pageText.trim().length < 25){
+          showStatus(`Seite ${p} / ${pdf.numPages}: Texterkennung (OCR) läuft …`, baseProgress);
+          try{
+            pageText = await ocrPage(page, p, pdf.numPages);
+          } catch(ocrErr){
+            console.warn('OCR fehlgeschlagen für Seite', p, ocrErr);
+          }
+        }
+
+        if (imagesEnabled){
+          try{
+            const hasImg = await pageHasImages(page);
+            if (hasImg){
+              showStatus(`Seite ${p} / ${pdf.numPages}: Bild wird eingebettet …`, baseProgress);
+              const dataUrl = await renderPageAsImage(page);
+              if (dataUrl) pageText += `\n\n![Seite ${p}](${dataUrl})`;
+            }
+          } catch(imgErr){
+            console.warn('Bild-Extraktion fehlgeschlagen für Seite', p, imgErr);
+          }
+        }
+
+        out.push(pageText.trim());
+      }
+
+      const combined = out.filter(Boolean).join('\n\n---\n\n');
+      editor.value = combined || '*Kein Text erkannt.*';
+      updatePreview();
+      showStatus('Fertig.', 100);
+      hideStatus(1200);
+    } catch(err){
+      console.error(err);
+      showStatus('Fehler beim Lesen der PDF-Datei.', 0);
+      hideStatus(2500);
+      alert('Die PDF-Datei konnte nicht gelesen werden:\n' + err.message);
+    }
+  }
+
+  function pageTextFromContent(textContent){
+    const items = textContent.items;
+    if (!items.length) return '';
+
+    const lines = [];
+    let current = null;
+    let lastY = null;
+
+    for (const item of items){
+      const y = item.transform[5];
+      const size = Math.abs(item.transform[0]) || Math.abs(item.transform[3]) || 10;
+      if (current === null || lastY === null || Math.abs(y - lastY) > size * 0.5){
+        current = { text: item.str, size, y };
+        lines.push(current);
+      } else {
+        current.text += item.str;
+        current.size = Math.max(current.size, size);
+      }
+      lastY = y;
+    }
+
+    const sizes = lines.map(l => l.size).filter(s => s > 0).sort((a, b) => a - b);
+    const median = sizes.length ? sizes[Math.floor(sizes.length / 2)] : 10;
+
+    const tagged = [];
+    for (const line of lines){
+      const t = line.text.trim();
+      if (!t) continue;
+      if (line.size >= median * 1.45) tagged.push('## ' + t);
+      else if (line.size >= median * 1.18) tagged.push('### ' + t);
+      else tagged.push(t);
+    }
+
+    const paragraphs = [];
+    let buf = [];
+    for (const l of tagged){
+      if (l.startsWith('#')){
+        if (buf.length){ paragraphs.push(buf.join(' ')); buf = []; }
+        paragraphs.push(l);
+      } else {
+        buf.push(l);
+      }
+    }
+    if (buf.length) paragraphs.push(buf.join(' '));
+    return paragraphs.join('\n\n');
+  }
+
+  async function pageHasImages(page){
+    const ops = await page.getOperatorList();
+    const imageOps = [
+      pdfjsLib.OPS.paintImageXObject,
+      pdfjsLib.OPS.paintJpegXObject,
+      pdfjsLib.OPS.paintImageMaskXObject,
+      pdfjsLib.OPS.paintInlineImageXObject
+    ];
+    return ops.fnArray.some(fn => imageOps.includes(fn));
+  }
+
+  async function renderPageAsImage(page, scale){
+    const viewport = page.getViewport({ scale: scale || 1.6 });
+    const canvas = document.createElement('canvas');
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+    const ctx = canvas.getContext('2d');
+    await page.render({ canvasContext: ctx, viewport }).promise;
+    return canvas.toDataURL('image/png');
+  }
+
+  async function ocrPage(page, pageNum, totalPages){
+    if (!window.Tesseract){
+      throw new Error('OCR-Bibliothek nicht verfügbar.');
+    }
+    const viewport = page.getViewport({ scale: 2.2 });
+    const canvas = document.createElement('canvas');
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+    const ctx = canvas.getContext('2d');
+    await page.render({ canvasContext: ctx, viewport }).promise;
+
+    const result = await Tesseract.recognize(canvas, 'deu+eng', {
+      logger: (m) => {
+        if (m.status === 'recognizing text'){
+          const base = ((pageNum - 1) / totalPages) * 100;
+          const span = (1 / totalPages) * 100;
+          showStatus(`Seite ${pageNum} / ${totalPages}: OCR ${Math.round(m.progress * 100)}%`, base + span * m.progress);
+        }
+      }
+    });
+    return result.data.text;
+  }
+
+  // ---------- drag & drop ----------
+  ['dragenter','dragover'].forEach(evt => {
+    document.addEventListener(evt, (e) => {
+      if ([...e.dataTransfer.items].some(it => it.type === 'application/pdf')){
+        e.preventDefault();
+        dropOverlay.classList.add('active');
+      }
+    });
+  });
+  ['dragleave','drop'].forEach(evt => {
+    document.addEventListener(evt, (e) => {
+      if (evt === 'drop') e.preventDefault();
+      dropOverlay.classList.remove('active');
+    });
+  });
+  document.addEventListener('drop', (e) => {
+    const file = e.dataTransfer.files[0];
+    if (file && file.type === 'application/pdf') handlePdfFile(file);
+  });
+
+  // ---------- load file (md/txt/html) ----------
+  const fileInputLoad = document.getElementById('fileInputLoad');
+  document.getElementById('btnLoad').addEventListener('click', () => fileInputLoad.click());
+  fileInputLoad.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    e.target.value = '';
+    if (!file) return;
+
+    if (/\.pdf$/i.test(file.name)){ handlePdfFile(file); return; }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      currentFileName = file.name.replace(/\.[^.]+$/, '');
+      fileNameEl.textContent = file.name;
+
+      if (/\.html?$/i.test(file.name)){
+        const doc = new DOMParser().parseFromString(reader.result, 'text/html');
+        const original = doc.getElementById('original-markdown');
+        editor.value = original ? original.textContent : (doc.body ? doc.body.innerText : reader.result);
+      } else {
+        editor.value = reader.result;
+      }
+      updatePreview();
+    };
+    reader.onerror = () => alert('Datei konnte nicht gelesen werden.');
+    reader.readAsText(file);
+  });
+
+  // ---------- save ----------
+  function downloadBlob(content, filename, mime){
+    const blob = new Blob([content], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  document.getElementById('btnSaveMd').addEventListener('click', () => {
+    const name = (currentFileName || 'dokument') + '.md';
+    downloadBlob(editor.value, name, 'text/markdown;charset=utf-8');
+  });
+
+  document.getElementById('btnSaveHtml').addEventListener('click', () => {
+    const bodyHtml = mdToHtml(editor.value);
+    const escapedMd = editor.value
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const doc = `<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>${escapeHtml(currentFileName || 'Dokument')}</title>
+<script>
+  MathJax = {
+    tex: {
+      inlineMath: [['$', '$'], ['\\\\(', '\\\\)']],
+      displayMath: [['$$', '$$'], ['\\\\[', '\\\\]']]
+    },
+    svg: { fontCache: 'global' }
+  };
+<\/script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"><\/script>
+<style>
+  body{ background:#0b0a08; color:#ece7da; font-family: Georgia, 'Times New Roman', serif; line-height:1.7; max-width: 74ch; margin: 2.5rem auto; padding: 0 1.5rem; }
+  h1,h2,h3,h4{ font-family: 'Helvetica Neue', Arial, sans-serif; color:#f2d477; }
+  code{ background:#1a1713; border:1px solid #322c20; border-radius:2px; padding:0.1em 0.4em; }
+  pre{ background:#1a1713; border:1px solid #322c20; border-left:3px solid #8a7532; padding:0.8rem 1rem; overflow-x:auto; }
+  pre code{ border:none; background:none; }
+  blockquote{ border-left:3px solid #d4af37; margin:0.9em 0; padding:0.4em 1rem; color:#9a927e; }
+  a{ color:#f2d477; }
+  img{ max-width:100%; }
+</style>
+</head>
+<body>
+${bodyHtml}
+<script type="text/plain" id="original-markdown">${escapedMd}<\/script>
+</body>
+</html>`;
+    const name = (currentFileName || 'dokument') + '.html';
+    downloadBlob(doc, name, 'text/html;charset=utf-8');
+  });
+
+  // ---------- init ----------
+  updatePreview();
+})();
+</script>
+
+</body>
+</html>

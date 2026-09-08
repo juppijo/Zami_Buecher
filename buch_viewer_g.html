@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interaktiver Buch-Viewer</title>
+    <!-- Page Flip Library -->
+    <script src="https://cdn.jsdelivr.net/npm/page-flip/dist/js/page-flip.browser.js"></script>
+    <!-- JSZip for Save/Load -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --panel-bg: #1e293b;
+            --accent-color: #06b6d4;
+            --accent-hover: #0891b2;
+            --text-color: #f8fafc;
+            --text-dim: #94a3b8;
+            --border-color: #334155;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Toolbar / Control Panel */
+        header {
+            background-color: var(--panel-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 10px 20px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            z-index: 10;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn {
+            background-color: #273549;
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover {
+            background-color: var(--accent-color);
+            border-color: var(--accent-color);
+            color: #000;
+        }
+
+        select {
+            background-color: #273549;
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            outline: none;
+        }
+
+        select:focus {
+            border-color: var(--accent-color);
+        }
+
+        .page-info {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--accent-color);
+            min-width: 80px;
+            text-align: center;
+        }
+
+        /* Main Viewport */
+        main {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            padding: 20px;
+            overflow: hidden;
+            background: radial-gradient(circle, #1e293b 0%, #0f172a 100%);
+        }
+
+        #book-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+        }
+
+        #book-container {
+            position: relative;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+        }
+
+        .page {
+            background-color: #ffffff;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .page img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            pointer-events: none;
+        }
+
+        /* Empty State Placeholder */
+        #placeholder {
+            text-align: center;
+            color: var(--text-dim);
+            border: 2px dashed var(--border-color);
+            padding: 50px;
+            border-radius: 12px;
+            max-width: 500px;
+        }
+
+        #placeholder h2 {
+            color: var(--text-color);
+            margin-bottom: 10px;
+        }
+
+        /* Hidden File Inputs */
+        input[type="file"] {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <!-- Lade/Speicher Aktionen -->
+        <div class="control-group">
+            <button class="btn" onclick="triggerFileInput('folderInput')">📁 Ordner öffnen</button>
+            <button class="btn" onclick="triggerFileInput('fileInput')">🖼️ Bilder wählen</button>
+            <button class="btn" onclick="triggerFileInput('coverInput')">📘 Cover wählen</button>
+            <button class="btn" onclick="saveProject()">💾 Projekt (.book) speichern</button>
+            <button class="btn" onclick="exportStandaloneHTML()">🌐 Als HTML exportieren</button>
+            <button class="btn" onclick="triggerFileInput('loadProjectInput')">📂 Projekt laden</button>
+        </div>
+
+        <!-- Modus Auswahl -->
+        <div class="control-group">
+            <label for="layoutMode" style="font-size: 14px; color: var(--text-dim);">Modus:</label>
+            <select id="layoutMode" onchange="changeLayoutMode()">
+                <option value="double">2-Seitig (Doppelseite)</option>
+                <option value="single">1-Seitig (Einzelseite)</option>
+                <option value="split">1 Bild auf 2 Seiten (Panorama)</option>
+            </select>
+            <label for="startPage" style="font-size: 14px; color: var(--text-dim); margin-left: 10px;">Start auf:</label>
+            <select id="startPage" onchange="changeStartPage()">
+                <option value="1">Seite 1 (Rechts)</option>
+                <option value="2">Seite 2 (Doppelseite)</option>
+            </select>
+        </div>
+
+        <!-- Navigation & Steuerung -->
+        <div class="control-group">
+            <button class="btn" onclick="if(pageFlip) pageFlip.flipPrev()">◀ Zurück</button>
+            <span class="page-info" id="pageInfo">0 / 0</span>
+            <button class="btn" onclick="if(pageFlip) pageFlip.flipNext()">Weiter ▶</button>
+        </div>
+
+        <!-- Vollbild -->
+        <div class="control-group">
+            <button class="btn" onclick="toggleFullscreen()">🖵 Vollbild</button>
+        </div>
+    </header>
+
+    <main id="mainViewport">
+        <div id="placeholder">
+            <h2>Willkommen zu deinem Buch-Viewer</h2>
+            <p>Lade einen Ordner mit Bildern oder eine vorher gespeicherte .book-Datei, um das Lesen zu starten.</p>
+        </div>
+        <div id="book-wrapper">
+            <div id="book-container"></div>
+        </div>
+    </main>
+
+    <!-- Versteckte Inputs -->
+    <input type="file" id="folderInput" webkitdirectory directory multiple accept="image/*" onchange="handleFiles(this)">
+    <input type="file" id="fileInput" multiple accept="image/*" onchange="handleFiles(this)">
+    <input type="file" id="coverInput" accept="image/*" onchange="handleCover(this)">
+    <input type="file" id="loadProjectInput" accept=".book,.zip" onchange="loadProject(this)">
+
+    <script>
+        let pageFlip = null;
+        let originalImages = []; // Array von { name, dataUrl }
+        let coverImage = null; // { name, dataUrl }
+        let currentMode = 'double';
+        let startPageNum = 1;
+
+        function triggerFileInput(id) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.value = ''; // Wert zurücksetzen, damit dasselbe erneut gewählt werden kann
+                el.click();
+            }
+        }
+
+        // Datei einlesen
+        function readFileAsDataURL(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => resolve(e.target.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // Bilder-Dimensionen laden
+        function loadImage(src) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.onload = () => resolve(img);
+                img.onerror = reject;
+                img.src = src;
+            });
+        }
+
+        // Dateien verarbeiten (Folder & Multiple File Input)
+        async function handleFiles(input) {
+            const fileList = input.files;
+            if (!fileList || fileList.length === 0) return;
+
+            const files = Array.from(fileList).filter(f => f.type.startsWith('image/'));
+            if (files.length === 0) {
+                alert("Keine gültigen Bilder gefunden.");
+                return;
+            }
+
+            // Nach Dateinamen sortieren
+            files.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
+
+            originalImages = [];
+            for (const file of files) {
+                try {
+                    const dataUrl = await readFileAsDataURL(file);
+                    originalImages.push({ name: file.name, dataUrl });
+                } catch (e) {
+                    console.error("Fehler beim Lesen der Datei: " + file.name, e);
+                }
+            }
+
+            buildBook();
+        }
+
+        // Cover-Datei verarbeiten
+        async function handleCover(input) {
+            const fileList = input.files;
+            if (!fileList || fileList.length === 0) return;
+            const file = fileList[0];
+            if (!file.type.startsWith('image/')) {
+                alert("Bitte wähle ein gültiges Bild als Cover aus.");
+                return;
+            }
+
+            try {
+                const dataUrl = await readFileAsDataURL(file);
+                coverImage = { name: file.name, dataUrl };
+                buildBook();
+            } catch (e) {
+                console.error("Fehler beim Laden des Covers: ", e);
+            }
+        }
+
+        // Modus wechseln
+        function changeLayoutMode() {
+            currentMode = document.getElementById('layoutMode').value;
+            if (originalImages.length > 0 || coverImage) {
+                buildBook();
+            }
+        }
+
+        // Startseite wechseln
+        function changeStartPage() {
+            startPageNum = parseInt(document.getElementById('startPage').value, 10);
+            if (originalImages.length > 0 || coverImage) {
+                buildBook();
+            }
+        }
+
+        // Buch rendern & initialisieren
+        async function buildBook() {
+            const container = document.getElementById('book-container');
+            const placeholder = document.getElementById('placeholder');
+
+            if (pageFlip) {
+                try {
+                    pageFlip.destroy();
+                } catch (e) {}
+                pageFlip = null;
+            }
+
+            container.innerHTML = '';
+
+            let allImages = [];
+            if (coverImage) {
+                allImages.push(coverImage);
+            }
+            allImages = allImages.concat(originalImages);
+
+            if (allImages.length === 0) {
+                placeholder.style.display = 'block';
+                document.getElementById('pageInfo').innerText = "0 / 0";
+                return;
+            }
+
+            placeholder.style.display = 'none';
+
+            let pagesToRender = [];
+
+            // 1 Bild auf 2 Seiten Panorama-Splitting
+            if (currentMode === 'split') {
+                for (let imgObj of allImages) {
+                    const [leftPage, rightPage] = await splitImageInHalf(imgObj.dataUrl);
+                    pagesToRender.push(leftPage);
+                    pagesToRender.push(rightPage);
+                }
+            } else {
+                pagesToRender = allImages.map(img => img.dataUrl);
+            }
+
+            // Wenn Start auf Seite 2 gewählt ist und eine Leerseite davor geschoben werden soll
+            if (startPageNum === 2 && currentMode !== 'single') {
+                const blankCanvas = document.createElement('canvas');
+                blankCanvas.width = 600;
+                blankCanvas.height = 800;
+                const ctx = blankCanvas.getContext('2d');
+                ctx.fillStyle = "#ffffff";
+                ctx.fillRect(0, 0, 600, 800);
+                pagesToRender.unshift(blankCanvas.toDataURL());
+            }
+
+            if (pagesToRender.length === 0) return;
+
+            // HTML-Seiten für PageFlip generieren
+            pagesToRender.forEach((src) => {
+                const pageDiv = document.createElement('div');
+                pageDiv.className = 'page';
+                const imgElem = document.createElement('img');
+                imgElem.src = src;
+                pageDiv.appendChild(imgElem);
+                container.appendChild(pageDiv);
+            });
+
+            // Erste Bildabmessungen ermitteln
+            const firstImg = await loadImage(pagesToRender[0]);
+            
+            const viewportWidth = window.innerWidth * 0.85;
+            const viewportHeight = window.innerHeight * 0.80;
+
+            let imgWidth = firstImg.naturalWidth || 600;
+            let imgHeight = firstImg.naturalHeight || 800;
+
+            const isSingle = (currentMode === 'single');
+
+            // Berechne Ziel-Skalierung
+            const targetWidthPerSinglePage = isSingle ? viewportWidth : (viewportWidth / 2);
+            const ratio = Math.min(targetWidthPerSinglePage / imgWidth, viewportHeight / imgHeight);
+
+            const bookWidth = Math.max(200, Math.round(imgWidth * ratio));
+            const bookHeight = Math.max(300, Math.round(imgHeight * ratio));
+
+            // PageFlip Instanz erstellen
+            pageFlip = new St.PageFlip(container, {
+                width: bookWidth,
+                height: bookHeight,
+                size: "fixed",
+                minWidth: 200,
+                maxWidth: 1500,
+                minHeight: 300,
+                maxHeight: 2000,
+                maxShadowOpacity: 0.4,
+                showCover: !isSingle && (startPageNum === 1),
+                mobileScrollSupport: false,
+                usePortrait: isSingle,
+                singlePageMode: isSingle
+            });
+
+            pageFlip.loadFromHTML(document.querySelectorAll('.page'));
+
+            updatePageInfo();
+            pageFlip.on('flip', () => updatePageInfo());
+        }
+
+        function updatePageInfo() {
+            if (!pageFlip) return;
+            const current = pageFlip.getCurrentPageIndex() + 1;
+            const total = pageFlip.getPageCount();
+            document.getElementById('pageInfo').innerText = `${current} / ${total}`;
+        }
+
+        // Trennt ein Bild vertikal in zwei Hälften (Links/Rechts)
+        function splitImageInHalf(dataUrl) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => {
+                    const halfWidth = Math.floor(img.width / 2);
+                    const height = img.height;
+
+                    // Linke Hälfte
+                    const canvasLeft = document.createElement('canvas');
+                    canvasLeft.width = halfWidth;
+                    canvasLeft.height = height;
+                    const ctxLeft = canvasLeft.getContext('2d');
+                    ctxLeft.drawImage(img, 0, 0, halfWidth, height, 0, 0, halfWidth, height);
+
+                    // Rechte Hälfte
+                    const canvasRight = document.createElement('canvas');
+                    canvasRight.width = halfWidth;
+                    canvasRight.height = height;
+                    const ctxRight = canvasRight.getContext('2d');
+                    ctxRight.drawImage(img, halfWidth, 0, halfWidth, height, 0, 0, halfWidth, height);
+
+                    resolve([canvasLeft.toDataURL('image/jpeg', 0.92), canvasRight.toDataURL('image/jpeg', 0.92)]);
+                };
+                img.src = dataUrl;
+            });
+        }
+
+        // Vollbild
+        function toggleFullscreen() {
+            const elem = document.documentElement;
+            if (!document.fullscreenElement) {
+                if (elem.requestFullscreen) elem.requestFullscreen();
+                else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+            }
+        }
+
+        // Projekt als standalone HTML exportieren
+        function exportStandaloneHTML() {
+            if (originalImages.length === 0 && !coverImage) {
+                alert("Es sind keine Bilder geladen zum Exportieren.");
+                return;
+            }
+
+            // Vollständigen HTML-Inhalt des aktuellen Dokuments kopieren
+            let cloneDoc = document.documentElement.cloneNode(true);
+
+            // Evtl. früher injizierte Re-Init Skripte entfernen, um Vervielfältigung zu vermeiden
+            const oldInits = cloneDoc.querySelectorAll('.exported-init-script');
+            oldInits.forEach(el => el.remove());
+
+            const initScript = document.createElement('script');
+            initScript.className = 'exported-init-script';
+            initScript.textContent = `
+                window.addEventListener('DOMContentLoaded', () => {
+                    originalImages = ${JSON.stringify(originalImages)};
+                    coverImage = ${JSON.stringify(coverImage)};
+                    currentMode = '${currentMode}';
+                    startPageNum = ${startPageNum};
+                    document.getElementById('layoutMode').value = currentMode;
+                    document.getElementById('startPage').value = startPageNum;
+                    if(originalImages.length > 0 || coverImage) buildBook();
+                });
+            `;
+            cloneDoc.querySelector('body').appendChild(initScript);
+
+            const exportedHTML = "<!DOCTYPE html>\n" + cloneDoc.outerHTML;
+
+            const blob = new Blob([exportedHTML], { type: 'text/html;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = "MeinBuch_Export.html";
+            link.click();
+        }
+
+        // Hilfsfunktion MIME-Typ bestimmen
+        function getMimeType(dataUrl) {
+            if (!dataUrl) return 'image/png';
+            const match = dataUrl.match(/^data:(image\/[a-zA-Z+-]+);base64,/);
+            return match ? match[1] : 'image/png';
+        }
+
+        // Projekt als .book (ZIP) Speichern
+        async function saveProject() {
+            if (originalImages.length === 0 && !coverImage) {
+                alert("Es sind keine Bilder geladen, die gespeichert werden können.");
+                return;
+            }
+
+            const zip = new JSZip();
+            const metadata = {
+                mode: currentMode,
+                startPageNum: startPageNum,
+                hasCover: !!coverImage,
+                coverName: coverImage ? coverImage.name : null,
+                images: originalImages.map(img => img.name)
+            };
+
+            zip.file("project.json", JSON.stringify(metadata, null, 2));
+
+            if (coverImage) {
+                const base64Data = coverImage.dataUrl.split(',')[1];
+                const ext = coverImage.name.split('.').pop() || 'png';
+                zip.file(`cover.${ext}`, base64Data, { base64: true });
+            }
+
+            const imgFolder = zip.folder("images");
+            originalImages.forEach((img, index) => {
+                const parts = img.dataUrl.split(',');
+                if (parts.length > 1) {
+                    const base64Data = parts[1];
+                    const ext = img.name.split('.').pop() || 'png';
+                    const filename = `image_${String(index).padStart(4, '0')}.${ext}`;
+                    imgFolder.file(filename, base64Data, { base64: true });
+                }
+            });
+
+            const content = await zip.generateAsync({ type: "blob" });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(content);
+            link.download = "MeinBuch.book";
+            link.click();
+        }
+
+        // Projekt aus .book (ZIP) Laden
+        async function loadProject(input) {
+            const fileList = input.files;
+            if (!fileList || fileList.length === 0) return;
+            const file = fileList[0];
+
+            try {
+                const zip = await JSZip.loadAsync(file);
+                const metaFile = await zip.file("project.json").async("string");
+                const metadata = JSON.parse(metaFile);
+
+                currentMode = metadata.mode || 'double';
+                startPageNum = metadata.startPageNum || 1;
+                document.getElementById('layoutMode').value = currentMode;
+                document.getElementById('startPage').value = startPageNum;
+
+                coverImage = null;
+                if (metadata.hasCover) {
+                    const coverFiles = Object.keys(zip.files).filter(f => f.startsWith('cover.'));
+                    if (coverFiles.length > 0) {
+                        const coverPath = coverFiles[0];
+                        const base64 = await zip.file(coverPath).async("base64");
+                        const ext = coverPath.split('.').pop().toLowerCase();
+                        let mime = 'image/png';
+                        if (ext === 'jpg' || ext === 'jpeg') mime = 'image/jpeg';
+                        else if (ext === 'webp') mime = 'image/webp';
+                        else if (ext === 'gif') mime = 'image/gif';
+
+                        coverImage = { 
+                            name: metadata.coverName || coverPath, 
+                            dataUrl: `data:${mime};base64,${base64}` 
+                        };
+                    }
+                }
+
+                const imgFiles = [];
+                const imagesFolder = zip.folder("images");
+                if (imagesFolder) {
+                    imagesFolder.forEach((relativePath, fileEntry) => {
+                        if (!fileEntry.dir) {
+                            imgFiles.push({ path: relativePath, file: fileEntry });
+                        }
+                    });
+                }
+
+                imgFiles.sort((a, b) => a.path.localeCompare(b.path));
+
+                originalImages = [];
+                for (let i = 0; i < imgFiles.length; i++) {
+                    const item = imgFiles[i];
+                    const base64 = await item.file.async("base64");
+                    const ext = item.path.split('.').pop().toLowerCase();
+                    let mime = 'image/png';
+                    if (ext === 'jpg' || ext === 'jpeg') mime = 'image/jpeg';
+                    else if (ext === 'webp') mime = 'image/webp';
+                    else if (ext === 'gif') mime = 'image/gif';
+
+                    const origName = (metadata.images && metadata.images[i]) ? metadata.images[i] : item.path;
+                    originalImages.push({ name: origName, dataUrl: `data:${mime};base64,${base64}` });
+                }
+
+                buildBook();
+            } catch (err) {
+                alert("Fehler beim Laden der Projektdatei: " + err.message);
+            }
+        }
+
+        // Fensterebenen-Anpassung
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                if (originalImages.length > 0 || coverImage) {
+                    buildBook();
+                }
+            }, 300);
+        });
+    </script>
+</body>
+</html>
