@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interaktives Fotoalbum</title>
+  <!-- Page-Flip Library JS -->
+  <script src="https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.js"></script>
+  <style>
+    :root {
+      --bg-color: #1a1e24;
+      --panel-bg: #252b33;
+      --text-color: #e0e6ed;
+      --accent-color: #00bcd4; /* Blau-Türkis */
+      --accent-hover: #008ba3;
+      --page-bg: #fdfbf7;
+      --page-text: #2c3e50;
+      --shadow-color: rgba(0,0,0,0.4);
+    }
+
+    body.theme-turquoise {
+      --bg-color: #1a1e24;
+      --panel-bg: #252b33;
+      --text-color: #e0e6ed;
+      --accent-color: #00bcd4;
+      --accent-hover: #008ba3;
+    }
+
+    body.theme-dark {
+      --bg-color: #121212;
+      --panel-bg: #1e1e1e;
+      --text-color: #ffffff;
+      --accent-color: #ff9800;
+      --accent-hover: #e68a00;
+      --page-bg: #2a2a2a;
+      --page-text: #f0f0f0;
+    }
+
+    body.theme-classic {
+      --bg-color: #2b1d0c;
+      --panel-bg: #3d2b17;
+      --text-color: #f3e5ab;
+      --accent-color: #d4a359;
+      --accent-hover: #b88a44;
+      --page-bg: #f4ebd9;
+      --page-text: #3e2723;
+    }
+
+    body.theme-impressionist {
+      --bg-color: #1c2a38;
+      --panel-bg: #2c3d4f;
+      --text-color: #e2f1f8;
+      --accent-color: #4db6ac;
+      --accent-hover: #39948b;
+      --page-bg: #f0f7f7;
+      --page-text: #1a3636;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background-color 0.3s, color 0.3s;
+      overflow-x: hidden;
+    }
+
+    header {
+      width: 100%;
+      background-color: var(--panel-bg);
+      padding: 12px 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 4px 10px var(--shadow-color);
+      z-index: 10;
+    }
+
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    label {
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    button, .btn-label {
+      background-color: var(--accent-color);
+      color: #fff;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.85rem;
+      transition: background-color 0.2s, transform 0.1s;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    button:hover, .btn-label:hover {
+      background-color: var(--accent-hover);
+      transform: translateY(-1px);
+    }
+
+    select, input[type="file"] {
+      display: none;
+    }
+
+    input[type="text"].custom-input {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      border: 1px solid var(--accent-color);
+      padding: 7px 10px;
+      border-radius: 6px;
+      outline: none;
+      font-size: 0.85rem;
+      width: 160px;
+    }
+
+    select.custom-select {
+      display: inline-block;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      border: 1px solid var(--accent-color);
+      padding: 7px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      outline: none;
+    }
+
+    main {
+      flex: 1;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      position: relative;
+    }
+
+    #book-viewport {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 600px;
+      width: 100%;
+    }
+
+    .stflip-book {
+      box-shadow: 0 12px 30px var(--shadow-color);
+      border-radius: 4px;
+    }
+
+    .page {
+      background-color: var(--page-bg);
+      color: var(--page-text);
+      padding: 20px;
+      border: 1px solid rgba(0,0,0,0.08);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+    }
+
+    .page-content {
+      width: 100%;
+      height: calc(100% - 25px);
+      display: grid;
+      gap: 8px;
+      align-content: center;
+      justify-items: center;
+    }
+
+    /* Raster-Layouts */
+    .grid-1  { grid-template-columns: 1fr; grid-template-rows: 1fr; }
+    .grid-2  { grid-template-columns: 1fr; grid-template-rows: repeat(2, 1fr); }
+    .grid-3  { grid-template-columns: 1fr; grid-template-rows: repeat(3, 1fr); }
+    .grid-4  { grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(2, 1fr); }
+    .grid-5, .grid-6 { grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(3, 1fr); }
+    .grid-7, .grid-8, .grid-9 { grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); }
+    .grid-10 { grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(4, 1fr); }
+
+    .img-container {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border-radius: 4px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.12);
+      background-color: rgba(0,0,0,0.03);
+    }
+
+    .img-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.2s;
+      cursor: pointer;
+    }
+
+    .img-container img:hover {
+      transform: scale(1.03);
+    }
+
+    .page-footer {
+      text-align: center;
+      font-size: 0.8rem;
+      opacity: 0.6;
+      height: 20px;
+      line-height: 20px;
+    }
+
+    /* Cover Styling */
+    .cover-page {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, var(--accent-color), var(--panel-bg));
+      color: #fff;
+      text-align: center;
+      padding: 30px;
+      position: relative;
+    }
+
+    .cover-page h1 {
+      font-size: 2.2rem;
+      margin-bottom: 15px;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+      word-break: break-word;
+      z-index: 2;
+    }
+
+    .cover-page p {
+      z-index: 2;
+      font-weight: 600;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.6);
+    }
+
+    .cover-img-box {
+      width: 70%;
+      height: 55%;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+      border: 3px solid rgba(255,255,255,0.8);
+      z-index: 2;
+    }
+
+    .cover-img-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .nav-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background-color: var(--panel-bg);
+      color: var(--text-color);
+      border: 1px solid var(--accent-color);
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      z-index: 20;
+      cursor: pointer;
+    }
+
+    .nav-btn.prev { left: 10px; }
+    .nav-btn.next { right: 10px; }
+
+    /* Lightbox Modal */
+    #lightbox {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.9);
+      z-index: 100;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #lightbox img {
+      max-width: 90vw;
+      max-height: 90vh;
+      object-fit: contain;
+      border-radius: 6px;
+    }
+
+    #lightbox-close {
+      position: absolute;
+      top: 20px;
+      right: 30px;
+      color: #fff;
+      font-size: 2.5rem;
+      cursor: pointer;
+    }
+
+    #placeholder-msg {
+      text-align: center;
+      font-size: 1.2rem;
+      opacity: 0.8;
+    }
+  </style>
+</head>
+<body class="theme-turquoise">
+
+  <header>
+    <!-- Dateien & Cover -->
+    <div class="control-group">
+      <label class="btn-label" for="folder-input">📁 Ordner wählen</label>
+      <input type="file" id="folder-input" webkitdirectory directory multiple accept="image/*">
+      
+      <label class="btn-label" for="file-input">🖼️ Bilder wählen</label>
+      <input type="file" id="file-input" multiple accept="image/*">
+
+      <label class="btn-label" for="cover-input">🎨 Cover-Bild</label>
+      <input type="file" id="cover-input" accept="image/*">
+    </div>
+
+    <!-- Titel & Einstellungen -->
+    <div class="control-group">
+      <label for="album-title-input">Titel:</label>
+      <input type="text" id="album-title-input" class="custom-input" value="Mein Fotoalbum" placeholder="Titel eingeben...">
+
+      <label>Bilder/Seite:</label>
+      <select id="imgs-per-page" class="custom-select">
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4" selected>4</option>
+        <option value="5">5</option>
+        <option value="6">6</option>
+        <option value="7">7</option>
+        <option value="8">8</option>
+        <option value="9">9</option>
+        <option value="10">10</option>
+      </select>
+
+      <label>Ansicht:</label>
+      <select id="view-mode" class="custom-select">
+        <option value="2-page">2-Seitig (Buch)</option>
+        <option value="1-page">1-Seitig</option>
+      </select>
+    </div>
+
+    <!-- Theme & Vollbild -->
+    <div class="control-group">
+      <label>Stil:</label>
+      <select id="theme-select" class="custom-select">
+        <option value="theme-turquoise">Blau-Türkis</option>
+        <option value="theme-dark">Dunkel</option>
+        <option value="theme-classic">Klassisch</option>
+        <option value="theme-impressionist">Impressionistisch</option>
+      </select>
+
+      <button id="btn-fullscreen">⛶ Vollbild</button>
+    </div>
+
+    <!-- Speicher- & Ladefunktion -->
+    <div class="control-group">
+      <button id="btn-save">💾 Album speichern</button>
+      <label class="btn-label" for="load-album-input">📂 Album laden</label>
+      <input type="file" id="load-album-input" accept=".json">
+    </div>
+  </header>
+
+  <main>
+    <button class="nav-btn prev" id="btn-prev">❮</button>
+    
+    <div id="book-viewport">
+      <div id="placeholder-msg">
+        Bitte wähle einen Ordner, Bilder oder lade ein gespeichertes Album.
+      </div>
+    </div>
+
+    <button class="nav-btn next" id="btn-next">❯</button>
+  </main>
+
+  <!-- Lightbox -->
+  <div id="lightbox">
+    <span id="lightbox-close">&times;</span>
+    <img id="lightbox-img" src="" alt="Vollbild">
+  </div>
+
+  <script>
+    let imagesData = [];
+    let coverImageData = null; // Eigenes Cover-Bild
+    let pageFlip = null;
+
+    // Elements
+    const folderInput = document.getElementById('folder-input');
+    const fileInput = document.getElementById('file-input');
+    const coverInput = document.getElementById('cover-input');
+    const albumTitleInput = document.getElementById('album-title-input');
+    const imgsPerPageSelect = document.getElementById('imgs-per-page');
+    const viewModeSelect = document.getElementById('view-mode');
+    const themeSelect = document.getElementById('theme-select');
+    const btnFullscreen = document.getElementById('btn-fullscreen');
+    const btnSave = document.getElementById('btn-save');
+    const loadAlbumInput = document.getElementById('load-album-input');
+    const bookViewport = document.getElementById('book-viewport');
+    const placeholderMsg = document.getElementById('placeholder-msg');
+    const btnPrev = document.getElementById('btn-prev');
+    const btnNext = document.getElementById('btn-next');
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightbox-img');
+    const lightboxClose = document.getElementById('lightbox-close');
+
+    // Event Listeners
+    folderInput.addEventListener('change', handleFileSelect);
+    fileInput.addEventListener('change', handleFileSelect);
+    coverInput.addEventListener('change', handleCoverSelect);
+    
+    albumTitleInput.addEventListener('input', () => renderAlbum());
+    imgsPerPageSelect.addEventListener('change', () => renderAlbum());
+    viewModeSelect.addEventListener('change', () => renderAlbum());
+    
+    themeSelect.addEventListener('change', (e) => {
+      document.body.className = e.target.value;
+    });
+
+    btnPrev.addEventListener('click', () => pageFlip && pageFlip.flipPrev());
+    btnNext.addEventListener('click', () => pageFlip && pageFlip.flipNext());
+
+    btnFullscreen.addEventListener('click', toggleFullscreen);
+    btnSave.addEventListener('click', saveAlbum);
+    loadAlbumInput.addEventListener('change', loadAlbum);
+
+    lightboxClose.addEventListener('click', () => lightbox.style.display = 'none');
+    lightbox.addEventListener('click', (e) => {
+      if (e.target === lightbox) lightbox.style.display = 'none';
+    });
+
+    // Dateiauswahl verarbeiten
+    function handleFileSelect(e) {
+      const files = Array.from(e.target.files).filter(f => f.type.startsWith('image/'));
+      if (files.length === 0) return;
+
+      imagesData = [];
+      let loaded = 0;
+
+      files.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          imagesData.push(event.target.result);
+          loaded++;
+          if (loaded === files.length) {
+            renderAlbum();
+          }
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // Cover-Bild verarbeiten
+    function handleCoverSelect(e) {
+      const file = e.target.files[0];
+      if (!file || !file.type.startsWith('image/')) return;
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        coverImageData = event.target.result;
+        renderAlbum();
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // Hauptfunktion zum Aufbauen/Rendern des Buchs
+    function renderAlbum() {
+      if (imagesData.length === 0 && !coverImageData) {
+        placeholderMsg.style.display = 'block';
+        return;
+      }
+      placeholderMsg.style.display = 'none';
+
+      // 1. Vorherige PageFlip-Instanz sauber verwerfen
+      if (pageFlip) {
+        try {
+          pageFlip.destroy();
+        } catch(e) {}
+        pageFlip = null;
+      }
+
+      // 2. Viewport leeren und ein frisches Container-Element erstellen
+      bookViewport.innerHTML = '';
+      const bookContainer = document.createElement('div');
+      bookContainer.id = 'book-container';
+      bookViewport.appendChild(bookContainer);
+
+      const imgsPerPage = parseInt(imgsPerPageSelect.value, 10);
+      const isTwoPage = viewModeSelect.value === '2-page';
+      const albumTitle = albumTitleInput.value.trim() || 'Mein Fotoalbum';
+
+      // 3. Cover erstellen
+      const cover = document.createElement('div');
+      cover.className = 'page cover-page';
+      
+      let coverImgHTML = '';
+      if (coverImageData) {
+        coverImgHTML = `
+          <div class="cover-img-box">
+            <img src="${coverImageData}" alt="Cover Bild">
+          </div>
+        `;
+      }
+
+      cover.innerHTML = `
+        <h1>${escapeHTML(albumTitle)}</h1>
+        ${coverImgHTML}
+        <p>${imagesData.length} Bilder</p>
+      `;
+      bookContainer.appendChild(cover);
+
+      // 4. Inhaltsseiten aufbauen
+      for (let i = 0; i < imagesData.length; i += imgsPerPage) {
+        const pageImages = imagesData.slice(i, i + imgsPerPage);
+        const pageEl = document.createElement('div');
+        pageEl.className = 'page';
+
+        const contentEl = document.createElement('div');
+        contentEl.className = `page-content grid-${pageImages.length}`;
+
+        pageImages.forEach(src => {
+          const container = document.createElement('div');
+          container.className = 'img-container';
+          const img = document.createElement('img');
+          img.src = src;
+          img.addEventListener('click', () => openLightbox(src));
+          container.appendChild(img);
+          contentEl.appendChild(container);
+        });
+
+        const footerEl = document.createElement('div');
+        footerEl.className = 'page-footer';
+FooterElText = `Seite ${Math.floor(i / imgsPerPage) + 1}`;
+        footerEl.textContent = FooterElText;
+
+        pageEl.appendChild(contentEl);
+        pageEl.appendChild(footerEl);
+        bookContainer.appendChild(pageEl);
+      }
+
+      // 5. PageFlip neu initialisieren
+      setTimeout(() => {
+        try {
+          pageFlip = new St.PageFlip(bookContainer, {
+            width: 500,
+            height: 650,
+            size: "fixed",
+            minWidth: 300,
+            maxWidth: 800,
+            minHeight: 400,
+            maxHeight: 1000,
+            maxShadowOpacity: 0.5,
+            showCover: true,
+            mobileScrollSupport: false,
+            usePortrait: !isTwoPage
+          });
+
+          const pages = bookContainer.querySelectorAll('.page');
+          pageFlip.loadFromHTML(pages);
+        } catch(err) {
+          console.error("PageFlip Fehler:", err);
+        }
+      }, 50);
+    }
+
+    function escapeHTML(str) {
+      return str.replace(/[&<>'"]/g, 
+        tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+      );
+    }
+
+    function openLightbox(src) {
+      lightboxImg.src = src;
+      lightbox.style.display = 'flex';
+    }
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    }
+
+    function saveAlbum() {
+      if (imagesData.length === 0 && !coverImageData) {
+        alert("Keine Inhalte zum Speichern vorhanden!");
+        return;
+      }
+      const albumData = {
+        title: albumTitleInput.value,
+        coverImage: coverImageData,
+        theme: themeSelect.value,
+        imgsPerPage: imgsPerPageSelect.value,
+        viewMode: viewModeSelect.value,
+        images: imagesData
+      };
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(albumData));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `${albumTitleInput.value.trim() || 'fotoalbum'}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    }
+
+    function loadAlbum(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+          const albumData = JSON.parse(event.target.result);
+          if (Array.isArray(albumData.images)) {
+            imagesData = albumData.images;
+            coverImageData = albumData.coverImage || null;
+            
+            if (albumData.title !== undefined) albumTitleInput.value = albumData.title;
+            if (albumData.theme) {
+              themeSelect.value = albumData.theme;
+              document.body.className = albumData.theme;
+            }
+            if (albumData.imgsPerPage) imgsPerPageSelect.value = albumData.imgsPerPage;
+            if (albumData.viewMode) viewModeSelect.value = albumData.viewMode;
+            
+            renderAlbum();
+          } else {
+            alert("Die JSON-Datei enthält keine gültigen Bilddaten.");
+          }
+        } catch (err) {
+          alert("Fehler beim Lesen der Album-Datei.");
+        }
+      };
+      reader.readAsText(file);
+      e.target.value = '';
+    }
+  </script>
+</body>
+</html>
