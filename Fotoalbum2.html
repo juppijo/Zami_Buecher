@@ -386,8 +386,9 @@
 
     <!-- Web-URL, Speicher- & Ladefunktion -->
     <div class="control-group">
-      <label for="base-url-input">🌐 Web-Ordner Pfad:</label>
+      <label for="base-url-input">🌐 Web-Ordner:</label>
       <input type="text" id="base-url-input" class="custom-input url-input" placeholder="https://juppijo.github.io/Bilder/WRZT/">
+      <button id="btn-load-url">🌐 Web-Bilder laden</button>
 
       <button id="btn-save">💾 Album speichern</button>
       <label class="btn-label" for="load-album-input">📂 Album laden</label>
@@ -426,6 +427,7 @@
     const coverInput = document.getElementById('cover-input');
     const albumTitleInput = document.getElementById('album-title-input');
     const baseUrlInput = document.getElementById('base-url-input');
+    const btnLoadUrl = document.getElementById('btn-load-url');
     const imgsPerPageSelect = document.getElementById('imgs-per-page');
     const viewModeSelect = document.getElementById('view-mode');
     const themeSelect = document.getElementById('theme-select');
@@ -444,6 +446,7 @@
     folderInput.addEventListener('change', handleFileSelect);
     fileInput.addEventListener('change', handleFileSelect);
     coverInput.addEventListener('change', handleCoverSelect);
+    btnLoadUrl.addEventListener('click', loadImagesFromWebUrl);
     
     albumTitleInput.addEventListener('input', () => renderAlbum());
     imgsPerPageSelect.addEventListener('change', () => renderAlbum());
@@ -464,6 +467,36 @@
     lightbox.addEventListener('click', (e) => {
       if (e.target === lightbox) lightbox.style.display = 'none';
     });
+
+    // Web-Bilder direkt über URL laden
+    function loadImagesFromWebUrl() {
+      let baseUrl = baseUrlInput.value.trim();
+      if (!baseUrl) {
+        alert("Bitte gib einen Web-Ordner Pfad ein!");
+        return;
+      }
+
+      const countStr = prompt("Wie viele Bilder sollen geladen werden?", "20");
+      if (!countStr) return;
+      const count = parseInt(countStr, 10);
+
+      const prefix = prompt("Namens-Präfix der Bilder (z. B. 'bild' für bild1.jpg, oder leer lassen für 1.jpg, 2.jpg...):", "");
+      const ext = prompt("Dateiendung (z. B. jpg, png, webp):", "jpg");
+
+      if (!baseUrl.endsWith('/')) baseUrl += '/';
+
+      imagesData = [];
+      imagePaths = [];
+
+      for (let i = 1; i <= count; i++) {
+        const fileName = `${prefix || ''}${i}.${ext}`;
+        const fullUrl = baseUrl + fileName;
+        imagePaths.push(fileName);
+        imagesData.push(fullUrl);
+      }
+
+      renderAlbum();
+    }
 
     // Dateiauswahl verarbeiten
     function handleFileSelect(e) {
@@ -626,7 +659,7 @@
       }
     }
 
-    // Pfad zusammensetzen (prüft ob schon http/https im Link steht)
+    // Pfad zusammensetzen
     function buildFullUrl(path, baseUrl) {
       if (!path) return null;
       if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('data:')) {
@@ -674,14 +707,12 @@
           const albumData = JSON.parse(event.target.result);
           if (Array.isArray(albumData.imageLinks)) {
             
-            // Base-URL aus der JSON oder dem Eingabefeld übernehmen
             if (albumData.baseUrl !== undefined) {
               baseUrlInput.value = albumData.baseUrl;
             }
             const currentBaseUrl = baseUrlInput.value.trim();
 
             imagePaths = albumData.imageLinks;
-            // Bildlinks mit Basis-URL aufbauen
             imagesData = imagePaths.map(p => buildFullUrl(p, currentBaseUrl));
             
             coverImagePath = albumData.coverImageLink || null;
