@@ -36,7 +36,6 @@
         overflow: hidden;
     }
     
-    /* Toolbar / Control Panel */
     header {
         background-color: var(--panel-bg);
         border-bottom: 1px solid var(--border-color);
@@ -77,11 +76,11 @@
         color: #000;
     }
     
-    select {
+    select, input[type="range"] {
         background-color: #273549;
         color: var(--text-color);
         border: 1px solid var(--border-color);
-        padding: 8px 12px;
+        padding: 6px 10px;
         border-radius: 6px;
         cursor: pointer;
         font-size: 14px;
@@ -100,7 +99,6 @@
         text-align: center;
     }
     
-    /* Main Viewport */
     main {
         flex: 1;
         display: flex;
@@ -133,6 +131,7 @@
         justify-content: center;
         align-items: center;
         overflow: hidden;
+        position: relative;
     }
     
     .page img {
@@ -141,8 +140,25 @@
         object-fit: contain;
         pointer-events: none;
     }
+
+    .page.split-left img {
+        width: 200% !important;
+        max-width: none !important;
+        object-fit: fill;
+        position: absolute;
+        left: 0;
+        top: 0;
+    }
+
+    .page.split-right img {
+        width: 200% !important;
+        max-width: none !important;
+        object-fit: fill;
+        position: absolute;
+        right: 0;
+        top: 0;
+    }
     
-    /* Empty State Placeholder */
     #placeholder {
         text-align: center;
         color: var(--text-dim);
@@ -157,16 +173,42 @@
         margin-bottom: 10px;
     }
     
-    /* Hidden File Inputs */
     input[type="file"] {
         display: none;
+    }
+
+    .reader-controls {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        z-index: 100;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: rgba(30, 41, 59, 0.85);
+        padding: 8px 12px;
+        border-radius: 8px;
+        backdrop-filter: blur(4px);
+    }
+
+    @media (max-width: 768px) {
+        header {
+            padding: 8px 10px;
+            gap: 8px;
+        }
+        .reader-controls {
+            flex-wrap: wrap;
+            top: 5px;
+            right: 5px;
+            left: 5px;
+            justify-content: center;
+        }
     }
   </style>
 </head>
 <body>
 
   <header id="main-header">
-    <!-- Lade/Speicher Aktionen -->
     <div class="control-group">
       <button class="btn" onclick="triggerFileInput('folderInput')">📁 Ordner öffnen</button>
       <button class="btn" onclick="triggerFileInput('fileInput')">🖼️ Bilder wählen</button>
@@ -175,13 +217,12 @@
       <button class="btn" onclick="triggerFileInput('loadProjectInput')">📂 Projekt laden</button>
     </div>
 
-    <!-- Modus Auswahl -->
     <div class="control-group">
       <label for="layoutMode" style="font-size: 14px; color: var(--text-dim);">Modus:</label>
       <select id="layoutMode" onchange="changeLayoutMode()">
-        <option value="double">2-Seitig (Doppelseite)</option>
+        <option value="auto">Auto (Smartphone / PC)</option>
+        <option value="double">2-Seitig (Bild teilen)</option>
         <option value="single">1-Seitig (Einzelseite)</option>
-        <option value="split">1 Bild auf 2 Seiten (Panorama)</option>
       </select>
       <label for="startPage" style="font-size: 14px; color: var(--text-dim); margin-left: 10px;">Start auf:</label>
       <select id="startPage" onchange="changeStartPage()">
@@ -190,14 +231,24 @@
       </select>
     </div>
 
-    <!-- Navigation & Steuerung -->
+    <div class="control-group">
+      <label for="widthScale" style="font-size: 14px; color: var(--text-dim);">Größe:</label>
+      <input type="range" id="widthScale" min="30" max="100" value="90" oninput="updateWidthScale(this.value)">
+      <span id="widthValue" style="font-size: 12px; color: var(--accent-color); min-width: 35px;">90%</span>
+    </div>
+
+    <div class="control-group">
+      <label for="ratioScale" style="font-size: 14px; color: var(--text-dim);">Ratio (B/H):</label>
+      <input type="range" id="ratioScale" min="0.5" max="1.5" step="0.02" value="0.75" oninput="updateRatioScale(this.value)">
+      <span id="ratioValue" style="font-size: 12px; color: var(--accent-color); min-width: 35px;">0.75</span>
+    </div>
+
     <div class="control-group">
       <button class="btn" onclick="if(pageFlip) pageFlip.flipPrev()">◀ Zurück</button>
       <span class="page-info" id="pageInfo">0 / 0</span>
       <button class="btn" onclick="if(pageFlip) pageFlip.flipNext()">Weiter ▶</button>
     </div>
 
-    <!-- Vollbild -->
     <div class="control-group">
       <button class="btn" onclick="toggleFullscreen()">🖵 Vollbild</button>
     </div>
@@ -213,7 +264,6 @@
     </div>
   </main>
 
-  <!-- Versteckte Inputs -->
   <input type="file" id="folderInput" webkitdirectory directory multiple accept="image/*" onchange="handleFiles(this)">
   <input type="file" id="fileInput" multiple accept="image/*" onchange="handleFiles(this)">
   <input type="file" id="coverInput" accept="image/*" onchange="handleCover(this)">
@@ -221,10 +271,24 @@
 
   <script>
     let pageFlip = null;
-    let originalImages = []; // Array von { name, path, src }
-    let coverImage = null; // { name, path, src }
-    let currentMode = 'double';
+    let originalImages = [];
+    let coverImage = null;
+    let currentMode = 'auto'; // Default: Auto-Erkennung für Smartphones/Desktop
     let startPageNum = 1;
+    let viewportWidthFactor = 0.90;
+    let pageAspectRatio = 0.75; // Verhältnis Breite zu Höhe einer einzelnen Seite
+    let scaleTimeout = null;
+
+    function isMobileDevice() {
+      return window.innerWidth <= 768;
+    }
+
+    function getEffectiveMode() {
+      if (currentMode === 'auto') {
+        return isMobileDevice() ? 'single' : 'double';
+      }
+      return currentMode;
+    }
 
     function sanitizePath(path) {
       if (!path) return '';
@@ -252,11 +316,51 @@
     function loadImage(src) {
       return new Promise((resolve, reject) => {
         const img = new Image();
-        img.crossOrigin = "anonymous";
         img.onload = () => resolve(img);
         img.onerror = (err) => reject(err);
         img.src = sanitizePath(src);
       });
+    }
+
+    function triggerBookRebuild() {
+      clearTimeout(scaleTimeout);
+      scaleTimeout = setTimeout(() => {
+        if (originalImages.length > 0 || coverImage) {
+          let currentPage = 0;
+          if (pageFlip) {
+            currentPage = pageFlip.getCurrentPageIndex();
+          }
+          buildBook().then(() => {
+            if (pageFlip && currentPage > 0) {
+              pageFlip.turnToPage(currentPage);
+            }
+          });
+        }
+      }, 50);
+    }
+
+    function updateWidthScale(val) {
+      viewportWidthFactor = parseFloat(val) / 100;
+      
+      const display = document.getElementById('widthValue');
+      if (display) display.innerText = val + '%';
+      
+      const readerDisplay = document.getElementById('readerWidthValue');
+      if (readerDisplay) readerDisplay.innerText = val + '%';
+
+      triggerBookRebuild();
+    }
+
+    function updateRatioScale(val) {
+      pageAspectRatio = parseFloat(val);
+      
+      const display = document.getElementById('ratioValue');
+      if (display) display.innerText = pageAspectRatio.toFixed(2);
+      
+      const readerDisplay = document.getElementById('readerRatioValue');
+      if (readerDisplay) readerDisplay.innerText = pageAspectRatio.toFixed(2);
+
+      triggerBookRebuild();
     }
 
     async function handleFiles(input) {
@@ -287,6 +391,19 @@
         } catch (e) {
           console.error("Fehler beim Lesen der Datei: " + file.name, e);
         }
+      }
+
+      // Automatische Erfassung des Seitenverhältnisses vom ersten Bild
+      try {
+        const firstImg = await loadImage(originalImages[0].src);
+        let rawWidth = firstImg.naturalWidth || 800;
+        let rawHeight = firstImg.naturalHeight || 600;
+        let effectiveMode = getEffectiveMode();
+        // Bei Doppelseiten wird das Bild halbiert
+        let singlePageWidth = (effectiveMode === 'double') ? (rawWidth / 2) : rawWidth;
+        pageAspectRatio = singlePageWidth / rawHeight;
+      } catch (e) {
+        pageAspectRatio = 0.75;
       }
 
       buildBook();
@@ -360,73 +477,64 @@
 
       if (placeholder) placeholder.style.display = 'none';
 
+      let activeMode = getEffectiveMode();
       let pagesToRender = [];
 
-      if (currentMode === 'split') {
+      if (activeMode === 'double') {
         for (let imgObj of allImages) {
-          try {
-            const [leftPage, rightPage] = await splitImageInHalf(imgObj.src);
-            pagesToRender.push(leftPage);
-            pagesToRender.push(rightPage);
-          } catch (e) {
-            console.error("Fehler beim Teilen des Bildes:", imgObj.src, e);
-            pagesToRender.push(sanitizePath(imgObj.src));
-          }
+          const path = sanitizePath(imgObj.src || imgObj.path || imgObj.name);
+          pagesToRender.push({ src: path, type: 'split-left' });
+          pagesToRender.push({ src: path, type: 'split-right' });
         }
       } else {
-        pagesToRender = allImages.map(img => sanitizePath(img.src));
+        pagesToRender = allImages.map(img => ({
+          src: sanitizePath(img.src || img.path || img.name),
+          type: 'full'
+        }));
       }
 
-      // Korrektur der Seitenausrichtung:
-      // Bei Start auf Seite 2 legen wir KEINE leere Seite am Anfang ein,
-      // sondern steuern die Darstellung primär über die `showCover`-Option der PageFlip-Bibliothek.
-      const isSingle = (currentMode === 'single');
+      const isSingle = (activeMode === 'single');
       const isCoverMode = !isSingle && (startPageNum === 1);
 
       if (pagesToRender.length === 0) return;
 
-      pagesToRender.forEach((src) => {
+      pagesToRender.forEach((pageData) => {
         const pageDiv = document.createElement('div');
-        pageDiv.className = 'page';
+        pageDiv.className = 'page ' + (pageData.type !== 'full' ? pageData.type : '');
         const imgElem = document.createElement('img');
-        imgElem.src = src;
+        imgElem.src = pageData.src;
         pageDiv.appendChild(imgElem);
         container.appendChild(pageDiv);
       });
 
-      let firstImg;
-      try {
-        firstImg = await loadImage(pagesToRender[0]);
-      } catch (e) {
-        firstImg = {
-          naturalWidth: 600,
-          naturalHeight: 800
-        };
+      const effectiveWidthFactor = isMobileDevice() ? 0.98 : viewportWidthFactor;
+      const availableWidth = window.innerWidth * effectiveWidthFactor;
+      const availableHeight = window.innerHeight * (isMobileDevice() ? 0.88 : 0.85);
+
+      const targetWidthPerSinglePage = isSingle ? availableWidth : (availableWidth / 2);
+      
+      let bookHeight = availableHeight;
+      let bookWidth = bookHeight * pageAspectRatio;
+
+      if (bookWidth > targetWidthPerSinglePage) {
+        bookWidth = targetWidthPerSinglePage;
+        bookHeight = bookWidth / pageAspectRatio;
       }
 
-      const viewportWidth = window.innerWidth * 0.90;
-      const viewportHeight = window.innerHeight * 0.90;
-
-      let imgWidth = firstImg.naturalWidth || 600;
-      let imgHeight = firstImg.naturalHeight || 800;
-
-      const targetWidthPerSinglePage = isSingle ? viewportWidth : (viewportWidth / 2);
-      const ratio = Math.min(targetWidthPerSinglePage / imgWidth, viewportHeight / imgHeight);
-
-      const bookWidth = Math.max(200, Math.round(imgWidth * ratio));
-      const bookHeight = Math.max(300, Math.round(imgHeight * ratio));
+      bookWidth = Math.max(100, Math.round(bookWidth));
+      bookHeight = Math.max(100, Math.round(bookHeight));
 
       pageFlip = new St.PageFlip(container, {
         width: bookWidth,
         height: bookHeight,
         size: "fixed",
-        minWidth: 200,
-        maxWidth: 1500,
-        minHeight: 300,
-        maxHeight: 2000,
+        minWidth: 100,
+        maxWidth: 3000,
+        minHeight: 100,
+        maxHeight: 3000,
         maxShadowOpacity: 0.4,
-        showCover: isCoverMode, // true = Einzelseite rechts (Cover), false = Direkt als Doppelseite starten
-        mobileScrollSupport: false,
+        showCover: isCoverMode,
+        mobileScrollSupport: true,
         usePortrait: isSingle,
         singlePageMode: isSingle
       });
@@ -440,6 +548,16 @@
       if (modeSelect) modeSelect.value = currentMode;
       const startSelect = document.getElementById('startPage');
       if (startSelect) startSelect.value = startPageNum.toString();
+      
+      const sliderWidth = document.getElementById('widthScale');
+      if (sliderWidth) sliderWidth.value = Math.round(viewportWidthFactor * 100);
+      const widthVal = document.getElementById('widthValue');
+      if (widthVal) widthVal.innerText = Math.round(viewportWidthFactor * 100) + '%';
+
+      const sliderRatio = document.getElementById('ratioScale');
+      if (sliderRatio) sliderRatio.value = pageAspectRatio.toFixed(2);
+      const ratioVal = document.getElementById('ratioValue');
+      if (ratioVal) ratioVal.innerText = pageAspectRatio.toFixed(2);
     }
 
     function updatePageInfo() {
@@ -449,58 +567,6 @@
       const current = pageFlip.getCurrentPageIndex() + 1;
       const total = pageFlip.getPageCount();
       info.innerText = `${current} / ${total}`;
-    }
-
-    async function fetchAsDataURL(url) {
-      const response = await fetch(sanitizePath(url));
-      const blob = await response.blob();
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-      });
-    }
-
-    function splitImageInHalf(src) {
-      return new Promise(async (resolve, reject) => {
-        let finalSrc = sanitizePath(src);
-
-        if (!finalSrc.startsWith('data:')) {
-          try {
-            finalSrc = await fetchAsDataURL(finalSrc);
-          } catch (err) {
-            console.warn("Fetch als Fallback fehlgeschlagen:", err);
-          }
-        }
-
-        const img = new Image();
-        img.crossOrigin = "anonymous";
-        img.onload = () => {
-          try {
-            const halfWidth = Math.floor(img.width / 2);
-            const height = img.height;
-
-            const canvasLeft = document.createElement('canvas');
-            canvasLeft.width = halfWidth;
-            canvasLeft.height = height;
-            const ctxLeft = canvasLeft.getContext('2d');
-            ctxLeft.drawImage(img, 0, 0, halfWidth, height, 0, 0, halfWidth, height);
-
-            const canvasRight = document.createElement('canvas');
-            canvasRight.width = halfWidth;
-            canvasRight.height = height;
-            const ctxRight = canvasRight.getContext('2d');
-            ctxRight.drawImage(img, halfWidth, 0, halfWidth, height, 0, 0, halfWidth, height);
-
-            resolve([canvasLeft.toDataURL('image/jpeg', 0.92), canvasRight.toDataURL('image/jpeg', 0.92)]);
-          } catch (e) {
-            reject(e);
-          }
-        };
-        img.onerror = reject;
-        img.src = finalSrc;
-      });
     }
 
     function toggleFullscreen() {
@@ -521,99 +587,60 @@
 
       let cloneDoc = document.documentElement.cloneNode(true);
 
-      // Entferne Titelleiste/Header und Dateieingaben
       const header = cloneDoc.querySelector('#main-header');
       if (header) header.remove();
 
       const fileInputs = cloneDoc.querySelectorAll('input[type="file"]');
       fileInputs.forEach(el => el.remove());
 
-      // Säubere den Wrapper
       const wrapper = cloneDoc.querySelector('#book-wrapper');
       if (wrapper) {
         wrapper.innerHTML = '<div id="book-container"></div>';
       }
 
-      let linkedOriginalImages = [];
-      let linkedCoverImage = null;
-
-      // Im Panorama-Modus (split) schneiden wir die Bilder vor dem Export fertig
-      // und speichern die beiden Hälften direkt als Base64-Data-URLs ab.
-      if (currentMode === 'split') {
-        if (coverImage) {
-          try {
-            const [left, right] = await splitImageInHalf(coverImage.src);
-            linkedCoverImage = {
-              name: coverImage.name,
-              path: coverImage.path,
-              src: left,
-              isSplitLeft: true
-            };
-            // Das rechte Cover-Bild schieben wir als erstes reguläres Bild ein
-            linkedOriginalImages.push({
-              name: coverImage.name + "_right",
-              path: coverImage.path,
-              src: right
-            });
-          } catch (e) {
-            linkedCoverImage = {
-              name: coverImage.name,
-              path: coverImage.path,
-              src: coverImage.path || coverImage.name
-            };
-          }
-        }
-
-        for (let img of originalImages) {
-          try {
-            const [left, right] = await splitImageInHalf(img.src);
-            linkedOriginalImages.push({
-              name: img.name + "_left",
-              path: img.path,
-              src: left
-            });
-            linkedOriginalImages.push({
-              name: img.name + "_right",
-              path: img.path,
-              src: right
-            });
-          } catch (e) {
-            linkedOriginalImages.push({
-              name: img.name,
-              path: img.path,
-              src: img.path || img.name
-            });
-          }
-        }
-      } else {
-        // In den normalen Modi (single/double) genügen die relativen Pfade
-        linkedOriginalImages = originalImages.map(img => ({
-          name: img.name,
-          path: img.path || img.name,
-          src: img.path || img.name
-        }));
-
-        linkedCoverImage = coverImage ? {
-          name: coverImage.name,
-          path: coverImage.path || coverImage.name,
-          src: coverImage.path || coverImage.name
-        } : null;
+      const mainElem = cloneDoc.querySelector('main');
+      if (mainElem) {
+        const readerControls = document.createElement('div');
+        readerControls.className = 'reader-controls';
+        readerControls.innerHTML = `
+          <button class="btn" onclick="if(pageFlip) pageFlip.flipPrev()">◀ Zurück</button>
+          <span class="page-info" id="pageInfo" style="display:flex; align-items:center;">0 / 0</span>
+          <button class="btn" onclick="if(pageFlip) pageFlip.flipNext()">Weiter ▶</button>
+          <label style="font-size: 13px; color: var(--text-dim); margin-left: 5px;">Größe:</label>
+          <input type="range" id="readerWidthScale" min="30" max="100" value="${Math.round(viewportWidthFactor * 100)}" oninput="updateWidthScale(this.value)">
+          <span id="readerWidthValue" style="font-size: 12px; color: var(--accent-color);">${Math.round(viewportWidthFactor * 100)}%</span>
+          <label style="font-size: 13px; color: var(--text-dim); margin-left: 5px;">Ratio:</label>
+          <input type="range" id="readerRatioScale" min="0.5" max="1.5" step="0.02" value="${pageAspectRatio.toFixed(2)}" oninput="updateRatioScale(this.value)">
+          <span id="readerRatioValue" style="font-size: 12px; color: var(--accent-color);">${pageAspectRatio.toFixed(2)}</span>
+          <button class="btn" onclick="toggleFullscreen()">🖵 Vollbild</button>
+        `;
+        mainElem.appendChild(readerControls);
       }
 
-      // Wenn die Panorama-Bilder bereits im Export zugeschnitten wurden,
-      // soll der Viewer im Export im Modus 'double' starten, um sie korrekt anzuzeigen.
-      const exportMode = (currentMode === 'split') ? 'double' : currentMode;
+      let linkedOriginalImages = originalImages.map(img => ({
+        name: img.name,
+        path: img.path || img.name,
+        src: img.path || img.name
+      }));
+
+      let linkedCoverImage = coverImage ? {
+        name: coverImage.name,
+        path: coverImage.path || coverImage.name,
+        src: coverImage.path || coverImage.name
+      } : null;
 
       const initScript = document.createElement('script');
       initScript.textContent = `
-                window.addEventListener('DOMContentLoaded', () => {
-                    originalImages = ${JSON.stringify(linkedOriginalImages)};
-                    coverImage = ${JSON.stringify(linkedCoverImage)};
-                    currentMode = '${exportMode}';
-                    startPageNum = ${startPageNum};
-                    if(originalImages.length > 0 || coverImage) buildBook();
-                });
-            `;
+        window.addEventListener('DOMContentLoaded', () => {
+            originalImages = ${JSON.stringify(linkedOriginalImages)};
+            coverImage = ${JSON.stringify(linkedCoverImage)};
+            currentMode = '${currentMode}';
+            startPageNum = ${startPageNum};
+            viewportWidthFactor = ${viewportWidthFactor};
+            pageAspectRatio = ${pageAspectRatio};
+            if(originalImages.length > 0 || coverImage) buildBook();
+        });
+      `;
       cloneDoc.querySelector('body').appendChild(initScript);
 
       const exportedHTML = "<!DOCTYPE html>\n" + cloneDoc.outerHTML;
@@ -637,7 +664,7 @@
         const metaFile = await zip.file("project.json").async("string");
         const metadata = JSON.parse(metaFile);
 
-        currentMode = metadata.mode || 'double';
+        currentMode = metadata.mode || 'auto';
         startPageNum = metadata.startPageNum || 1;
 
         coverImage = null;
