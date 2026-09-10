@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gate gate</title>
+
+  <style>
+    /* <link rel="stylesheet" href="book-style.css"> */  
+        
+        /* ==========================================
+       BUCHBINDER - ELEGANTES BUCH-STYLING
+       ========================================== */
+    
+    /* Google Fonts Import für klassische Buchtypografie */
+    
+    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap');
+    
+    :root {
+      --font-heading: 'Playfair Display', 'Cinzel', Georgia, serif;
+      --font-body: 'Source Serif 4', Georgia, serif;
+      --text-color: #2b2318;
+      --accent-color: #8b5e34;
+    }
+      
+    * {
+     	margin: 0;
+      padding: 0;
+      box-sizing: border-box;      
+    }
+    
+    /* Base Layout & Typografie */
+    body {
+      margin-top: 20px;    /* Oben */
+    	margin-right: 20px;  /* Rechts */
+   	 	margin-bottom: 20px; /* Unten */
+   		margin-left: 20px;    /* Links */
+      
+      padding: 15px;
+      width: 95%;
+    	max-width: 1000px;
+      color: #112255;
+      background: #ededfd;
+      font-family: var(--font-body);
+      color: var(--text-color);
+      line-height: 1.65;
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
+    }
+    
+    /* Überschriften */
+    h1, h2, h3, h4, h5, h6 {
+      font-family: var(--font-heading);
+      color: var(--accent-color);
+      font-weight: 600;
+      line-height: 1.25;
+      margin-top: 1.8em;
+      margin-bottom: 0.6em;
+      text-wrap: balance;
+      page-break-after: avoid;
+      break-after: avoid;
+    }
+    
+    h1 {
+    	color: #112299;
+      font-size: 2em;
+      text-align: center;
+      border-bottom: 1px solid rgba(139, 94, 52, 0.3);
+      padding-bottom: 0.3em;
+      margin-top: 0.5em;
+      margin-bottom: 1em;
+    }
+    
+    h2 {
+      font-size: 1.5em;
+      text-align: center;
+    }
+    
+    h3 {
+      font-size: 1.2em;
+    }
+    
+    /* Klassische Buch-Absätze mit Einzug */
+    p {
+      margin-top: 0;
+      margin-bottom: 0;
+      text-indent: 1.5em;
+      text-align: justify;
+      hyphens: auto;
+      -webkit-hyphens: auto;
+    }
+    
+    /* Der allererste Absatz nach einer Überschrift bekommt keinen Einzug */
+    h1 + p, h2 + p, h3 + p, h4 + p, .no-indent {
+      text-indent: 0;
+    }
+    
+    /* Großer Zierbuchstabe (Drop Cap) für den ersten Absatz nach H1/H2 */
+    h1 + p::first-letter,
+    h2 + p::first-letter,
+    p.chapter-start::first-letter {
+      font-family: var(--font-heading);
+      font-size: 3.2em;
+      float: left;
+      line-height: 0.8;
+      padding-top: 4px;
+      padding-right: 8px;
+      padding-bottom: 2px;
+      color: var(--accent-color);
+      font-weight: 700;
+    }
+    
+    /* Blockquotes (Zitate) */
+    blockquote {
+      font-style: italic;
+      margin: 1.5em 2em;
+      padding-left: 1em;
+      border-left: 2px solid var(--accent-color);
+      color: rgba(43, 35, 24, 0.85);
+    }
+    
+    blockquote p {
+      text-indent: 0;
+      text-align: left;
+    }
+    
+    /* Zierteiler zwischen Kapiteln / Abschnitten */
+    hr, .divider {
+      border: 0;
+      text-align: center;
+      margin: 2em 0;
+      height: auto;
+      background: transparent;
+    }
+    
+    hr::before, .divider::before {
+      content: "❦";
+      font-size: 1.2em;
+      color: var(--accent-color);
+      opacity: 0.7;
+    }
+    
+    /* Bilder-Optimierung für das Buchraster */
+    img {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      margin: 1.5em auto;
+      border-radius: 2px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+    
+    figcaption {
+      font-size: 0.85em;
+      font-style: italic;
+      text-align: center;
+      color: #665b4e;
+      margin-top: 0.5em;
+    }
+    
+    /* Listen */
+    ul, ol {
+      padding-left: 1.8em;
+      margin: 1em 0;
+    }
+    
+    li {
+      margin-bottom: 0.4em;
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+      
+  </style>
+
+</head>
+<body>
+  <h1>Gate gate pāragate</h1>
+
+  <p>Das <strong>Gate Gate Mantra</strong> (aus dem <em>Herz-Sutra</em> des Mahayana-Buddhismus) ist eines der bekanntesten und tiefgründigsten Mantras überhaupt. Auf Sanskrit lautet der vollständige Vers:</p>
+  <blockquote>
+    <p><strong>Gate gate pāragate pārasamgate bodhi svāhā</strong></p>
+  </blockquote>
+  <h3>Bedeutung der einzelnen Wörter</h3>
+  <ul>
+    <li><strong>Gate:</strong> Gegangen (oder: hinübergegangen, passiert).</li>
+    <li><strong>Gate:</strong> Gegangen (verstärkt: weiter gegangen).</li>
+    <li><strong>Pāragate:</strong> Ans andere Ufer gegangen (<em>pāra</em> = das andere Ufer / die Befreiung).</li>
+    <li><strong>Pārasamgate:</strong> Vollständig ans andere Ufer hinübergegangen (<em>sam</em> = vollständig, gemeinsam).</li>
+    <li><strong>Bodhi:</strong> Erleuchtung, Erwachen, das Erwacht-Sein.</li>
+    <li><strong>Svāhā:</strong> Heil! So sei es! (Ein Ausruf des Dankes, der Hingabe oder Verankerung).</li>
+  </ul>
+  <hr>
+  <h3>Die Übersetzung und innere Haltung</h3>
+  <p>Frei übersetzt bedeutet die Zeile:</p>
+  <blockquote>
+    <p><em>„Gegangen, gegangen, ans andere Ufer gegangen, gemeinsam völlig ans andere Ufer gegangen – Erleuchtung, Heil!“</em></p>
+  </blockquote>
+  <p>Es ist kein Mantra, das an ein äußeres Wesen oder eine Gottheit gerichtet ist. Stattdessen beschreibt es eine <strong>Transformation des Bewusstseins</strong>: das schrittweise Loslassen von Täuschung, Anhaftung und Ego, um das „andere Ufer“ der Nicht-Zweiheit (Shatyam / Sunyata – die Leere aller Dinge von einem getrennten Eigenwesen) zu erreichen.</p>
+  <p>Nach Thich Nhat Hanh beschreibt das Mantra nicht nur das persönliche Beschreiten des Weges, sondern auch das <strong>gemeinsame Erwachen</strong> (<em>pārasamgate</em>): Niemand geht allein ans andere Ufer – wir erwachen in der Erkenntnis, dass alles miteinander verbunden ist (Intersein).</p>
+
+  <h1>
+    Das Herz-Sutra
+  </h1>
+
+  <p>Das <strong>Herz-Sutra</strong> (<em>Prajñāpāramitā Hṛdaya</em>) ist einer der zentralen Texte des Mahayana-Buddhismus. Obwohl es sehr kurz ist (im Sanskrit nur etwa 25 Zeilen), gilt es als die Quintessenz der gesamten Lehre von der „Vollkommenen Weisheit“ (<em>Prajñāpāramitā</em>).</p>
+  <p>Der Kerngedanke lässt sich in der berühmten Passage zusammenfassen:</p>
+  <blockquote>
+    <p><strong>„Form ist Leere, Leere ist Form.“</strong> (<em>Rūpaṃ śūnyatā śūnyataiva rūpam</em>)</p>
+  </blockquote>
+  <hr>
+  <h3>Key-Konzepte des Herz-Sutras</h3>
+  <ul>
+    <li><strong>Leerheit (<em>Śūnyatā</em>):</strong> Es bedeutet nicht, dass nichts existiert oder dass die Welt ein Nichts ist. Wie Thich Nhat Hanh es formulierte: Dinge sind <em>leer von einem getrennten Selbst</em>. Ein Blatt Papier existiert nicht für sich allein – es besteht aus Sonnenlicht, Wolken, Bäumen und der Arbeit des Holzfällers. Alles existiert nur in gegenseitiger Abhängigkeit (Intersein).</li>
+    <li><strong>Die 5 Skandhas:</strong> Der Bodhisattva <em>Avalokiteshvara</em> durchschaut, dass die fünf Bausteine des menschlichen Daseins (Körper/Form, Empfindungen, Wahrnehmungen, Geistige Formationen und Bewusstsein) keine feste, getrennte Substanz haben.</li>
+    <li><strong>Befreiung von Angst:</strong> Weil es kein isoliertes „Ich“ gibt, das etwas verlieren oder sterben könnte, löst das tiefere Verständnis von Leerheit Greifen, Anhaftung und die Angst vor dem Tod auf.</li>
+  </ul>
+  <hr>
+  <h3>Struktur des Sutras</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Abschnitt</th>
+        <th>Inhalt</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Einleitung</strong></td>
+        <td>Avalokiteshvara meditiert über die tiefste Weisheit und erkennt die Leerheit aller Erscheinungen.</td>
+      </tr>
+      <tr>
+        <td><strong>Lehre an Shariputra</strong></td>
+        <td>Erklärung der Form-Leerheit-Identität und dass alle Phänomene ohne Geburt, Tod, Reinheit oder Unreinheit sind.</td>
+      </tr>
+      <tr>
+        <td><strong>Auflösung der Konzepte</strong></td>
+        <td>Dekonstruktion aller buddhistischen Kategorien (Sinnesorgane, Ursache/Wirkung, sogar die 4 Edlen Wahrheiten) – da nichts festgehalten werden muss.</td>
+      </tr>
+      <tr>
+        <td><strong>Abschluss-Mantra</strong></td>
+        <td>Das <em>Gate Gate</em>-Mantra als Verdichtung und Verankerung der Einsicht.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>
+    Thich Nhat Hanhs moderne Übersetzung des Herz-Sutras
+  </h2>
+
+  <p>Thich Nhat Hanh fertigte im September 2014 eine grundlegend überarbeitete Übersetzung des Herz-Sutras an (veröffentlicht unter anderem im Buch <em>The Other Shore</em>). Seine Motivation war es, ein <strong>jahrhundertealtes Missverständnis</strong> zu korrigieren, das durch eine ungeschickte Formulierung in den historischen chinesischen und Sanskrit-Quelltexten entstanden war.</p>
+  <hr>
+  <h3>Der Hauptunterschied: Vermeidung von Nihilismus</h3>
+  <p>In traditionellen Fassungen findet sich nach der berühmten Passage „Form ist Leere“ die Aufzählung:</p>
+  <blockquote>
+    <p><em>„Deshalb gibt es in der Leere keine Form, keine Empfindung, keine Wahrnehmung ... keine Augen, keine Ohren, keine Nase ...“</em></p>
+  </blockquote>
+  <p>Thich Nhat Hanh argumentierte, dass diese Formulierung im Widerspruch zum ersten Teil steht. Wenn man sagt <em>„Form ist Leere“</em> und direkt danach <em>„in der Leere gibt es keine Form“</em>, drängt man den Geist in einen <strong>Nihilismus</strong> – als ob die Phänomene der Welt gar nicht existieren würden.</p>
+  <p>In seiner Übersetzung formulierte er diese Passagen um:</p>
+  <blockquote>
+    <p><strong>Traditionell:</strong> „Deshalb gibt es in der Leere keine Form, keine Empfindungen...“
+      <strong>Thich Nhat Hanh:</strong> „Deshalb sind in der Leere Form, Empfindungen [...] <strong>keine getrennten Eigenwesen</strong>.“ (<em>are not separate self entities</em>)
+    </p>
+  </blockquote>
+  <hr>
+  <h3>Die drei zentralen Neuerungen auf einen Blick</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Thema</th>
+        <th>Traditionelle Übersetzung</th>
+        <th>Thich Nhat Hanhs Übersetzung</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Form &amp; Leere</strong></td>
+        <td>„In der Leere gibt es kein Auge, kein Ohr...“ (Liest sich wie eine Verneinung der Welt).</td>
+        <td>„Sinnesorgane und Phänomene existieren nicht als isolierte, getrennte Einheiten“.</td>
+      </tr>
+      <tr>
+        <td><strong>Sein &amp; Nicht-Sein</strong></td>
+        <td>Bezieht sich meist auf Paare wie <em>Geburt/Tod</em> oder <em>Zunahme/Abnahme</em>.</td>
+        <td>Ergänzte explizit die Wörter <strong>„kein Sein, kein Nicht-Sein“</strong> (<em>no Being, no Non-being</em>), um jedes Extrem abzufangen.</td>
+      </tr>
+      <tr>
+        <td><strong>Erleuchtung</strong></td>
+        <td>„Es gibt kein Wissen und kein Erreichen.“ (Klingt abstrakt/paradox).</td>
+        <td>„Auch Einsicht und Erreichen sind keine getrennten Eigenwesen.“</td>
+      </tr>
+    </tbody>
+  </table>
+  <hr>
+  <h3>Der philosophische Kern der Änderung</h3>
+  <p>Für Thich Nhat Hanh ist die <strong>Leerheit (<em>Śūnyatā</em>)</strong> nicht das Fehlen von Existenz, sondern das <strong>Vollsein mit allem</strong> (das Prinzip des <em>Interseins</em>).</p>
+  <p>Er betonte, dass die ursprünglichen Autoren die Phänomene aus der Kategorie des „Seins“ herauslösen wollten, sie dabei aber versehentlich in die Kategorie des „Nicht-Seins“ geworfen haben. Seine Übersetzung stellt klar: Die Wirklichkeit liegt jenseits beider Begriffe.</p>
+
+  <h2>
+    „Die Einsicht, die uns ans andere Ufer bringt“
+  </h2>
+
+  <p>Hier ist der vollständige Text von <strong>Thich Nhat Hanhs neuer Übersetzung des Herz-Sutras</strong> (unter dem Titel <em>„Die Einsicht, die uns ans andere Ufer bringt“</em> / engl. <em>„The Insight that Brings Us to the Other Shore“</em>).</p>
+  <hr>
+  <h3>Die Einsicht, die uns ans andere Ufer bringt</h3>
+  <p><em>(Maha Prajñāpāramitā Hṛdaya Sūtra)</em></p>
+  <p>Avalokiteshvara,</p>
+  <p>während er tief in der Einsicht praktizierte, die uns ans andere Ufer bringt,</p>
+  <p>erregte plötzlich die Erkenntnis,</p>
+  <p>dass alle fünf Skandhas gleichermaßen leer sind,</p>
+  <p>und mit dieser Realisierung überwand er alles Leiden.</p>
+  <p>„Höre, Shariputra,</p>
+  <p>dieser Körper ist Leerheit</p>
+  <p>und Leerheit ist dieser Körper.</p>
+  <p>Dieser Körper ist nichts anderes als Leerheit</p>
+  <p>und Leerheit ist nichts anderes als dieser Körper.</p>
+  <p>Das Gleiche gilt für Gefühle, Wahrnehmungen, geistige Formationen und Bewusstsein.</p>
+  <p>Höre, Shariputra,</p>
+  <p>alle Phänomene tragen das Merkmal der Leerheit:</p>
+  <p>ihre wahre Natur ist die Natur von</p>
+  <p>keinem Entstehen, keinem Vergeh’n,</p>
+  <p>keinem Sein, keinem Nicht-Sein,</p>
+  <p>keiner Unreinheit, keiner Reinheit,</p>
+  <p>keinem Zunehmen, keinem Abnehmen.</p>
+  <p>Deshalb sind in der Leerheit</p>
+  <p>Körper, Gefühle, Wahrnehmungen, geistige Formationen und Bewusstsein</p>
+  <p><strong>keine getrennten Eigenwesen</strong>.</p>
+  <p>Die sechs Sinnesorgane – Augen, Ohren, Nase, Zunge, Körper und Geist –</p>
+  <p>sind keine getrennten Eigenwesen.</p>
+  <p>Die sechs Objekte der Sinne – Form, Klang, Geruch, Geschmack, Berührung und Phänomene –</p>
+  <p>sind keine getrennten Eigenwesen.</p>
+  <p>Die sechs Bereiche des Bewusstseins – vom Augen-Bewusstsein bis hin zum Geist-Bewusstsein –</p>
+  <p>sind keine getrennten Eigenwesen.</p>
+  <p>Die zwölf Glieder des abhängigen Entstehens</p>
+  <p>und ihr Erlöschen</p>
+  <p>sind ebenfalls keine getrennten Eigenwesen.</p>
+  <p>Leiden, die Ursachen des Leidens, das Erlöschen des Leidens und der Pfad</p>
+  <p>sind keine getrennten Eigenwesen.</p>
+  <p>Auch Einsicht und Erreichen</p>
+  <p>sind keine getrennten Eigenwesen.</p>
+  <p>Wer dies sehen kann,</p>
+  <p>braucht nichts mehr zu erreichen.</p>
+  <p>Bodhisattvas, die die Einsicht praktizieren, die uns ans andere Ufer bringt,</p>
+  <p>sehen keine Hindernisse mehr in ihrem Geist.</p>
+  <p>Und weil es keine Hindernisse mehr in ihrem Geist gibt,</p>
+  <p>können sie alle Angst überwinden,</p>
+  <p>alle falschen Wahrnehmungen zerstören</p>
+  <p>und das vollkommene Nirvana verwirklichen.</p>
+  <p>Alle Buddhas in Vergangenheit, Gegenwart und Zukunft</p>
+  <p>gelangen durch die Praxis der Einsicht, die uns ans andere Ufer bringt,</p>
+  <p>zur höchsten, vollständigen und vollkommenen Erleuchtung.</p>
+  <p>Darum lasst uns ein Mantra verkünden,</p>
+  <p>um die Einsicht zu preisen, die uns ans andere Ufer bringt:</p>
+  <blockquote>
+    <p><strong>Gate, gate, pāragate, pārasaṃgate, bodhi svāhā!</strong>
+      <em>(Gegangen, gegangen, ans andere Ufer gegangen, gemeinsam völlig ans andere Ufer gegangen – Erleuchtung, Heil!)</em>
+    </p>
+  </blockquote>
+  <hr>
+  <h3>Warum diese Fassung besonders ist</h3>
+  <p>Achte besonders auf den Kernabschnitt in der Mitte: Während im klassischen Text steht <em>„In der Leere gibt es kein Auge, kein Ohr...“</em>, heißt es hier präzise: <strong>„...sind keine getrennten Eigenwesen“</strong>.</p>
+  <p>Damit weist Thich Nhat Hanh darauf hin, dass die Welt der Dinge keineswegs ausgelöscht wird, sondern dass alle Erscheinungen – vom Auge bis zum Schmerz – in tiefer Wechselwirkung miteinander (im <em>Intersein</em>) miteinander verwoben sind.</p>
+
+  <h1>
+    Intersein.
+  </h1>
+
+  <p>Thich Nhat Hanh prägte das Wort <strong>Intersein</strong> (<em>Interbeing</em> / vietnamesisch: <em>Tiếp Hiện</em>), um den zentralen buddhistischen Begriff der <strong>Leerheit (<em>Śūnyatā</em>)</strong> und des <strong>abhängigen Entstehens</strong> für den modernen Menschen verständlich zu machen.</p>
+  <p>Seine zentrale Aussage dazu lautet: <strong>Nichts kann <em>für sich allein</em> sein. Alles muss <em>inter-sein</em>.</strong></p>
+  <hr>
+  <h3>1. Das Prinzip: Keine getrennte Existenz</h3>
+  <p>Ein Objekt oder Wesen existiert nicht als isoliertes, unabhängiges „Eigenwesen“. Ein Baum ist nicht einfach nur ein Baum: Er existiert nur, weil Sonnenlicht, Regen, Erde, Mikroben und der gesamte Kosmos zusammenwirken. Nimmt man das Sonnenlicht weg, gibt es keinen Baum mehr. Der Baum besteht also vollständig aus <strong>„Nicht-Baum-Elementen“</strong>.</p>
+  <blockquote>
+    <p><em>„Wenn du eine Blume anschaust, siehst du, dass sie aus Nicht-Blumen-Elementen besteht: Sonnenlicht, Wolken, Erde, Zeit und Raum. Ohne die Wolke gibt es keinen Regen, ohne Regen keine Blume. Die Blume kann nicht allein existieren. Sie muss mit allem anderen inter-sein.“</em></p>
+  </blockquote>
+  <hr>
+  <h3>2. Das berühmte Beispiel vom Blatt Papier</h3>
+  <p>In seinen Vorträgen nutzte Thich Nhat Hanh oft dieses eingängige Bild:</p>
+  <ul>
+    <li>Wenn du ein Blatt Papier betrachtest, siehst du darin eine <strong>Wolke</strong> schwimmen. Ohne Wolke kein Regen, ohne Regen kein Baum, ohne Baum kein Papier.</li>
+    <li>Du siehst den <strong>Holzfäller</strong>, der den Baum gefällt hat, und das <strong>Brot</strong>, das der Holzfäller gegessen hat.</li>
+    <li>Du siehst die <strong>Eltern</strong> des Holzfällers und deine eigene <strong>Wahrnehmung</strong>, die dieses Papier gerade liest.</li>
+  </ul>
+  <p>Das Blatt Papier besteht zu 100 % aus dem gesamten Universum. Das Einzige, was dem Papier fehlt, ist eine getrennte, isolierte Existenz.</p>
+  <hr>
+  <h3>3. Die Konsequenzen für das Leben</h3>
+  <p><strong>Auflösung von Angst und Einsamkeit</strong>
+    Die Vorstellung, ein getrenntes Ego zu sein, erzeugt die Angst vor Verlust und Tod. Wenn du verstehst, dass du <em>inter-bist</em>, erkennst du, dass du Teil eines kontinuierlichen Flusses bist. Du bist nicht im Universum isoliert – du <em>bist</em> das Universum.</p>
+  <p><strong>Mitgefühl als natürliche Folge</strong>
+    Intersein unterscheidet nicht starr zwischen „Ich“ und „Du“ oder „Mensch“ und „Natur“. Wenn du der Umwelt schadest, schadest du dir selbst, weil du aus denselben Elementen bestehst. Echtes Mitgefühl entsteht dadurch ganz von selbst, ohne Zwang.</p>
+  <p><strong>Sein und Nicht-Sein überschreiten</strong>
+    Wie eine Welle auf dem Ozean: Die Welle unterscheidet sich in Form und Höhe, aber ihre Substanz ist Wasser. Die Welle „steigt auf“ und „geht unter“, aber das Wasser stirbt nie. Intersein zeigt, dass Entstehen und Vergehen nur Formen des Wandels sind.</p>
+
+  <hr>
+
+</body>
+</html>

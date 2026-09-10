@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gate gate</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root{--wood-0:#171310;--wood-1:#211a14;--wood-2:#2b2119;--wood-3:#3a2c20;--brass:#b5883f;--brass-dim:#8a683a;--paper-text:#ece3d2;--paper-text-dim:#a99d87;}*{box-sizing:border-box;}html,body{height:100%;}body{margin:0;background:radial-gradient(ellipse at 50% -10%, #382a1e 0%, transparent 55%), linear-gradient(180deg, var(--wood-1), var(--wood-0) 70%);color:var(--paper-text);font-family:"Inter",sans-serif;display:flex;flex-direction:column;min-height:100%;overflow:hidden;}#bookMount{ flex:1; min-height:0; }
+  </style>
+</head>
+<body>
+  <div id="bookMount"></div>
+  <script>
+    var BOOK_CSS = "\n.bb-root{ width:100%; height:100%; display:flex; flex-direction:column; }\n.bb-topbar{\n  display:flex; align-items:center; justify-content:center; gap:14px;\n  padding:10px 16px; flex-wrap:wrap;\n}\n.bb-title{\n  font-family:'Fraunces', serif; font-size:14px; color:var(--paper-text-dim,#a99d87);\n  margin-right:auto; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:38vw;\n}\n.bb-themes{ display:flex; gap:6px; padding:4px; background:var(--wood-0,#171310); border-radius:5px; border:1px solid #000; }\n.bb-swatch{ width:24px; height:24px; border-radius:3px; cursor:pointer; border:2px solid transparent; }\n.bb-swatch[data-theme=\"classic\"]{ background:#efe6d1; }\n.bb-swatch[data-theme=\"night\"]{ background:#232120; }\n.bb-swatch[data-theme=\"sepia\"]{ background:#e8d9b3; }\n.bb-swatch[data-theme=\"modern\"]{ background:#ffffff; }\n.bb-swatch.active{ border-color:var(--brass,#b5883f); }\n.bb-fs{\n  appearance:none; border:1px solid #000; background:linear-gradient(180deg, var(--wood-3,#3a2c20), var(--wood-2,#2b2119));\n  color:var(--paper-text,#ece3d2); font-family:'Inter',sans-serif; font-size:13px; font-weight:500;\n  padding:8px 13px; border-radius:3px; cursor:pointer; white-space:nowrap;\n}\n.bb-fs:hover{ border-color:var(--brass-dim,#8a683a); color:#fff; }\n.bb-slidegroup{ display:flex; align-items:center; gap:7px; background:var(--wood-0,#171310); border:1px solid #000; border-radius:5px; padding:4px 10px; }\n.bb-slide-ic{ font-size:12px; color:var(--paper-text-dim,#a99d87); font-family:'Inter',sans-serif; line-height:1; }\n.bb-range{ -webkit-appearance:none; appearance:none; width:84px; height:3px; background:rgba(181,136,63,.35); border-radius:2px; outline:none; cursor:pointer; }\n.bb-range::-webkit-slider-thumb{ -webkit-appearance:none; appearance:none; width:13px; height:13px; border-radius:50%; background:var(--brass,#b5883f); border:1px solid #000; cursor:pointer; }\n.bb-range::-moz-range-thumb{ width:13px; height:13px; border-radius:50%; background:var(--brass,#b5883f); border:1px solid #000; cursor:pointer; }\n.bb-range::-moz-range-track{ background:rgba(181,136,63,.35); height:3px; border-radius:2px; }\n.bb-stage{ flex:1; position:relative; display:flex; align-items:center; justify-content:center; padding:10px 24px 46px; min-height:0; }\n.bb-wrapper{ position:relative; display:flex; align-items:center; justify-content:center; width:100%; height:100%; perspective:2600px; }\n.bb-book{\n  --bb-paper:#f3ecda; --bb-ink:#2b2318; --bb-accent:#8b5e34; --bb-font:'Source Serif 4', Georgia, serif;\n  position:relative; width:min(94vw, 980px); height:min(80vh, 720px);\n}\n.bb-stack{ position:absolute; inset:6px 0 0 6px; background:#000; opacity:.5; border-radius:2px; }\n.bb-stack.s2{ inset:12px 0 0 12px; opacity:.3; }\n.bb-frame{\n  position:absolute; inset:0; background:#050403; border-radius:2px;\n  box-shadow:0 30px 70px rgba(0,0,0,.55), 0 2px 0 rgba(0,0,0,.6);\n  overflow:hidden; display:flex;\n}\n.bb-spine{\n  position:absolute; left:50%; top:0; bottom:0; width:22px; margin-left:-11px;\n  background:linear-gradient(90deg, rgba(0,0,0,.4), rgba(0,0,0,0) 45%, rgba(0,0,0,0) 55%, rgba(0,0,0,.4));\n  z-index:8; pointer-events:none;\n}\n.bb-slot{ position:relative; width:50%; height:100%; overflow:hidden; cursor:pointer; background:var(--bb-paper); }\n.bb-slot-inner, .bb-slot iframe, .bb-slot .bb-face-plain{ position:absolute; inset:0; width:100%; height:100%; border:0; }\n.bb-slot .bb-face-plain{ display:flex; align-items:center; justify-content:center; text-align:center; }\n.bb-leaf{\n  position:absolute; left:50%; top:0; width:50%; height:100%;\n  transform-origin:left center; transform-style:preserve-3d; transform:rotateY(0deg);\n  display:none; z-index:9;\n}\n.bb-leaf.bb-animating{ transition:transform .7s cubic-bezier(.61,.02,.41,.99); }\n.bb-leaf-face{ position:absolute; inset:0; backface-visibility:hidden; overflow:hidden; background:var(--bb-paper); }\n.bb-leaf-face iframe, .bb-leaf-face .bb-face-plain{ position:absolute; inset:0; width:100%; height:100%; border:0; }\n.bb-leaf-face .bb-face-plain{ display:flex; align-items:center; justify-content:center; text-align:center; }\n.bb-leaf-back{ transform:rotateY(180deg); }\n.bb-leaf-shade{ position:absolute; inset:0; opacity:0; pointer-events:none; z-index:3;\n  background:linear-gradient(90deg, rgba(0,0,0,.32), rgba(0,0,0,0) 55%); }\n.bb-leaf.bb-animating .bb-leaf-shade{ animation:bbShade .7s ease; }\n@keyframes bbShade{ 0%{opacity:0;} 45%{opacity:1;} 100%{opacity:0;} }\n.bb-face-plain{ font-family:var(--bb-font); color:var(--bb-ink); padding:10%; }\n.bb-face-cover{ background:linear-gradient(155deg, var(--bb-accent), color-mix(in srgb, var(--bb-accent) 55%, #000)); color:#f4ead2; flex-direction:column; gap:14px; }\n.bb-face-cover h2{ font-family:'Fraunces', serif; font-size:clamp(18px,2.6vw,30px); font-weight:600; margin:0; line-height:1.25; }\n.bb-cover-orn{ font-size:22px; opacity:.85; }\n.bb-cover-rule{ width:64px; height:2px; background:currentColor; opacity:.55; }\n.bb-face-inner{ background:var(--bb-paper); }\n.bb-face-outer-blank{ background:linear-gradient(155deg, #241c14, #14100b); }\n.bb-face-blank-end{ background:var(--bb-paper); color:var(--bb-ink); flex-direction:column; gap:10px; font-family:'Fraunces', serif; font-size:15px; letter-spacing:.08em; text-transform:uppercase; opacity:.7; }\n.bb-content{ font-family:var(--bb-font); color:var(--bb-ink); }\n.bb-nav{\n  position:absolute; top:50%; transform:translateY(-50%); width:44px; height:64px;\n  background:rgba(20,16,12,.5); border:1px solid rgba(181,136,63,.3); color:var(--brass,#b5883f);\n  font-size:22px; border-radius:4px; cursor:pointer; display:flex; align-items:center; justify-content:center; z-index:15;\n}\n.bb-nav:hover{ background:rgba(181,136,63,.18); }\n.bb-nav:disabled{ opacity:.25; cursor:default; }\n.bb-nav.prev{ left:-6px; } .bb-nav.next{ right:-6px; }\n.bb-pager{\n  position:absolute; bottom:-30px; left:50%; transform:translateX(-50%);\n  font-family:'Fraunces', serif; font-size:12.5px; color:var(--paper-text-dim,#a99d87); white-space:nowrap;\n}\n@media (max-width:720px){\n  .bb-book{ width:92vw; height:64vh; }\n  .bb-nav{ width:34px; height:50px; font-size:18px; }\n}\n";
+    var s = document.createElement("style");
+    s.textContent = BOOK_CSS;
+    document.head.appendChild(s);
+    var initBook = function initBook(mount, cfg) {
+      var THEME_VARS = {
+        classic: {
+          paper: '#f3ecda',
+          ink: '#2b2318',
+          accent: '#8b5e34',
+          font: "'Source Serif 4', Georgia, serif"
+        },
+        night: {
+          paper: '#201d1a',
+          ink: '#e3dccd',
+          accent: '#c79a56',
+          font: "'Source Serif 4', Georgia, serif"
+        },
+        sepia: {
+          paper: '#e8d9b3',
+          ink: '#4a3623',
+          accent: '#7a4b25',
+          font: "'Source Serif 4', Georgia, serif"
+        },
+        modern: {
+          paper: '#ffffff',
+          ink: '#1a1a1a',
+          accent: '#2f5d50',
+          font: "'Inter', system-ui, sans-serif"
+        }
+      };
+      var DUR = 800;
+      var theme = cfg.theme || 'classic';
+      var customStyles = cfg.customStyles || null;
+      var bodyWidth = cfg.bodyWidth || 100;
+      var content = cfg.content || '';
+      var headExtras = cfg.headExtras || '';
+      var title = cfg.title || 'Buch';
+      var fontSize = cfg.fontSize || 16.5;
+      var bookWidth = cfg.width || null;
+
+      mount.innerHTML =
+        '<div class="bb-root">' +
+        '<div class="bb-topbar">' +
+        '<div class="bb-title"></div>' +
+        '<div class="bb-themes">' +
+        '<div class="bb-swatch" data-theme="classic" title="Klassisch"></div>' +
+        '<div class="bb-swatch" data-theme="night" title="Nacht"></div>' +
+        '<div class="bb-swatch" data-theme="sepia" title="Sepia"></div>' +
+        '<div class="bb-swatch" data-theme="modern" title="Modern"></div>' +
+        '</div>' +
+        '<div class="bb-slidegroup" title="Buchbreite"><span class="bb-slide-ic">↔</span><input type="range" class="bb-range bb-range-width" min="420" max="1800" step="10"></div>' +
+        '<div class="bb-slidegroup" title="Textgröße"><span class="bb-slide-ic">Aa</span><input type="range" class="bb-range bb-range-font" min="12" max="22" step="1"></div>' +
+        '<div class="bb-slidegroup" title="Inhaltsbreite"><span class="bb-slide-ic">⇥</span><input type="range" class="bb-range bb-range-bodywidth" min="50" max="100" step="1"></div>' +
+        '<button class="bb-fs">⛶ Vollbild</button>' +
+        '</div>' +
+        '<div class="bb-stage"><div class="bb-wrapper">' +
+        '<div class="bb-book">' +
+        '<div class="bb-stack s2"></div><div class="bb-stack"></div>' +
+        '<div class="bb-frame">' +
+        '<div class="bb-slot bb-slot-left"><iframe sandbox="allow-same-origin"></iframe><div class="bb-face-plain"></div></div>' +
+        '<div class="bb-slot bb-slot-right"><iframe sandbox="allow-same-origin"></iframe><div class="bb-face-plain"></div></div>' +
+        '<div class="bb-spine"></div>' +
+        '<div class="bb-leaf">' +
+        '<div class="bb-leaf-face bb-leaf-front"><iframe sandbox="allow-same-origin"></iframe><div class="bb-face-plain"></div></div>' +
+        '<div class="bb-leaf-face bb-leaf-back"><iframe sandbox="allow-same-origin"></iframe><div class="bb-face-plain"></div></div>' +
+        '<div class="bb-leaf-shade"></div>' +
+        '</div>' +
+        '</div>' +
+        '<button class="bb-nav prev" aria-label="Vorherige Seite">‹</button>' +
+        '<button class="bb-nav next" aria-label="Nächste Seite">›</button>' +
+        '</div>' +
+        '<div class="bb-pager"></div>' +
+        '</div></div>' +
+        '</div>';
+
+      var el = {
+        root: mount.querySelector('.bb-root'),
+        titleEl: mount.querySelector('.bb-title'),
+        swatches: mount.querySelectorAll('.bb-swatch'),
+        fsBtn: mount.querySelector('.bb-fs'),
+        widthRange: mount.querySelector('.bb-range-width'),
+        fontRange: mount.querySelector('.bb-range-font'),
+        bodyWidthRange: mount.querySelector('.bb-range-bodywidth'),
+        book: mount.querySelector('.bb-book'),
+        left: wrapSlot(mount.querySelector('.bb-slot-left')),
+        right: wrapSlot(mount.querySelector('.bb-slot-right')),
+        leaf: mount.querySelector('.bb-leaf'),
+        leafFront: wrapSlot(mount.querySelector('.bb-leaf-front')),
+        leafBack: wrapSlot(mount.querySelector('.bb-leaf-back')),
+        prevBtn: mount.querySelector('.bb-nav.prev'),
+        nextBtn: mount.querySelector('.bb-nav.next'),
+        pager: mount.querySelector('.bb-pager'),
+        wrapper: mount.querySelector('.bb-wrapper')
+      };
+
+      function wrapSlot(rootEl) {
+        return {
+          root: rootEl,
+          iframe: rootEl.querySelector('iframe'),
+          plain: rootEl.querySelector('.bb-face-plain')
+        };
+      }
+
+      var allFrames = [el.left.iframe, el.right.iframe, el.leafFront.iframe, el.leafBack.iframe];
+      var state = {
+        pageStep: 0,
+        pageHeight: 0,
+        totalContentPages: 1,
+        M: 1,
+        T: 0,
+        animating: false
+      };
+
+      el.titleEl.textContent = title;
+      if (bookWidth) el.book.style.width = bookWidth + 'px';
+      el.fontRange.value = fontSize;
+      el.bodyWidthRange.value = bodyWidth;
+
+      var remeasureRAF = null;
+
+      function scheduleRemeasure() {
+        if (remeasureRAF) return;
+        remeasureRAF = requestAnimationFrame(function() {
+          remeasureRAF = null;
+          measureAndPaginate();
+          renderRest();
+        });
+      }
+
+      function getActiveThemeVars() {
+        if (customStyles) return customStyles;
+        return THEME_VARS[theme] || THEME_VARS.classic;
+      }
+
+      function applyThemeVars() {
+        var t = getActiveThemeVars();
+        el.book.style.setProperty('--bb-paper', t.paper);
+        el.book.style.setProperty('--bb-ink', t.ink);
+        el.book.style.setProperty('--bb-accent', t.accent);
+        el.book.style.setProperty('--bb-font', t.font);
+      }
+
+      function contentSrcdoc() {
+        var t = getActiveThemeVars();
+        return '<!DOCTYPE html><html><head><meta charset="utf-8">' +
+          '<style>' +
+          '* { box-sizing: border-box !important; max-width: 100% !important; }' +
+          'html { margin: 0; padding: 0; width: 100%; height: 100%; background:' + t.paper + '; overflow: hidden; }' +
+          'body { margin: 0; padding: 30px 25px; width: 100%; height: 100%; background:' + t.paper + '; overflow: hidden; box-sizing: border-box; }' +
+          '#bb-content { font-family:' + t.font + '; color:' + t.ink + '; font-size:' + fontSize + 'px; line-height: 1.6; ' +
+          'height: 100%; column-fill: auto; margin: 0 auto; overflow-wrap: break-word; word-wrap: break-word; }' +
+          '#bb-content h1, #bb-content h2, #bb-content h3 { font-family:' + t.font + '; color:' + t.accent + '; margin-top: 0; }' +
+          '#bb-content a { color:' + t.accent + '; }' +
+          '#bb-content img, #bb-content svg, #bb-content canvas, #bb-content video { max-width: 100% !important; max-height: 100% !important; object-fit: contain; }' +
+          '#bb-content p, #bb-content h1, #bb-content h2, #bb-content h3, #bb-content blockquote, #bb-content figure, #bb-content tr, #bb-content li { break-inside: avoid; page-break-inside: avoid; }' +
+          '</style>' + headExtras +
+          '</head><body><div id="bb-content">' + content + '</div></body></html>';
+      }
+
+      function loadAllFrames() {
+        var doc = contentSrcdoc();
+        var loads = allFrames.map(function(f) {
+          return new Promise(function(res) {
+            f.onload = function() {
+              res();
+            };
+            f.srcdoc = doc;
+          });
+        });
+        return Promise.all(loads);
+      }
+
+      function measureAndPaginate() {
+        var rect = el.left.root.getBoundingClientRect();
+        var w = Math.floor(rect.width);
+        var h = Math.floor(rect.height);
+
+        if (w <= 0 || h <= 0) return;
+
+        state.pageStep = w;
+        state.pageHeight = h;
+
+        allFrames.forEach(function(f) {
+          var d = f.contentDocument;
+          if (!d) return;
+          var c = d.getElementById('bb-content');
+          if (!c) return;
+
+          // Grundlegendes Innenmaß abzüglich des festen Padding (50px horizontal, 60px vertikal)
+          var baseWidth = w - 50;
+          var innerHeight = h - 60;
+
+          // Der Slider (bodyWidth in %) skaliert die Inhaltsbreite exakt
+          var targetWidth = Math.floor(baseWidth * (bodyWidth / 100));
+
+          // Der verbleibende Restabstand wird als Gap genutzt, damit der Blätterschritt (w) exakt synchron bleibt
+          var gap = w - targetWidth;
+
+          c.style.width = targetWidth + 'px';
+          c.style.columnWidth = targetWidth + 'px';
+          c.style.columnGap = gap + 'px';
+          c.style.height = innerHeight + 'px';
+        });
+
+        var probeDoc = el.left.iframe.contentDocument;
+        if (!probeDoc) return;
+        var probe = probeDoc.getElementById('bb-content');
+        if (!probe) return;
+
+        var scrollW = probe.scrollWidth;
+        state.totalContentPages = Math.max(1, Math.round(scrollW / w));
+        state.M = Math.max(1, Math.ceil(state.totalContentPages / 2));
+      }
+
+      function setIframePage(iframe, n) {
+        var d = iframe.contentDocument;
+        if (!d) return;
+        var c = d.getElementById('bb-content');
+        if (!c) return;
+        if (n < 1 || n > state.totalContentPages) {
+          c.style.visibility = 'hidden';
+        } else {
+          c.style.visibility = 'visible';
+          c.style.transform = 'translateX(-' + ((n - 1) * state.pageStep) + 'px)';
+        }
+      }
+
+      function escapeHtml(s) {
+        return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      }
+
+      function plainMarkup(type) {
+        if (type === 'cover') {
+          return '<div class="bb-cover-orn">❦</div><h2>' + escapeHtml(title) + '</h2><div class="bb-cover-rule"></div>';
+        }
+        if (type === 'blank-end') {
+          return '<div class="bb-cover-orn">❦</div><span>Ende</span>';
+        }
+        return '';
+      }
+
+      function setFace(slot, ref) {
+        if (ref.type === 'content') {
+          slot.iframe.style.zIndex = 2;
+          slot.iframe.style.opacity = 1;
+          slot.plain.style.zIndex = 1;
+          slot.plain.style.opacity = 0;
+          setIframePage(slot.iframe, ref.n);
+        } else {
+          slot.plain.style.zIndex = 2;
+          slot.plain.style.opacity = 1;
+          slot.iframe.style.zIndex = 1;
+          slot.iframe.style.opacity = 0;
+          slot.plain.className = 'bb-face-plain bb-face-' + ref.type;
+          slot.plain.innerHTML = plainMarkup(ref.type);
+        }
+      }
+
+      function leafFace(k, side) {
+        if (k === 0) return side === 'front' ? {
+          type: 'cover'
+        } : {
+          type: 'inner'
+        };
+        var n = side === 'front' ? (2 * k - 1) : (2 * k);
+        if (n > state.totalContentPages) return {
+          type: 'blank-end'
+        };
+        return {
+          type: 'content',
+          n: n
+        };
+      }
+
+      function restLeft() {
+        return state.T === 0 ? {
+          type: 'outer-blank'
+        } : leafFace(state.T - 1, 'back');
+      }
+
+      function restRight() {
+        return state.T >= state.M ? {
+          type: 'blank-end'
+        } : leafFace(state.T, 'front');
+      }
+
+      function renderRest() {
+        setFace(el.left, restLeft());
+        setFace(el.right, restRight());
+        el.leaf.style.display = 'none';
+        el.leaf.classList.remove('bb-animating');
+        el.leaf.style.transform = 'rotateY(0deg)';
+        updateNav();
+      }
+
+      function updateNav() {
+        el.prevBtn.disabled = state.T <= 0;
+        el.nextBtn.disabled = state.T >= state.M;
+        var label;
+        if (state.T <= 0) label = 'Umschlag';
+        else if (state.T >= state.M) label = 'Ende';
+        else {
+          var a = leafFace(state.T - 1, 'back');
+          var b = leafFace(state.T, 'front');
+          if (a.type === 'content' && b.type === 'content') label = 'Seite ' + a.n + '–' + b.n + ' von ' + state.totalContentPages;
+          else if (b.type === 'content') label = 'Seite ' + b.n + ' von ' + state.totalContentPages;
+          else if (a.type === 'content') label = 'Seite ' + a.n + ' von ' + state.totalContentPages;
+          else label = state.totalContentPages + ' Seiten';
+        }
+        el.pager.textContent = label;
+      }
+
+      function turnForward() {
+        if (state.animating || state.T >= state.M) return;
+        state.animating = true;
+        var k = state.T;
+        var front = leafFace(k, 'front'),
+          back = leafFace(k, 'back');
+        setFace(el.leafFront, front);
+        setFace(el.leafBack, back);
+        el.leaf.style.display = 'block';
+        el.leaf.classList.remove('bb-animating');
+        el.leaf.style.transform = 'rotateY(0deg)';
+        void el.leaf.offsetWidth;
+        var newRight = (k + 1 >= state.M) ? {
+          type: 'blank-end'
+        } : leafFace(k + 1, 'front');
+        setFace(el.right, newRight);
+        el.leaf.classList.add('bb-animating');
+        requestAnimationFrame(function() {
+          el.leaf.style.transform = 'rotateY(-180deg)';
+        });
+        setTimeout(function() {
+          setFace(el.left, back);
+        }, DUR * 0.55);
+        setTimeout(function() {
+          state.T += 1;
+          el.leaf.style.display = 'none';
+          el.leaf.classList.remove('bb-animating');
+          el.leaf.style.transform = 'rotateY(0deg)';
+          state.animating = false;
+          updateNav();
+        }, DUR + 40);
+      }
+
+      function turnBackward() {
+        if (state.animating || state.T <= 0) return;
+        state.animating = true;
+        var k = state.T - 1;
+        var front = leafFace(k, 'front'),
+          back = leafFace(k, 'back');
+        setFace(el.leafFront, front);
+        setFace(el.leafBack, back);
+        el.leaf.style.display = 'block';
+        el.leaf.classList.remove('bb-animating');
+        el.leaf.style.transform = 'rotateY(-180deg)';
+        void el.leaf.offsetWidth;
+        var newLeft = (k - 1 < 0) ? {
+          type: 'outer-blank'
+        } : leafFace(k - 1, 'back');
+        setFace(el.left, newLeft);
+        el.leaf.classList.add('bb-animating');
+        requestAnimationFrame(function() {
+          el.leaf.style.transform = 'rotateY(0deg)';
+        });
+        setTimeout(function() {
+          setFace(el.right, front);
+        }, DUR * 0.55);
+        setTimeout(function() {
+          state.T -= 1;
+          el.leaf.style.display = 'none';
+          el.leaf.classList.remove('bb-animating');
+          state.animating = false;
+          updateNav();
+        }, DUR + 40);
+      }
+
+      el.right.root.addEventListener('click', function() {
+        turnForward();
+      });
+      el.left.root.addEventListener('click', function() {
+        turnBackward();
+      });
+      el.prevBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        turnBackward();
+      });
+      el.nextBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        turnForward();
+      });
+      document.addEventListener('keydown', function(e) {
+        if (mount.hidden || !document.body.contains(mount)) return;
+        if (e.key === 'ArrowRight') turnForward();
+        if (e.key === 'ArrowLeft') turnBackward();
+      });
+      (function() {
+        var startX = null;
+        el.wrapper.addEventListener('touchstart', function(e) {
+          startX = e.touches[0].clientX;
+        }, {
+          passive: true
+        });
+        el.wrapper.addEventListener('touchend', function(e) {
+          if (startX === null) return;
+          var dx = e.changedTouches[0].clientX - startX;
+          if (Math.abs(dx) > 40)(dx < 0 ? turnForward() : turnBackward());
+          startX = null;
+        }, {
+          passive: true
+        });
+      })();
+
+      el.swatches.forEach(function(sw) {
+        if (sw.dataset.theme === theme && !customStyles) sw.classList.add('active');
+        sw.addEventListener('click', function() {
+          customStyles = null;
+          el.swatches.forEach(function(s) {
+            s.classList.remove('active');
+          });
+          sw.classList.add('active');
+          theme = sw.dataset.theme;
+          applyThemeVars();
+          if (cfg.onChange) cfg.onChange({
+            theme: theme,
+            customStyles: null
+          });
+          loadAllFrames().then(function() {
+            measureAndPaginate();
+            renderRest();
+          });
+        });
+      });
+
+      el.widthRange.addEventListener('input', function() {
+        bookWidth = parseInt(this.value, 10);
+        el.book.style.width = bookWidth + 'px';
+        if (cfg.onChange) cfg.onChange({
+          width: bookWidth
+        });
+        scheduleRemeasure();
+      });
+      el.fontRange.addEventListener('change', function() {
+        fontSize = parseFloat(this.value);
+        if (cfg.onChange) cfg.onChange({
+          fontSize: fontSize
+        });
+        loadAllFrames().then(function() {
+          measureAndPaginate();
+          renderRest();
+        });
+      });
+      el.bodyWidthRange.addEventListener('change', function() {
+        bodyWidth = parseInt(this.value, 10);
+        if (cfg.onChange) cfg.onChange({
+          bodyWidth: bodyWidth
+        });
+        loadAllFrames().then(function() {
+          measureAndPaginate();
+          renderRest();
+        });
+      });
+
+      el.fsBtn.addEventListener('click', function() {
+        if (!document.fullscreenElement) mount.requestFullscreen ? mount.requestFullscreen().catch(function() {}) : null;
+        else document.exitFullscreen();
+      });
+      document.addEventListener('fullscreenchange', function() {
+        el.fsBtn.textContent = document.fullscreenElement ? '⛶ Vollbild beenden' : '⛶ Vollbild';
+        setTimeout(function() {
+          measureAndPaginate();
+          renderRest();
+        }, 140);
+      });
+
+      var resizeT;
+      window.addEventListener('resize', function() {
+        clearTimeout(resizeT);
+        resizeT = setTimeout(function() {
+          measureAndPaginate();
+          renderRest();
+        }, 180);
+      });
+
+      applyThemeVars();
+
+      return loadAllFrames().then(function() {
+        requestAnimationFrame(function() {
+          measureAndPaginate();
+          renderRest();
+        });
+      });
+    };
+    initBook(document.getElementById("bookMount"), {
+      content: "\n  <h1>Gate gate pāragate</h1>\n\n  <p>Das <strong>Gate Gate Mantra</strong> (aus dem <em>Herz-Sutra</em> des Mahayana-Buddhismus) ist eines der bekanntesten und tiefgründigsten Mantras überhaupt. Auf Sanskrit lautet der vollständige Vers:</p>\n  <blockquote>\n    <p><strong>Gate gate pāragate pārasamgate bodhi svāhā</strong></p>\n  </blockquote>\n  <h3>Bedeutung der einzelnen Wörter</h3>\n  <ul>\n    <li><strong>Gate:</strong> Gegangen (oder: hinübergegangen, passiert).</li>\n    <li><strong>Gate:</strong> Gegangen (verstärkt: weiter gegangen).</li>\n    <li><strong>Pāragate:</strong> Ans andere Ufer gegangen (<em>pāra</em> = das andere Ufer / die Befreiung).</li>\n    <li><strong>Pārasamgate:</strong> Vollständig ans andere Ufer hinübergegangen (<em>sam</em> = vollständig, gemeinsam).</li>\n    <li><strong>Bodhi:</strong> Erleuchtung, Erwachen, das Erwacht-Sein.</li>\n    <li><strong>Svāhā:</strong> Heil! So sei es! (Ein Ausruf des Dankes, der Hingabe oder Verankerung).</li>\n  </ul>\n  <hr>\n  <h3>Die Übersetzung und innere Haltung</h3>\n  <p>Frei übersetzt bedeutet die Zeile:</p>\n  <blockquote>\n    <p><em>„Gegangen, gegangen, ans andere Ufer gegangen, gemeinsam völlig ans andere Ufer gegangen – Erleuchtung, Heil!“</em></p>\n  </blockquote>\n  <p>Es ist kein Mantra, das an ein äußeres Wesen oder eine Gottheit gerichtet ist. Stattdessen beschreibt es eine <strong>Transformation des Bewusstseins</strong>: das schrittweise Loslassen von Täuschung, Anhaftung und Ego, um das „andere Ufer“ der Nicht-Zweiheit (Shatyam / Sunyata – die Leere aller Dinge von einem getrennten Eigenwesen) zu erreichen.</p>\n  <p>Nach Thich Nhat Hanh beschreibt das Mantra nicht nur das persönliche Beschreiten des Weges, sondern auch das <strong>gemeinsame Erwachen</strong> (<em>pārasamgate</em>): Niemand geht allein ans andere Ufer – wir erwachen in der Erkenntnis, dass alles miteinander verbunden ist (Intersein).</p>\n\n  <h1>\n    Das Herz-Sutra\n  </h1>\n\n  <p>Das <strong>Herz-Sutra</strong> (<em>Prajñāpāramitā Hṛdaya</em>) ist einer der zentralen Texte des Mahayana-Buddhismus. Obwohl es sehr kurz ist (im Sanskrit nur etwa 25 Zeilen), gilt es als die Quintessenz der gesamten Lehre von der „Vollkommenen Weisheit“ (<em>Prajñāpāramitā</em>).</p>\n  <p>Der Kerngedanke lässt sich in der berühmten Passage zusammenfassen:</p>\n  <blockquote>\n    <p><strong>„Form ist Leere, Leere ist Form.“</strong> (<em>Rūpaṃ śūnyatā śūnyataiva rūpam</em>)</p>\n  </blockquote>\n  <hr>\n  <h3>Key-Konzepte des Herz-Sutras</h3>\n  <ul>\n    <li><strong>Leerheit (<em>Śūnyatā</em>):</strong> Es bedeutet nicht, dass nichts existiert oder dass die Welt ein Nichts ist. Wie Thich Nhat Hanh es formulierte: Dinge sind <em>leer von einem getrennten Selbst</em>. Ein Blatt Papier existiert nicht für sich allein – es besteht aus Sonnenlicht, Wolken, Bäumen und der Arbeit des Holzfällers. Alles existiert nur in gegenseitiger Abhängigkeit (Intersein).</li>\n    <li><strong>Die 5 Skandhas:</strong> Der Bodhisattva <em>Avalokiteshvara</em> durchschaut, dass die fünf Bausteine des menschlichen Daseins (Körper/Form, Empfindungen, Wahrnehmungen, Geistige Formationen und Bewusstsein) keine feste, getrennte Substanz haben.</li>\n    <li><strong>Befreiung von Angst:</strong> Weil es kein isoliertes „Ich“ gibt, das etwas verlieren oder sterben könnte, löst das tiefere Verständnis von Leerheit Greifen, Anhaftung und die Angst vor dem Tod auf.</li>\n  </ul>\n  <hr>\n  <h3>Struktur des Sutras</h3>\n  <table>\n    <thead>\n      <tr>\n        <th>Abschnitt</th>\n        <th>Inhalt</th>\n      </tr>\n    </thead>\n    <tbody>\n      <tr>\n        <td><strong>Einleitung</strong></td>\n        <td>Avalokiteshvara meditiert über die tiefste Weisheit und erkennt die Leerheit aller Erscheinungen.</td>\n      </tr>\n      <tr>\n        <td><strong>Lehre an Shariputra</strong></td>\n        <td>Erklärung der Form-Leerheit-Identität und dass alle Phänomene ohne Geburt, Tod, Reinheit oder Unreinheit sind.</td>\n      </tr>\n      <tr>\n        <td><strong>Auflösung der Konzepte</strong></td>\n        <td>Dekonstruktion aller buddhistischen Kategorien (Sinnesorgane, Ursache/Wirkung, sogar die 4 Edlen Wahrheiten) – da nichts festgehalten werden muss.</td>\n      </tr>\n      <tr>\n        <td><strong>Abschluss-Mantra</strong></td>\n        <td>Das <em>Gate Gate</em>-Mantra als Verdichtung und Verankerung der Einsicht.</td>\n      </tr>\n    </tbody>\n  </table>\n\n  <h2>\n    Thich Nhat Hanhs moderne Übersetzung des Herz-Sutras\n  </h2>\n\n  <p>Thich Nhat Hanh fertigte im September 2014 eine grundlegend überarbeitete Übersetzung des Herz-Sutras an (veröffentlicht unter anderem im Buch <em>The Other Shore</em>). Seine Motivation war es, ein <strong>jahrhundertealtes Missverständnis</strong> zu korrigieren, das durch eine ungeschickte Formulierung in den historischen chinesischen und Sanskrit-Quelltexten entstanden war.</p>\n  <hr>\n  <h3>Der Hauptunterschied: Vermeidung von Nihilismus</h3>\n  <p>In traditionellen Fassungen findet sich nach der berühmten Passage „Form ist Leere“ die Aufzählung:</p>\n  <blockquote>\n    <p><em>„Deshalb gibt es in der Leere keine Form, keine Empfindung, keine Wahrnehmung ... keine Augen, keine Ohren, keine Nase ...“</em></p>\n  </blockquote>\n  <p>Thich Nhat Hanh argumentierte, dass diese Formulierung im Widerspruch zum ersten Teil steht. Wenn man sagt <em>„Form ist Leere“</em> und direkt danach <em>„in der Leere gibt es keine Form“</em>, drängt man den Geist in einen <strong>Nihilismus</strong> – als ob die Phänomene der Welt gar nicht existieren würden.</p>\n  <p>In seiner Übersetzung formulierte er diese Passagen um:</p>\n  <blockquote>\n    <p><strong>Traditionell:</strong> „Deshalb gibt es in der Leere keine Form, keine Empfindungen...“\n      <strong>Thich Nhat Hanh:</strong> „Deshalb sind in der Leere Form, Empfindungen [...] <strong>keine getrennten Eigenwesen</strong>.“ (<em>are not separate self entities</em>)\n    </p>\n  </blockquote>\n  <hr>\n  <h3>Die drei zentralen Neuerungen auf einen Blick</h3>\n  <table>\n    <thead>\n      <tr>\n        <th>Thema</th>\n        <th>Traditionelle Übersetzung</th>\n        <th>Thich Nhat Hanhs Übersetzung</th>\n      </tr>\n    </thead>\n    <tbody>\n      <tr>\n        <td><strong>Form &amp; Leere</strong></td>\n        <td>„In der Leere gibt es kein Auge, kein Ohr...“ (Liest sich wie eine Verneinung der Welt).</td>\n        <td>„Sinnesorgane und Phänomene existieren nicht als isolierte, getrennte Einheiten“.</td>\n      </tr>\n      <tr>\n        <td><strong>Sein &amp; Nicht-Sein</strong></td>\n        <td>Bezieht sich meist auf Paare wie <em>Geburt/Tod</em> oder <em>Zunahme/Abnahme</em>.</td>\n        <td>Ergänzte explizit die Wörter <strong>„kein Sein, kein Nicht-Sein“</strong> (<em>no Being, no Non-being</em>), um jedes Extrem abzufangen.</td>\n      </tr>\n      <tr>\n        <td><strong>Erleuchtung</strong></td>\n        <td>„Es gibt kein Wissen und kein Erreichen.“ (Klingt abstrakt/paradox).</td>\n        <td>„Auch Einsicht und Erreichen sind keine getrennten Eigenwesen.“</td>\n      </tr>\n    </tbody>\n  </table>\n  <hr>\n  <h3>Der philosophische Kern der Änderung</h3>\n  <p>Für Thich Nhat Hanh ist die <strong>Leerheit (<em>Śūnyatā</em>)</strong> nicht das Fehlen von Existenz, sondern das <strong>Vollsein mit allem</strong> (das Prinzip des <em>Interseins</em>).</p>\n  <p>Er betonte, dass die ursprünglichen Autoren die Phänomene aus der Kategorie des „Seins“ herauslösen wollten, sie dabei aber versehentlich in die Kategorie des „Nicht-Seins“ geworfen haben. Seine Übersetzung stellt klar: Die Wirklichkeit liegt jenseits beider Begriffe.</p>\n\n  <h2>\n    „Die Einsicht, die uns ans andere Ufer bringt“\n  </h2>\n\n  <p>Hier ist der vollständige Text von <strong>Thich Nhat Hanhs neuer Übersetzung des Herz-Sutras</strong> (unter dem Titel <em>„Die Einsicht, die uns ans andere Ufer bringt“</em> / engl. <em>„The Insight that Brings Us to the Other Shore“</em>).</p>\n  <hr>\n  <h3>Die Einsicht, die uns ans andere Ufer bringt</h3>\n  <p><em>(Maha Prajñāpāramitā Hṛdaya Sūtra)</em></p>\n  <p>Avalokiteshvara,</p>\n  <p>während er tief in der Einsicht praktizierte, die uns ans andere Ufer bringt,</p>\n  <p>erregte plötzlich die Erkenntnis,</p>\n  <p>dass alle fünf Skandhas gleichermaßen leer sind,</p>\n  <p>und mit dieser Realisierung überwand er alles Leiden.</p>\n  <p>„Höre, Shariputra,</p>\n  <p>dieser Körper ist Leerheit</p>\n  <p>und Leerheit ist dieser Körper.</p>\n  <p>Dieser Körper ist nichts anderes als Leerheit</p>\n  <p>und Leerheit ist nichts anderes als dieser Körper.</p>\n  <p>Das Gleiche gilt für Gefühle, Wahrnehmungen, geistige Formationen und Bewusstsein.</p>\n  <p>Höre, Shariputra,</p>\n  <p>alle Phänomene tragen das Merkmal der Leerheit:</p>\n  <p>ihre wahre Natur ist die Natur von</p>\n  <p>keinem Entstehen, keinem Vergeh’n,</p>\n  <p>keinem Sein, keinem Nicht-Sein,</p>\n  <p>keiner Unreinheit, keiner Reinheit,</p>\n  <p>keinem Zunehmen, keinem Abnehmen.</p>\n  <p>Deshalb sind in der Leerheit</p>\n  <p>Körper, Gefühle, Wahrnehmungen, geistige Formationen und Bewusstsein</p>\n  <p><strong>keine getrennten Eigenwesen</strong>.</p>\n  <p>Die sechs Sinnesorgane – Augen, Ohren, Nase, Zunge, Körper und Geist –</p>\n  <p>sind keine getrennten Eigenwesen.</p>\n  <p>Die sechs Objekte der Sinne – Form, Klang, Geruch, Geschmack, Berührung und Phänomene –</p>\n  <p>sind keine getrennten Eigenwesen.</p>\n  <p>Die sechs Bereiche des Bewusstseins – vom Augen-Bewusstsein bis hin zum Geist-Bewusstsein –</p>\n  <p>sind keine getrennten Eigenwesen.</p>\n  <p>Die zwölf Glieder des abhängigen Entstehens</p>\n  <p>und ihr Erlöschen</p>\n  <p>sind ebenfalls keine getrennten Eigenwesen.</p>\n  <p>Leiden, die Ursachen des Leidens, das Erlöschen des Leidens und der Pfad</p>\n  <p>sind keine getrennten Eigenwesen.</p>\n  <p>Auch Einsicht und Erreichen</p>\n  <p>sind keine getrennten Eigenwesen.</p>\n  <p>Wer dies sehen kann,</p>\n  <p>braucht nichts mehr zu erreichen.</p>\n  <p>Bodhisattvas, die die Einsicht praktizieren, die uns ans andere Ufer bringt,</p>\n  <p>sehen keine Hindernisse mehr in ihrem Geist.</p>\n  <p>Und weil es keine Hindernisse mehr in ihrem Geist gibt,</p>\n  <p>können sie alle Angst überwinden,</p>\n  <p>alle falschen Wahrnehmungen zerstören</p>\n  <p>und das vollkommene Nirvana verwirklichen.</p>\n  <p>Alle Buddhas in Vergangenheit, Gegenwart und Zukunft</p>\n  <p>gelangen durch die Praxis der Einsicht, die uns ans andere Ufer bringt,</p>\n  <p>zur höchsten, vollständigen und vollkommenen Erleuchtung.</p>\n  <p>Darum lasst uns ein Mantra verkünden,</p>\n  <p>um die Einsicht zu preisen, die uns ans andere Ufer bringt:</p>\n  <blockquote>\n    <p><strong>Gate, gate, pāragate, pārasaṃgate, bodhi svāhā!</strong>\n      <em>(Gegangen, gegangen, ans andere Ufer gegangen, gemeinsam völlig ans andere Ufer gegangen – Erleuchtung, Heil!)</em>\n    </p>\n  </blockquote>\n  <hr>\n  <h3>Warum diese Fassung besonders ist</h3>\n  <p>Achte besonders auf den Kernabschnitt in der Mitte: Während im klassischen Text steht <em>„In der Leere gibt es kein Auge, kein Ohr...“</em>, heißt es hier präzise: <strong>„...sind keine getrennten Eigenwesen“</strong>.</p>\n  <p>Damit weist Thich Nhat Hanh darauf hin, dass die Welt der Dinge keineswegs ausgelöscht wird, sondern dass alle Erscheinungen – vom Auge bis zum Schmerz – in tiefer Wechselwirkung miteinander (im <em>Intersein</em>) miteinander verwoben sind.</p>\n\n  <h1>\n    Intersein.\n  </h1>\n\n  <p>Thich Nhat Hanh prägte das Wort <strong>Intersein</strong> (<em>Interbeing</em> / vietnamesisch: <em>Tiếp Hiện</em>), um den zentralen buddhistischen Begriff der <strong>Leerheit (<em>Śūnyatā</em>)</strong> und des <strong>abhängigen Entstehens</strong> für den modernen Menschen verständlich zu machen.</p>\n  <p>Seine zentrale Aussage dazu lautet: <strong>Nichts kann <em>für sich allein</em> sein. Alles muss <em>inter-sein</em>.</strong></p>\n  <hr>\n  <h3>1. Das Prinzip: Keine getrennte Existenz</h3>\n  <p>Ein Objekt oder Wesen existiert nicht als isoliertes, unabhängiges „Eigenwesen“. Ein Baum ist nicht einfach nur ein Baum: Er existiert nur, weil Sonnenlicht, Regen, Erde, Mikroben und der gesamte Kosmos zusammenwirken. Nimmt man das Sonnenlicht weg, gibt es keinen Baum mehr. Der Baum besteht also vollständig aus <strong>„Nicht-Baum-Elementen“</strong>.</p>\n  <blockquote>\n    <p><em>„Wenn du eine Blume anschaust, siehst du, dass sie aus Nicht-Blumen-Elementen besteht: Sonnenlicht, Wolken, Erde, Zeit und Raum. Ohne die Wolke gibt es keinen Regen, ohne Regen keine Blume. Die Blume kann nicht allein existieren. Sie muss mit allem anderen inter-sein.“</em></p>\n  </blockquote>\n  <hr>\n  <h3>2. Das berühmte Beispiel vom Blatt Papier</h3>\n  <p>In seinen Vorträgen nutzte Thich Nhat Hanh oft dieses eingängige Bild:</p>\n  <ul>\n    <li>Wenn du ein Blatt Papier betrachtest, siehst du darin eine <strong>Wolke</strong> schwimmen. Ohne Wolke kein Regen, ohne Regen kein Baum, ohne Baum kein Papier.</li>\n    <li>Du siehst den <strong>Holzfäller</strong>, der den Baum gefällt hat, und das <strong>Brot</strong>, das der Holzfäller gegessen hat.</li>\n    <li>Du siehst die <strong>Eltern</strong> des Holzfällers und deine eigene <strong>Wahrnehmung</strong>, die dieses Papier gerade liest.</li>\n  </ul>\n  <p>Das Blatt Papier besteht zu 100 % aus dem gesamten Universum. Das Einzige, was dem Papier fehlt, ist eine getrennte, isolierte Existenz.</p>\n  <hr>\n  <h3>3. Die Konsequenzen für das Leben</h3>\n  <p><strong>Auflösung von Angst und Einsamkeit</strong>\n    Die Vorstellung, ein getrenntes Ego zu sein, erzeugt die Angst vor Verlust und Tod. Wenn du verstehst, dass du <em>inter-bist</em>, erkennst du, dass du Teil eines kontinuierlichen Flusses bist. Du bist nicht im Universum isoliert – du <em>bist</em> das Universum.</p>\n  <p><strong>Mitgefühl als natürliche Folge</strong>\n    Intersein unterscheidet nicht starr zwischen „Ich“ und „Du“ oder „Mensch“ und „Natur“. Wenn du der Umwelt schadest, schadest du dir selbst, weil du aus denselben Elementen bestehst. Echtes Mitgefühl entsteht dadurch ganz von selbst, ohne Zwang.</p>\n  <p><strong>Sein und Nicht-Sein überschreiten</strong>\n    Wie eine Welle auf dem Ozean: Die Welle unterscheidet sich in Form und Höhe, aber ihre Substanz ist Wasser. Die Welle „steigt auf“ und „geht unter“, aber das Wasser stirbt nie. Intersein zeigt, dass Entstehen und Vergehen nur Formen des Wandels sind.</p>\n\n  <hr>\n\n\n",
+      headExtras: "<style>\n    /* <link rel=\"stylesheet\" href=\"book-style.css\"> */  \n        \n        /* ==========================================\n       BUCHBINDER - ELEGANTES BUCH-STYLING\n       ========================================== */\n    \n    /* Google Fonts Import für klassische Buchtypografie */\n    \n    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap');\n    \n    :root {\n      --font-heading: 'Playfair Display', 'Cinzel', Georgia, serif;\n      --font-body: 'Source Serif 4', Georgia, serif;\n      --text-color: #2b2318;\n      --accent-color: #8b5e34;\n    }\n      \n    * {\n     \tmargin: 0;\n      padding: 0;\n      box-sizing: border-box;      \n    }\n    \n    /* Base Layout & Typografie */\n    body {\n      margin-top: 20px;    /* Oben */\n    \tmargin-right: 20px;  /* Rechts */\n   \t \tmargin-bottom: 20px; /* Unten */\n   \t\tmargin-left: 20px;    /* Links */\n      \n      padding: 15px;\n      width: 95%;\n    \tmax-width: 1000px;\n      color: #112255;\n      background: #ededfd;\n      font-family: var(--font-body);\n      color: var(--text-color);\n      line-height: 1.65;\n      text-rendering: optimizeLegibility;\n      -webkit-font-smoothing: antialiased;\n    }\n    \n    /* Überschriften */\n    h1, h2, h3, h4, h5, h6 {\n      font-family: var(--font-heading);\n      color: var(--accent-color);\n      font-weight: 600;\n      line-height: 1.25;\n      margin-top: 1.8em;\n      margin-bottom: 0.6em;\n      text-wrap: balance;\n      page-break-after: avoid;\n      break-after: avoid;\n    }\n    \n    h1 {\n    \tcolor: #112299;\n      font-size: 2em;\n      text-align: center;\n      border-bottom: 1px solid rgba(139, 94, 52, 0.3);\n      padding-bottom: 0.3em;\n      margin-top: 0.5em;\n      margin-bottom: 1em;\n    }\n    \n    h2 {\n      font-size: 1.5em;\n      text-align: center;\n    }\n    \n    h3 {\n      font-size: 1.2em;\n    }\n    \n    /* Klassische Buch-Absätze mit Einzug */\n    p {\n      margin-top: 0;\n      margin-bottom: 0;\n      text-indent: 1.5em;\n      text-align: justify;\n      hyphens: auto;\n      -webkit-hyphens: auto;\n    }\n    \n    /* Der allererste Absatz nach einer Überschrift bekommt keinen Einzug */\n    h1 + p, h2 + p, h3 + p, h4 + p, .no-indent {\n      text-indent: 0;\n    }\n    \n    /* Großer Zierbuchstabe (Drop Cap) für den ersten Absatz nach H1/H2 */\n    h1 + p::first-letter,\n    h2 + p::first-letter,\n    p.chapter-start::first-letter {\n      font-family: var(--font-heading);\n      font-size: 3.2em;\n      float: left;\n      line-height: 0.8;\n      padding-top: 4px;\n      padding-right: 8px;\n      padding-bottom: 2px;\n      color: var(--accent-color);\n      font-weight: 700;\n    }\n    \n    /* Blockquotes (Zitate) */\n    blockquote {\n      font-style: italic;\n      margin: 1.5em 2em;\n      padding-left: 1em;\n      border-left: 2px solid var(--accent-color);\n      color: rgba(43, 35, 24, 0.85);\n    }\n    \n    blockquote p {\n      text-indent: 0;\n      text-align: left;\n    }\n    \n    /* Zierteiler zwischen Kapiteln / Abschnitten */\n    hr, .divider {\n      border: 0;\n      text-align: center;\n      margin: 2em 0;\n      height: auto;\n      background: transparent;\n    }\n    \n    hr::before, .divider::before {\n      content: \"❦\";\n      font-size: 1.2em;\n      color: var(--accent-color);\n      opacity: 0.7;\n    }\n    \n    /* Bilder-Optimierung für das Buchraster */\n    img {\n      max-width: 100%;\n      height: auto;\n      display: block;\n      margin: 1.5em auto;\n      border-radius: 2px;\n      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);\n      page-break-inside: avoid;\n      break-inside: avoid;\n    }\n    \n    figcaption {\n      font-size: 0.85em;\n      font-style: italic;\n      text-align: center;\n      color: #665b4e;\n      margin-top: 0.5em;\n    }\n    \n    /* Listen */\n    ul, ol {\n      padding-left: 1.8em;\n      margin: 1em 0;\n    }\n    \n    li {\n      margin-bottom: 0.4em;\n      page-break-inside: avoid;\n      break-inside: avoid;\n    }\n      \n  </style>",
+      title: "Gate gate",
+      theme: "classic",
+      customStyles: null,
+      width: 1370,
+      fontSize: 17,
+      bodyWidth: 95
+    });
+  </script>
+</body>
+</html>

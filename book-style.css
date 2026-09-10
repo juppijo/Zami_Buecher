@@ -1,0 +1,150 @@
+/* ==========================================
+   BUCHBINDER - ELEGANTES BUCH-STYLING
+   ========================================== */
+
+/* Google Fonts Import für klassische Buchtypografie */
+
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap');
+
+:root {
+  --font-heading: 'Playfair Display', 'Cinzel', Georgia, serif;
+  --font-body: 'Source Serif 4', Georgia, serif;
+  --text-color: #2b2318;
+  --accent-color: #8b5e34;
+}
+
+/* Base Layout & Typografie */
+body {
+  margin: 40px;
+  color: #112255;
+  background: #ededfd;
+  font-family: var(--font-body);
+  color: var(--text-color);
+  line-height: 1.65;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Überschriften */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  color: var(--accent-color);
+  font-weight: 600;
+  line-height: 1.25;
+  margin-top: 1.8em;
+  margin-bottom: 0.6em;
+  text-wrap: balance;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+
+h1 {
+	color: #112299;
+  font-size: 2em;
+  text-align: center;
+  border-bottom: 1px solid rgba(139, 94, 52, 0.3);
+  padding-bottom: 0.3em;
+  margin-top: 0.5em;
+  margin-bottom: 1em;
+}
+
+h2 {
+  font-size: 1.5em;
+  text-align: center;
+}
+
+h3 {
+  font-size: 1.2em;
+}
+
+/* Klassische Buch-Absätze mit Einzug */
+p {
+  margin-top: 0;
+  margin-bottom: 0;
+  text-indent: 1.5em;
+  text-align: justify;
+  hyphens: auto;
+  -webkit-hyphens: auto;
+}
+
+/* Der allererste Absatz nach einer Überschrift bekommt keinen Einzug */
+h1 + p, h2 + p, h3 + p, h4 + p, .no-indent {
+  text-indent: 0;
+}
+
+/* Großer Zierbuchstabe (Drop Cap) für den ersten Absatz nach H1/H2 */
+h1 + p::first-letter,
+h2 + p::first-letter,
+p.chapter-start::first-letter {
+  font-family: var(--font-heading);
+  font-size: 3.2em;
+  float: left;
+  line-height: 0.8;
+  padding-top: 4px;
+  padding-right: 8px;
+  padding-bottom: 2px;
+  color: var(--accent-color);
+  font-weight: 700;
+}
+
+/* Blockquotes (Zitate) */
+blockquote {
+  font-style: italic;
+  margin: 1.5em 2em;
+  padding-left: 1em;
+  border-left: 2px solid var(--accent-color);
+  color: rgba(43, 35, 24, 0.85);
+}
+
+blockquote p {
+  text-indent: 0;
+  text-align: left;
+}
+
+/* Zierteiler zwischen Kapiteln / Abschnitten */
+hr, .divider {
+  border: 0;
+  text-align: center;
+  margin: 2em 0;
+  height: auto;
+  background: transparent;
+}
+
+hr::before, .divider::before {
+  content: "❦";
+  font-size: 1.2em;
+  color: var(--accent-color);
+  opacity: 0.7;
+}
+
+/* Bilder-Optimierung für das Buchraster */
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 1.5em auto;
+  border-radius: 2px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+
+figcaption {
+  font-size: 0.85em;
+  font-style: italic;
+  text-align: center;
+  color: #665b4e;
+  margin-top: 0.5em;
+}
+
+/* Listen */
+ul, ol {
+  padding-left: 1.8em;
+  margin: 1em 0;
+}
+
+li {
+  margin-bottom: 0.4em;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
