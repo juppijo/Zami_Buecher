@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interaktives Foto-Karussell XXL & Diashow</title>
+  <style>
+    :root {
+      --bg-color: #1a1e24;
+      --panel-bg: #252b33;
+      --text-color: #e0e6ed;
+      --accent-color: #00bcd4; /* Blau-Türkis */
+      --accent-hover: #008ba3;
+      --page-bg: #fdfbf7;
+      --page-text: #2c3e50;
+      --shadow-color: rgba(0,0,0,0.4);
+    }
+
+    body.theme-turquoise {
+      --bg-color: #1a1e24;
+      --panel-bg: #252b33;
+      --text-color: #e0e6ed;
+      --accent-color: #00bcd4;
+      --accent-hover: #008ba3;
+    }
+
+    body.theme-dark {
+      --bg-color: #121212;
+      --panel-bg: #1e1e1e;
+      --text-color: #ffffff;
+      --accent-color: #ff9800;
+      --accent-hover: #e68a00;
+      --page-bg: #2a2a2a;
+      --page-text: #f0f0f0;
+    }
+
+    body.theme-classic {
+      --bg-color: #2b1d0c;
+      --panel-bg: #3d2b17;
+      --text-color: #f3e5ab;
+      --accent-color: #d4a359;
+      --accent-hover: #b88a44;
+      --page-bg: #f4ebd9;
+      --page-text: #3e2723;
+    }
+
+    body.theme-impressionist {
+      --bg-color: #1c2a38;
+      --panel-bg: #2c3d4f;
+      --text-color: #e2f1f8;
+      --accent-color: #4db6ac;
+      --accent-hover: #39948b;
+      --page-bg: #f0f7f7;
+      --page-text: #1a3636;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background-color 0.3s, color 0.3s;
+      overflow-x: hidden;
+    }
+
+    header {
+      width: 100%;
+      background-color: var(--panel-bg);
+      padding: 8px 16px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 4px 10px var(--shadow-color);
+      z-index: 10;
+    }
+
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    label {
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    button, .btn-label {
+      background-color: var(--accent-color);
+      color: #fff;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.85rem;
+      transition: background-color 0.2s, transform 0.1s;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    button:hover, .btn-label:hover {
+      background-color: var(--accent-hover);
+      transform: translateY(-1px);
+    }
+
+    button.btn-active {
+      background-color: #e53935;
+    }
+
+    button.btn-active:hover {
+      background-color: #c62828;
+    }
+
+    select, input[type="file"] {
+      display: none;
+    }
+
+    input[type="text"].custom-input {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      border: 1px solid var(--accent-color);
+      padding: 6px 10px;
+      border-radius: 6px;
+      outline: none;
+      font-size: 0.85rem;
+      width: 150px;
+    }
+
+    input[type="text"].custom-input.url-input {
+      width: 240px;
+    }
+
+    select.custom-select {
+      display: inline-block;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      border: 1px solid var(--accent-color);
+      padding: 6px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      outline: none;
+    }
+
+    main {
+      flex: 1;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 10px;
+      position: relative;
+    }
+
+    /* Maximierte Ansicht für Karussell-Viewport */
+    #carousel-viewport {
+      position: relative;
+      display: flex;
+      align-items: center;
+      width: 96vw;
+      height: 86vh;
+    }
+
+    #carousel-track {
+      display: flex;
+      gap: 15px;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scroll-behavior: smooth;
+      width: 100%;
+      height: 100%;
+      padding: 5px 0;
+      scrollbar-width: thin;
+      scrollbar-color: var(--accent-color) var(--panel-bg);
+    }
+
+    #carousel-track::-webkit-scrollbar {
+      height: 8px;
+    }
+
+    #carousel-track::-webkit-scrollbar-track {
+      background: var(--panel-bg);
+      border-radius: 4px;
+    }
+
+    #carousel-track::-webkit-scrollbar-thumb {
+      background-color: var(--accent-color);
+      border-radius: 4px;
+    }
+
+    .carousel-slide {
+      flex: 0 0 100%;
+      scroll-snap-align: center;
+      background-color: var(--page-bg);
+      color: var(--page-text);
+      padding: 12px;
+      border-radius: 8px;
+      box-shadow: 0 8px 24px var(--shadow-color);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-sizing: border-box;
+      height: 100%;
+    }
+
+    .slide-content {
+      width: 100%;
+      height: calc(100% - 20px);
+      display: grid;
+      gap: 6px;
+      align-content: center;
+      justify-items: center;
+    }
+
+    .img-container {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border-radius: 4px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+      background-color: rgba(0,0,0,0.03);
+    }
+
+    .img-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.2s;
+      cursor: pointer;
+    }
+
+    .img-container img:hover {
+      transform: scale(1.03);
+    }
+
+    .slide-footer {
+      text-align: center;
+      font-size: 0.8rem;
+      opacity: 0.7;
+      height: 16px;
+      line-height: 16px;
+      font-weight: 600;
+    }
+
+    /* Cover Styling */
+    .cover-slide {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, var(--accent-color), var(--panel-bg));
+      color: #fff;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .cover-slide h1 {
+      font-size: 3rem;
+      margin-bottom: 20px;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+      word-break: break-word;
+    }
+
+    .cover-slide p {
+      font-weight: 600;
+      font-size: 1.3rem;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.6);
+    }
+
+    .cover-img-box {
+      width: 70%;
+      height: 60%;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+      border: 4px solid rgba(255,255,255,0.8);
+    }
+
+    .cover-img-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* Navigation Buttons */
+    .nav-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background-color: var(--panel-bg);
+      color: var(--text-color);
+      border: 2px solid var(--accent-color);
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      z-index: 20;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+      transition: background-color 0.2s, transform 0.2s;
+    }
+
+    .nav-btn:hover {
+      background-color: var(--accent-color);
+      color: #fff;
+      transform: translateY(-50%) scale(1.1);
+    }
+
+    .nav-btn.prev { left: -15px; }
+    .nav-btn.next { right: -15px; }
+
+    /* Lightbox Modal */
+    #lightbox {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.92);
+      z-index: 100;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #lightbox img {
+      max-width: 95vw;
+      max-height: 95vh;
+      object-fit: contain;
+      border-radius: 6px;
+    }
+
+    #lightbox-close {
+      position: absolute;
+      top: 20px;
+      right: 30px;
+      color: #fff;
+      font-size: 2.5rem;
+      cursor: pointer;
+    }
+
+    #placeholder-msg {
+      text-align: center;
+      font-size: 1.3rem;
+      opacity: 0.8;
+      width: 100%;
+    }
+  </style>
+</head>
+<body class="theme-turquoise">
+
+  <header>
+    <!-- Dateilinks & Cover -->
+    <div class="control-group">
+      <label class="btn-label" for="folder-input">📁 Ordner wählen</label>
+      <input type="file" id="folder-input" webkitdirectory directory multiple accept="image/*">
+      
+      <label class="btn-label" for="file-input">🖼️ Bilder wählen</label>
+      <input type="file" id="file-input" multiple accept="image/*">
+
+      <label class="btn-label" for="cover-input">🎨 Cover-Bild</label>
+      <input type="file" id="cover-input" accept="image/*">
+    </div>
+
+    <!-- Titel & Einstellungen -->
+    <div class="control-group">
+      <label for="album-title-input">Titel:</label>
+      <input type="text" id="album-title-input" class="custom-input" value="Mein Foto-Karussell" placeholder="Titel eingeben...">
+
+      <label>Bilder/Slide:</label>
+      <select id="imgs-per-page" class="custom-select">
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4" selected>4</option>
+        <option value="6">6</option>
+        <option value="8">8</option>
+        <option value="9">9</option>
+        <option value="12">12</option>
+        <option value="15">15</option>
+        <option value="16">16</option>
+        <option value="20">20</option>
+        <option value="25">25</option>
+        <option value="30">30</option>
+        <option value="36">36</option>
+        <option value="40">40</option>
+        <option value="48">48</option>
+        <option value="50">50</option>
+      </select>
+    </div>
+
+    <!-- Diashow Steuerung -->
+    <div class="control-group">
+      <button id="btn-slideshow">▶ Diashow</button>
+      <label>Intervall:</label>
+      <select id="slideshow-speed" class="custom-select">
+        <option value="1000">1s</option>
+        <option value="2000">2s</option>
+        <option value="3000" selected>3s</option>
+        <option value="5000">5s</option>
+        <option value="10000">10s</option>
+      </select>
+    </div>
+
+    <!-- Theme & Vollbild -->
+    <div class="control-group">
+      <label>Stil:</label>
+      <select id="theme-select" class="custom-select">
+        <option value="theme-turquoise">Blau-Türkis</option>
+        <option value="theme-dark">Dunkel</option>
+        <option value="theme-classic">Klassisch</option>
+        <option value="theme-impressionist">Impressionistisch</option>
+      </select>
+
+      <button id="btn-fullscreen">⛶ Vollbild</button>
+    </div>
+
+    <!-- Web-URL, Speicher- & Ladefunktion -->
+    <div class="control-group">
+      <label for="base-url-input">🌐 Web-Ordner:</label>
+      <input type="text" id="base-url-input" class="custom-input url-input" placeholder="https://juppijo.github.io/Bilder/WRZT/">
+      <button id="btn-load-url">🌐 Web-Bilder laden</button>
+
+      <button id="btn-save">💾 Album speichern</button>
+      <label class="btn-label" for="load-album-input">📂 Album laden</label>
+      <input type="file" id="load-album-input" accept=".json">
+    </div>
+  </header>
+
+  <main>
+    <div id="carousel-viewport">
+      <button class="nav-btn prev" id="btn-prev">❮</button>
+      
+      <div id="carousel-track">
+        <div id="placeholder-msg">
+          Bitte wähle einen Ordner, Bilder oder lade ein gespeichertes Album.
+        </div>
+      </div>
+
+      <button class="nav-btn next" id="btn-next">❯</button>
+    </div>
+  </main>
+
+  <!-- Lightbox -->
+  <div id="lightbox">
+    <span id="lightbox-close">&times;</span>
+    <img id="lightbox-img" src="" alt="Vollbild">
+  </div>
+
+  <script>
+    let imagesData = [];      // Speichert verarbeitete Links/URLs
+    let imagePaths = [];      // Speichert Pfade/Dateinamen für JSON
+    let coverImageData = null;
+    let coverImagePath = null;
+    let slideshowTimer = null;
+    let isSlideshowRunning = false;
+
+    // Elements
+    const folderInput = document.getElementById('folder-input');
+    const fileInput = document.getElementById('file-input');
+    const coverInput = document.getElementById('cover-input');
+    const albumTitleInput = document.getElementById('album-title-input');
+    const baseUrlInput = document.getElementById('base-url-input');
+    const btnLoadUrl = document.getElementById('btn-load-url');
+    const imgsPerPageSelect = document.getElementById('imgs-per-page');
+    const btnSlideshow = document.getElementById('btn-slideshow');
+    const slideshowSpeedSelect = document.getElementById('slideshow-speed');
+    const themeSelect = document.getElementById('theme-select');
+    const btnFullscreen = document.getElementById('btn-fullscreen');
+    const btnSave = document.getElementById('btn-save');
+    const loadAlbumInput = document.getElementById('load-album-input');
+    const carouselTrack = document.getElementById('carousel-track');
+    const placeholderMsg = document.getElementById('placeholder-msg');
+    const btnPrev = document.getElementById('btn-prev');
+    const btnNext = document.getElementById('btn-next');
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightbox-img');
+    const lightboxClose = document.getElementById('lightbox-close');
+
+    // Event Listeners
+    folderInput.addEventListener('change', handleFileSelect);
+    fileInput.addEventListener('change', handleFileSelect);
+    coverInput.addEventListener('change', handleCoverSelect);
+    btnLoadUrl.addEventListener('click', loadImagesFromWebUrl);
+    
+    albumTitleInput.addEventListener('input', () => renderCarousel());
+    imgsPerPageSelect.addEventListener('change', () => {
+      if (isSlideshowRunning) stopSlideshow();
+      renderCarousel();
+    });
+    
+    themeSelect.addEventListener('change', (e) => {
+      document.body.className = e.target.value;
+    });
+
+    // Horizontal Scroll-Navigation
+    btnPrev.addEventListener('click', () => {
+      carouselTrack.scrollBy({ left: -carouselTrack.clientWidth, behavior: 'smooth' });
+    });
+    btnNext.addEventListener('click', nextSlide);
+
+    btnSlideshow.addEventListener('click', toggleSlideshow);
+    btnFullscreen.addEventListener('click', toggleFullscreen);
+    btnSave.addEventListener('click', saveAlbum);
+    loadAlbumInput.addEventListener('change', loadAlbum);
+
+    lightboxClose.addEventListener('click', () => lightbox.style.display = 'none');
+    lightbox.addEventListener('click', (e) => {
+      if (e.target === lightbox) lightbox.style.display = 'none';
+    });
+
+    function nextSlide() {
+      // Wenn wir am Ende sind, spule zum Anfang
+      if (carouselTrack.scrollLeft + carouselTrack.clientWidth >= carouselTrack.scrollWidth - 10) {
+        carouselTrack.scrollTo({ left: 0, behavior: 'smooth' });
+      } else {
+        carouselTrack.scrollBy({ left: carouselTrack.clientWidth, behavior: 'smooth' });
+      }
+    }
+
+    // Diashow Start/Stopp
+    function toggleSlideshow() {
+      if (isSlideshowRunning) {
+        stopSlideshow();
+      } else {
+        startSlideshow();
+      }
+    }
+
+    function startSlideshow() {
+      if (imagesData.length === 0) {
+        alert("Bitte lade zuerst Bilder!");
+        return;
+      }
+
+      // Für Einzelbild-Diashow automatisch auf 1 Bild pro Slide stellen
+      imgsPerPageSelect.value = "1";
+      renderCarousel();
+
+      isSlideshowRunning = true;
+      btnSlideshow.textContent = "⏸ Stopp";
+      btnSlideshow.classList.add('btn-active');
+
+      const speed = parseInt(slideshowSpeedSelect.value, 10);
+      slideshowTimer = setInterval(nextSlide, speed);
+    }
+
+    function stopSlideshow() {
+      isSlideshowRunning = false;
+      clearInterval(slideshowTimer);
+      slideshowTimer = null;
+      btnSlideshow.textContent = "▶ Diashow";
+      btnSlideshow.classList.remove('btn-active');
+    }
+
+    // Web-Bilder direkt über URL laden
+    function loadImagesFromWebUrl() {
+      let baseUrl = baseUrlInput.value.trim();
+      if (!baseUrl) {
+        alert("Bitte gib einen Web-Ordner Pfad ein!");
+        return;
+      }
+
+      const countStr = prompt("Wie viele Bilder sollen geladen werden?", "50");
+      if (!countStr) return;
+      const count = parseInt(countStr, 10);
+
+      const prefix = prompt("Namens-Präfix der Bilder (z. B. 'bild' für bild1.jpg, oder leer lassen für 1.jpg, 2.jpg...):", "");
+      const ext = prompt("Dateiendung (z. B. jpg, png, webp):", "jpg");
+
+      if (!baseUrl.endsWith('/')) baseUrl += '/';
+
+      imagesData = [];
+      imagePaths = [];
+
+      for (let i = 1; i <= count; i++) {
+        const fileName = `${prefix || ''}${i}.${ext}`;
+        const fullUrl = baseUrl + fileName;
+        imagePaths.push(fileName);
+        imagesData.push(fullUrl);
+      }
+
+      if (isSlideshowRunning) stopSlideshow();
+      renderCarousel();
+    }
+
+    // Dateiauswahl verarbeiten
+    function handleFileSelect(e) {
+      const files = Array.from(e.target.files).filter(f => f.type.startsWith('image/'));
+      if (files.length === 0) return;
+
+      imagesData = [];
+      imagePaths = [];
+
+      files.forEach(file => {
+        const relPath = file.webkitRelativePath || file.name;
+        imagePaths.push(relPath);
+        imagesData.push(URL.createObjectURL(file));
+      });
+
+      if (isSlideshowRunning) stopSlideshow();
+      renderCarousel();
+    }
+
+    // Cover-Bild verarbeiten
+    function handleCoverSelect(e) {
+      const file = e.target.files[0];
+      if (!file || !file.type.startsWith('image/')) return;
+
+      coverImagePath = file.webkitRelativePath || file.name;
+      coverImageData = URL.createObjectURL(file);
+      renderCarousel();
+    }
+
+    // Errechnet Spalten und Zeilen für 1 bis 50 Bilder
+    function getGridDimensions(count) {
+      if (count === 1) return { cols: 1, rows: 1 };
+      if (count === 2) return { cols: 2, rows: 1 };
+      if (count === 3) return { cols: 3, rows: 1 };
+      if (count === 4) return { cols: 2, rows: 2 };
+      if (count <= 6) return { cols: 3, rows: 2 };
+      if (count <= 9) return { cols: 3, rows: 3 };
+      if (count <= 12) return { cols: 4, rows: 3 };
+      if (count <= 16) return { cols: 4, rows: 4 };
+      if (count <= 20) return { cols: 5, rows: 4 };
+      if (count <= 25) return { cols: 5, rows: 5 };
+      if (count <= 30) return { cols: 6, rows: 5 };
+      if (count <= 36) return { cols: 6, rows: 6 };
+      if (count <= 42) return { cols: 7, rows: 6 };
+      if (count <= 49) return { cols: 7, rows: 7 };
+      return { cols: 10, rows: 5 };
+    }
+
+    // Hauptfunktion zum Aufbauen/Rendern des Karussells
+    function renderCarousel() {
+      if (imagesData.length === 0 && !coverImageData) {
+        placeholderMsg.style.display = 'block';
+        return;
+      }
+
+      carouselTrack.innerHTML = '';
+
+      const imgsPerPage = parseInt(imgsPerPageSelect.value, 10);
+      const albumTitle = albumTitleInput.value.trim() || 'Mein Foto-Karussell';
+
+      // Cover als erste Slide erstellen
+      const coverSlide = document.createElement('div');
+      coverSlide.className = 'carousel-slide cover-slide';
+      
+      let coverImgHTML = '';
+      if (coverImageData) {
+        coverImgHTML = `
+          <div class="cover-img-box">
+            <img src="${coverImageData}" alt="Cover Bild">
+          </div>
+        `;
+      }
+
+      coverSlide.innerHTML = `
+        <h1>${escapeHTML(albumTitle)}</h1>
+        ${coverImgHTML}
+        <p>${imagesData.length} Bilder</p>
+      `;
+      carouselTrack.appendChild(coverSlide);
+
+      // Inhalts-Slides aufbauen
+      for (let i = 0; i < imagesData.length; i += imgsPerPage) {
+        const pageImages = imagesData.slice(i, i + imgsPerPage);
+        const slideEl = document.createElement('div');
+        slideEl.className = 'carousel-slide';
+
+        const contentEl = document.createElement('div');
+        contentEl.className = 'slide-content';
+        
+        const gridDim = getGridDimensions(pageImages.length);
+        contentEl.style.gridTemplateColumns = `repeat(${gridDim.cols}, 1fr)`;
+        contentEl.style.gridTemplateRows = `repeat(${gridDim.rows}, 1fr)`;
+
+        pageImages.forEach(src => {
+          const container = document.createElement('div');
+          container.className = 'img-container';
+          const img = document.createElement('img');
+          img.src = src;
+          
+          // Wenn nur 1 Bild pro Slide gezeigt wird, passe das Bild optimal an
+          if (imgsPerPage === 1) {
+            img.style.objectFit = 'contain';
+          } else {
+            img.style.objectFit = 'cover';
+          }
+
+          img.addEventListener('click', () => openLightbox(src));
+          container.appendChild(img);
+          contentEl.appendChild(container);
+        });
+
+        const footerEl = document.createElement('div');
+        footerEl.className = 'slide-footer';
+        footerEl.textContent = `Slide ${Math.floor(i / imgsPerPage) + 1}`;
+
+        slideEl.appendChild(contentEl);
+        slideEl.appendChild(footerEl);
+        carouselTrack.appendChild(slideEl);
+      }
+    }
+
+    function escapeHTML(str) {
+      return str.replace(/[&<>'"]/g, 
+        tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+      );
+    }
+
+    function openLightbox(src) {
+      lightboxImg.src = src;
+      lightbox.style.display = 'flex';
+    }
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    }
+
+    // Pfad zusammensetzen
+    function buildFullUrl(path, baseUrl) {
+      if (!path) return null;
+      if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('data:')) {
+        return path;
+      }
+      if (!baseUrl) return path;
+      
+      const cleanBase = baseUrl.endsWith('/') ? baseUrl : baseUrl + '/';
+      const cleanPath = path.startsWith('/') ? path.slice(1) : path;
+      return cleanBase + cleanPath;
+    }
+
+    // Speichern der JSON
+    function saveAlbum() {
+      if (imagePaths.length === 0 && !coverImagePath) {
+        alert("Keine Inhalte zum Speichern vorhanden!");
+        return;
+      }
+      const albumData = {
+        title: albumTitleInput.value,
+        baseUrl: baseUrlInput.value.trim(),
+        coverImageLink: coverImagePath,
+        theme: themeSelect.value,
+        imgsPerPage: imgsPerPageSelect.value,
+        imageLinks: imagePaths
+      };
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(albumData, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `${albumTitleInput.value.trim() || 'fotokarussell'}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    }
+
+    // Laden der JSON-Datei
+    function loadAlbum(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+          const albumData = JSON.parse(event.target.result);
+          if (Array.isArray(albumData.imageLinks)) {
+            
+            if (albumData.baseUrl !== undefined) {
+              baseUrlInput.value = albumData.baseUrl;
+            }
+            const currentBaseUrl = baseUrlInput.value.trim();
+
+            imagePaths = albumData.imageLinks;
+            imagesData = imagePaths.map(p => buildFullUrl(p, currentBaseUrl));
+            
+            coverImagePath = albumData.coverImageLink || null;
+            coverImageData = buildFullUrl(coverImagePath, currentBaseUrl);
+
+            if (albumData.title !== undefined) albumTitleInput.value = albumData.title;
+            if (albumData.theme) {
+              themeSelect.value = albumData.theme;
+              document.body.className = albumData.theme;
+            }
+            if (albumData.imgsPerPage) imgsPerPageSelect.value = albumData.imgsPerPage;
+
+            if (isSlideshowRunning) stopSlideshow();
+            renderCarousel();
+          } else {
+            alert("Die JSON-Datei enthält keine gültige Bild-Linkstruktur.");
+          }
+        } catch (err) {
+          alert("Fehler beim Lesen der Album-Datei.");
+        }
+      };
+      reader.readAsText(file);
+      e.target.value = '';
+    }
+  </script>
+</body>
+</html>
