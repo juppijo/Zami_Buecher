@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Mirjam_Fotos</title>
+
+  <style>
+    /* 1. Body zentriert ausrichten */
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      padding: 20px 0;
+      color: #eeddff;   
+      background-color: #121224; /* Dunkler Hintergrund */
+      display: flex;
+      flex-direction: column;
+      align-items: center; /* Waagerechte Zentrierung aller Kind-Elemente */
+      min-height: 100vh;
+      box-sizing: border-box;
+    }
+
+    /* 2. Header-Bereich mit Titel & Button */
+    .button-container {
+      display: flex;
+      align-items: center;
+      justify-content: center; 
+      gap: 15px; 
+      margin-bottom: 20px;
+      width: 100%;
+      max-width: 1000px;
+      padding: 0 15px;
+      box-sizing: border-box;
+    }
+
+    h1 {
+      color: #7788ff; /* Hellere Farbe für bessere Lesbarkeit auf dunkelblau */
+      margin: 0;
+      font-size: 28px;
+    }
+
+    .link-box-button {
+      padding: 8px 16px;
+      background: #2233aa;
+      color: #eeddff;
+      font-size: 16px;
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: background 0.2s ease;
+      cursor: pointer; 
+    }
+
+    .link-box-button:hover {
+      background: #4455cc;
+    }
+
+    /* 3. Galerie-Container */
+    .gallery {
+      display: flex;
+      flex-direction: column;
+      align-items: center; /* Zentriert jedes Bild einzeln */
+      width: 100%;
+      max-width: 1000px; /* Maximale Galeriebreite */
+      padding: 0 15px;
+      box-sizing: border-box;
+    }
+
+    /* 4. Bilder-Styling */
+    .gallery img {
+      width: 100%;        /* Passt sich kleinen Bildschirmen flexibel an */
+      max-width: 1000px;  /* Maximale Breite für das Bild */
+      height: auto;       /* Behält das Seitenverhältnis bei */
+      display: block;
+      margin: 0 auto 20px auto; /* Zentriert das Bild waagerecht mit Abstand nach unten */
+      border-radius: 8px; /* Leicht abgerundete Ecken */
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); /* Dezent schattierter Rand für Tiefe */
+    }
+  </style>
+</head>
+<body>
+
+  <div class="button-container">
+    <h1>Mirjam_Fotos</h1>
+    <button class="link-box-button" onclick="toggleFullscreen()">⛶</button>
+  </div>
+
+  <div class="gallery">
+    <!-- Galerie deiner Bilder aus Google Drive -->
+    <img src="https://lh3.googleusercontent.com/d/1chiZtjgto4uoCKEeGdo86krVC09JfBnm" alt="Bild 0">
+    <img src="https://lh3.googleusercontent.com/d/1duYV1p-9dw7K-E-nFCLnm6O2FV3WD_Gd" alt="Bild 1">
+    <img src="https://lh3.googleusercontent.com/d/1fPF3ufPEhht_pVijMipsLh_-UoHYs0PC" alt="Bild 2">
+    <img src="https://lh3.googleusercontent.com/d/1m57XnIlI6lmohpUPCaRkb-9cXZnrR8M0" alt="Bild 3">
+    <img src="https://lh3.googleusercontent.com/d/1UOukDmxabnvEkp4JJL49Jde5syvGBhcA" alt="Bild 4">
+    <img src="https://lh3.googleusercontent.com/d/17_8mDC2SAQDoKeWUs6P1eqDrx6ihomy6" alt="Bild 5">
+    <img src="https://lh3.googleusercontent.com/d/193Q7haNL-Bwb61jZGVpcwZU7pEVVqK6v" alt="Bild 6">
+    <img src="https://lh3.googleusercontent.com/d/1az4SHCM1RoFk7J8AJa2atkIGcClfxKQZ" alt="Bild 7">
+    <img src="https://lh3.googleusercontent.com/d/1093-Fs0HPR60x_Fk2Fk1HFlGCFH7Fhdm" alt="Bild 8">
+    <img src="https://lh3.googleusercontent.com/d/1GS9XZXgYfwKvF6zokNzScrpRqpebbewv" alt="Bild 9">
+    <img src="https://lh3.googleusercontent.com/d/1zX6SZA7Ymx-DLCU_dibZ69n_FHAKhEwM" alt="Bild 10">
+  </div>
+
+  <script>
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => {
+          alert("Fehler beim Aktivieren des Vollbildmodus!");
+        });
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    }
+  </script>
+</body>
+</html>
