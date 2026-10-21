@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-<html lang="de">
-<head>
+<html lang="de"><head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Das Licht über den Türmen von Magdala</title>
@@ -49,14 +48,14 @@
     .page { background:var(--paper) !important; padding:var(--pad) !important; border:1px solid rgba(0,0,0,.1); }
     .page-content { height:100%; width:100%; overflow-y:auto; font-family:var(--ff); font-size:var(--fs); line-height:var(--lh); color:var(--text); text-align:var(--ta); hyphens:auto; scrollbar-width:thin; }
     .page-content h1,.page-content h2,.page-content h3 { font-family:'Playfair Display',serif; line-height:1.2; }
-    .page-content img { max-width:var(--imgw); max-height:calc(var(--imgh) * 1vh); width:auto; height:auto; display:block; margin:30px auto; border-radius:5px; border:var(--imgb) solid #fff; box-shadow:var(--imgs); cursor:zoom-in; }
+    .page-content img { max-width:var(--imgw); max-height:calc(var(--imgh) * 1vh); width:auto; height:auto; display:block; margin:30px auto; border-radius:5px; border:var(--imgb) solid #fff; box-shadow:var(--imgs); cursor:default; }
     .page-content.img-page { display:flex; align-items:center; justify-content:center; overflow:hidden; }
     .page-content.img-page img { margin:0 auto; }
     .page-content.img-page p { margin:0; width:100%; }
     /* Bild über Doppelseite: jede Seite zeigt eine Hälfte, randlos bis zum Falz */
     .page.half { padding:0 !important; border:0; }
     .page.half .page-content { position:relative; overflow:hidden; }
-    .page.half .half-img { position:absolute; top:0; width:200%; height:100%; background:no-repeat center / contain; cursor:zoom-in; }
+    .page.half .half-img { position:absolute; top:0; width:200%; height:100%; background:no-repeat center / contain; cursor:default; }
     .page.half.hl .half-img { left:0; }
     .page.half.hr .half-img { left:-100%; }
     .page-content table { border-collapse:collapse; width:100%; font-size:.9em; } .page-content td,.page-content th { border:1px solid #9994; padding:4px 6px; }
@@ -162,70 +161,67 @@
       top: 0;
     }
   </style>
-  <style type="text/css">
-    .stf__parent {
-      position: relative;
-      display: block;
-      box-sizing: border-box;
-      transform: translateZ(0);
-    
-      -ms-touch-action: pan-y;
-      touch-action: pan-y;
-    }
-    
-    .sft__wrapper {
-      position: relative;
-      width: 100%;
-      box-sizing: border-box;
-    }
-    
-    .stf__parent canvas {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      left: 0;
-      top: 0;
-    }
-    
-    .stf__block {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      box-sizing: border-box;
-      perspective: 2000px;
-    }
-    
-    .stf__item {
-      display: none;
-      position: absolute;
-      transform-style: preserve-3d;
-    }
-    
-    .stf__outerShadow {
-      position: absolute;
-      left: 0;
-      top: 0;
-    }
-    
-    .stf__innerShadow {
-      position: absolute;
-      left: 0;
-      top: 0;
-    }
-    
-    .stf__hardShadow {
-      position: absolute;
-      left: 0;
-      top: 0;
-    }
-    
-    .stf__hardInnerShadow {
-      position: absolute;
-      left: 0;
-      top: 0;
-    }
-  </style>
-</head>
+<style type="text/css">.stf__parent {
+  position: relative;
+  display: block;
+  box-sizing: border-box;
+  transform: translateZ(0);
+
+  -ms-touch-action: pan-y;
+  touch-action: pan-y;
+}
+
+.sft__wrapper {
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.stf__parent canvas {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  left: 0;
+  top: 0;
+}
+
+.stf__block {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  perspective: 2000px;
+}
+
+.stf__item {
+  display: none;
+  position: absolute;
+  transform-style: preserve-3d;
+}
+
+.stf__outerShadow {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.stf__innerShadow {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.stf__hardShadow {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.stf__hardInnerShadow {
+  position: absolute;
+  left: 0;
+  top: 0;
+}</style></head>
 <body>
 
   <section id="start">
@@ -1610,64 +1606,8 @@
       })
     }));
   </script>
-
-  <script id="bookdata" type="application/json">
-    {
-      "title": "Das Licht über den Türmen von Magdala",
-      "pages": [{
-        "h": "\u003cp>\u003cimg src=\"https://lh3.googleusercontent.com/d/1igsPgVysyUiOLjhtut0urmlMV0oPlXwY\">\u003c/p>",
-        "img": true
-      }, {
-        "h": "\u003cp>\u003cimg src=\"https://lh3.googleusercontent.com/d/1-HnjJ1nUl2Tf1nJ7K7AUB8qNyaQ_4GtT\">\u003c/p>",
-        "img": true
-      }, {
-        "h": "\u003cp>\u003cimg src=\"https://lh3.googleusercontent.com/d/1woeTvCj1J5k75UdGdtz-goFc-BtaTPyJ\">\u003c/p>",
-        "img": true
-      }, {
-        "h": "\u003cp>\u003cimg src=\"https://lh3.googleusercontent.com/d/1oNmfZIoOyU9whIi0ZnBjeZcqhUX_vZdp\">\u003c/p>",
-        "img": true
-      }, {
-        "h": "\u003cp>\u003cimg src=\"https://lh3.googleusercontent.com/d/1rafVLcB0LeMS1ehVwOVsmwZppD6LzVOu\">\u003c/p>",
-        "img": true
-      }, {
-        "h": "\u003cp>\u003cimg src=\"https://lh3.googleusercontent.com/d/116mkMC1oqqhdgWTHTup577ctpsWWGts_\">\u003c/p>",
-        "img": true
-      }, {
-        "h": "\u003cp>\u003cimg src=\"https://lh3.googleusercontent.com/d/1xpV5iyqZRRSi0DLKXuZIVNFdArRxaOY5\">\u003c/p>",
-        "img": true
-      }, {
-        "h": "\u003cp>\u003cimg src=\"https://lh3.googleusercontent.com/d/1nG-39d-xLQnCsXGECa8dCwvFAtMMrakY\">\u003c/p>",
-        "img": true
-      }, {
-        "h": "\u003cp>\u003cimg src=\"https://lh3.googleusercontent.com/d/1JC76Sg0olrBEDd65Y66kf8LH2qKe5vgG\">\u003c/p>",
-        "img": true
-      }, {
-        "h": "\u003cp>\u003cimg src=\"https://lh3.googleusercontent.com/d/1leNkfc3SMNwUAqL76xfBnEF348NO7lvI\">\u003c/p>",
-        "img": true
-      }, {
-        "h": "\u003cp>\u003cimg src=\"https://lh3.googleusercontent.com/d/1zLOqPHtt2t67DTEbYYW3ivMhP5W_2xQw\">\u003c/p>",
-        "img": true
-      }],
-      "settings": {
-        "pageH": 90,
-        "pageW": 29,
-        "pad": 20,
-        "paper": "#fdfaf3",
-        "font": "'Lora',Georgia,serif",
-        "fs": 14.5,
-        "lh": 1.45,
-        "align": "justify",
-        "imgw": 85,
-        "imgh": 70,
-        "frame": true,
-        "spread": true,
-        "rate": 1,
-        "jpgq": 85,
-        "phone": false
-      }
-    }
-  </script>
-  <script>
+  
+  <script id="bookdata" type="application/json">{"title":"Das Licht über den Türmen von Magdala","pages":[{"h":"\u003cp>\u003cimg src=\"https://drive.google.com/thumbnail?id=1igsPgVysyUiOLjhtut0urmlMV0oPlXwY&sz=w2000\">\u003c/p>","img":true},{"h":"\u003cp>\u003cimg src=\"https://drive.google.com/thumbnail?id=1-HnjJ1nUl2Tf1nJ7K7AUB8qNyaQ_4GtT&sz=w2000\">\u003c/p>","img":true},{"h":"\u003cp>\u003cimg src=\"https://drive.google.com/thumbnail?id=1woeTvCj1J5k75UdGdtz-goFc-BtaTPyJ&sz=w2000\">\u003c/p>","img":true},{"h":"\u003cp>\u003cimg src=\"https://drive.google.com/thumbnail?id=1oNmfZIoOyU9whIi0ZnBjeZcqhUX_vZdp&sz=w2000\">\u003c/p>","img":true},{"h":"\u003cp>\u003cimg src=\"https://drive.google.com/thumbnail?id=1rafVLcB0LeMS1ehVwOVsmwZppD6LzVOu&sz=w2000\">\u003c/p>","img":true},{"h":"\u003cp>\u003cimg src=\"https://drive.google.com/thumbnail?id=116mkMC1oqqhdgWTHTup577ctpsWWGts_&sz=w2000\">\u003c/p>","img":true},{"h":"\u003cp>\u003cimg src=\"https://drive.google.com/thumbnail?id=1xpV5iyqZRRSi0DLKXuZIVNFdArRxaOY5&sz=w2000\">\u003c/p>","img":true},{"h":"\u003cp>\u003cimg src=\"https://drive.google.com/thumbnail?id=1nG-39d-xLQnCsXGECa8dCwvFAtMMrakY&sz=w2000\">\u003c/p>","img":true},{"h":"\u003cp>\u003cimg src=\"https://drive.google.com/thumbnail?id=1JC76Sg0olrBEDd65Y66kf8LH2qKe5vgG&sz=w2000\">\u003c/p>","img":true},{"h":"\u003cp>\u003cimg src=\"https://drive.google.com/thumbnail?id=1leNkfc3SMNwUAqL76xfBnEF348NO7lvI&sz=w2000\">\u003c/p>","img":true},{"h":"\u003cp>\u003cimg src=\"https://drive.google.com/thumbnail?id=1zLOqPHtt2t67DTEbYYW3ivMhP5W_2xQw&sz=w2000\">\u003c/p>","img":true},{"h":"\u003cp>\u003cimg src=\"https://drive.google.com/thumbnail?id=1TxsKirjzHJlep1n5hcPWK7jrRk3baBU1&sz=w2000\">\u003c/p>","img":true},{"h":"\u003cp>\u003cimg src=\"https://drive.google.com/thumbnail?id=121vCzHLn54bRYdkOE3iOwtD9K4m_g6xP&sz=w2000\">\u003c/p>","img":true},{"h":"\u003cp>\u003cimg src=\"https://drive.google.com/thumbnail?id=1OD7FsbPEttGsDPaWs5GuwKiqP2DijK_P&sz=w2000\">\u003c/p>","img":true},{"h":"\u003cp>\u003cimg src=\"https://drive.google.com/thumbnail?id=1iMXeiHPUB7eO2iAEvG2HXucJDVbA288l&sz=w2000\">\u003c/p>","img":true},{"h":"\u003cp>\u003cimg src=\"https://drive.google.com/thumbnail?id=1Yqg95K1WCX3GPf3tQEalY_d6xGay46bD&sz=w2000\">\u003c/p>","img":true},{"h":"\u003cp>\u003cimg src=\"https://drive.google.com/thumbnail?id=1Z1iNqGkdFrxj8_b03rD9xi9zH2ekTcPz&sz=w2000\">\u003c/p>","img":true},{"h":"\u003cp>\u003cimg src=\"https://drive.google.com/thumbnail?id=1asSFL0ElgjkGRosAQf-MADACGs8dSpXv&sz=w2000\">\u003c/p>","img":true},{"h":"\u003cp>\u003cimg src=\"https://drive.google.com/thumbnail?id=1F88Gr4BoXMKYstFPsyEY3l3Fn3nuIu6T&sz=w2000\">\u003c/p>","img":true},{"h":"\u003cp>\u003cimg src=\"https://drive.google.com/thumbnail?id=1o84UhiDmkWItC1-OS1xlHIiPEe3BB_VG&sz=w2000\">\u003c/p>","img":true},{"h":"\u003cp>\u003cimg src=\"https://drive.google.com/thumbnail?id=1r8qTJCxJupEov06ryS7KhDDm7rMTXrDN&sz=w2000\">\u003c/p>","img":true},{"h":"\u003cp>\u003cimg src=\"https://drive.google.com/thumbnail?id=1yUTL1nn3Du7d9JcGbbIV9NUm_7wPbx8z&sz=w2000\">\u003c/p>","img":true},{"h":"\u003cp>\u003cimg src=\"https://drive.google.com/thumbnail?id=1ImwEGFNTTOXSt09YW2pndPWImuW24PZG&sz=w2000\">\u003c/p>","img":true}],"settings":{"pageH":95,"pageW":32,"pad":30,"paper":"#fdfaf3","font":"'Lora',Georgia,serif","fs":14.5,"lh":1.45,"align":"justify","imgw":80,"imgh":60,"frame":true,"spread":true,"rate":1,"jpgq":85,"phone":false}}</script><script>
     (() => {
       const SRC = '<!DOCTYPE html>\n' + document.documentElement.outerHTML; // Vorlage für den HTML-Export
       const $ = id => document.getElementById(id);
@@ -1888,7 +1828,7 @@
       /* Seitenliste: Titelbild, Inhalt, Seiten – Bilder optional als Doppelseite (linke Hälfte links, rechte Hälfte rechts) */
       function buildAllPages(pages) {
         const toc = {
-          h: "<h6>Das Licht über den Türmen von Magdala</h6><div id='toc-inject'></div>"
+          h: "<h1>Inhaltsverzeichnis</h1><div id='toc-inject'></div>"
         };
         const base = [pages[0], toc, ...pages.slice(1)];
         const split = S.spread && !isPhone(); // im Smartphone-Modus (eine Seite) bleibt das Bild ganz
@@ -2104,8 +2044,7 @@
             pageFlip.flip(+a.dataset.p);
             return;
           }
-          if (e.target.tagName === 'IMG') openLightbox(e.target.src);
-          else if (e.target.classList && e.target.classList.contains('half-img')) openLightbox(e.target.dataset.src);
+          /* Zoom beim Anklicken von Bildern deaktiviert */
         });
       }
       const info = i => $('page-info').textContent = `Seite ${i + 1} / ${allPages.length}`;
@@ -2205,8 +2144,7 @@
             pf.removeAttribute('src');
             pf.textContent = code.replace(/<\/script/gi, '<\\/script');
           } catch (e) {
-            /* bleibt als CDN-Verweis */
-          }
+            /* bleibt als CDN-Verweis */ }
         }
         const data = doc.createElement('script');
         data.id = 'bookdata';
@@ -2798,6 +2736,4 @@
         }
       }
     })();
-  </script>
-</body>
-</html>
+  </script></body></html>
