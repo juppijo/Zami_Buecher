@@ -3,25 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <title>Mirjam_Fotos</title>
-
   <style>
-    /* 1. Body zentriert ausrichten */
     body {
       font-family: sans-serif;
       margin: 0;
       padding: 20px 0;
       color: #eeddff;   
-      background-color: #121224; /* Dunkler Hintergrund */
+      background-color: #121224;
       display: flex;
       flex-direction: column;
-      align-items: center; /* Waagerechte Zentrierung aller Kind-Elemente */
+      align-items: center;
       min-height: 100vh;
       box-sizing: border-box;
     }
-
-    /* 2. Header-Bereich mit Titel & Button */
     .button-container {
       display: flex;
       align-items: center;
@@ -33,13 +28,11 @@
       padding: 0 15px;
       box-sizing: border-box;
     }
-
     h1 {
-      color: #7788ff; /* Hellere Farbe für bessere Lesbarkeit auf dunkelblau */
+      color: #7788ff;
       margin: 0;
       font-size: 28px;
     }
-
     .link-box-button {
       padding: 8px 16px;
       background: #2233aa;
@@ -53,31 +46,26 @@
       transition: background 0.2s ease;
       cursor: pointer; 
     }
-
     .link-box-button:hover {
       background: #4455cc;
     }
-
-    /* 3. Galerie-Container */
     .gallery {
       display: flex;
       flex-direction: column;
-      align-items: center; /* Zentriert jedes Bild einzeln */
+      align-items: center;
       width: 100%;
-      max-width: 1000px; /* Maximale Galeriebreite */
+      max-width: 1000px;
       padding: 0 15px;
       box-sizing: border-box;
     }
-
-    /* 4. Bilder-Styling */
     .gallery img {
-      width: 100%;        /* Passt sich kleinen Bildschirmen flexibel an */
-      max-width: 1000px;  /* Maximale Breite für das Bild */
-      height: auto;       /* Behält das Seitenverhältnis bei */
+      width: 100%;
+      max-width: 1000px;
+      height: auto;
       display: block;
-      margin: 0 auto 20px auto; /* Zentriert das Bild waagerecht mit Abstand nach unten */
-      border-radius: 8px; /* Leicht abgerundete Ecken */
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); /* Dezent schattierter Rand für Tiefe */
+      margin: 0 auto 20px auto;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
     }
   </style>
 </head>
@@ -89,16 +77,29 @@
   </div>
 
   <div class="gallery">
-    <!-- Bilder aus dem Google Drive Unterordner "images" -->
-    <img src="https://lh3.googleusercontent.com/d/1Mj1L_ADbM-PouluuE9zXMV-4JeHQIfgT" alt="Bild 1">
-    <img src="https://lh3.googleusercontent.com/d/1j3d8yFlR8QiBWR2YkxvFBGOCuY7Ef6IT" alt="Bild 3">
-    <img src="https://lh3.googleusercontent.com/d/1mi8mMDRev7GTnhZvZcT0i1NIQhiVSCk0" alt="Bild 4">
-    <img src="https://lh3.googleusercontent.com/d/1hJkbWrnn-Wu3FYP0qCdZ7z-ICzVryCvB" alt="Bild 5">
-    <img src="https://lh3.googleusercontent.com/d/14KHpJIcctb4-KaO7kGIhNS-MiImNi11q" alt="Bild 6">
-    <img src="https://lh3.googleusercontent.com/d/1QybhHNOHaxTtb5oGPHN3hF81IwT-SCYx" alt="Bild 7">
-    <img src="https://lh3.googleusercontent.com/d/1myT0vH3zjc1TGcnQTyxEkO5KPWpSV4IZ" alt="Bild 8">
-    <img src="https://lh3.googleusercontent.com/d/1O0zKP1kk7awUkGAoeOtwOwY3d-70OAEy" alt="Bild 9">
-    <img src="https://lh3.googleusercontent.com/d/1oedbo4BZ_ADqN10fIzfWfBfvdqVhHhID" alt="Bild 10">
+    <img src="https://drive.google.com/thumbnail?id=1igsPgVysyUiOLjhtut0urmlMV0oPlXwY&sz=w2000" alt="Bild 1">
+    <img src="https://drive.google.com/thumbnail?id=1-HnjJ1nUl2Tf1nJ7K7AUB8qNyaQ_4GtT&sz=w2000" alt="Bild 2">
+    <img src="https://drive.google.com/thumbnail?id=1woeTvCj1J5k75UdGdtz-goFc-BtaTPyJ&sz=w2000" alt="Bild 3">
+    <img src="https://drive.google.com/thumbnail?id=1oNmfZIoOyU9whIi0ZnBjeZcqhUX_vZdp&sz=w2000" alt="Bild 4">
+    <img src="https://drive.google.com/thumbnail?id=1rafVLcB0LeMS1ehVwOVsmwZppD6LzVOu&sz=w2000" alt="Bild 5">
+    <img src="https://drive.google.com/thumbnail?id=116mkMC1oqqhdgWTHTup577ctpsWWGts_&sz=w2000" alt="Bild 6">
+    <img src="https://drive.google.com/thumbnail?id=1xpV5iyqZRRSi0DLKXuZIVNFdArRxaOY5&sz=w2000" alt="Bild 7">
+    <img src="https://drive.google.com/thumbnail?id=1nG-39d-xLQnCsXGECa8dCwvFAtMMrakY&sz=w2000" alt="Bild 8">
+    <img src="https://drive.google.com/thumbnail?id=1JC76Sg0olrBEDd65Y66kf8LH2qKe5vgG&sz=w2000" alt="Bild 9">
+    <img src="https://drive.google.com/thumbnail?id=1leNkfc3SMNwUAqL76xfBnEF348NO7lvI&sz=w2000" alt="Bild 10">
+    <img src="https://drive.google.com/thumbnail?id=1zLOqPHtt2t67DTEbYYW3ivMhP5W_2xQw&sz=w2000" alt="Bild 11">
+    <img src="https://drive.google.com/thumbnail?id=1TxsKirjzHJlep1n5hcPWK7jrRk3baBU1&sz=w2000" alt="Bild 12">
+    <img src="https://drive.google.com/thumbnail?id=121vCzHLn54bRYdkOE3iOwtD9K4m_g6xP&sz=w2000" alt="Bild 13">
+    <img src="https://drive.google.com/thumbnail?id=1OD7FsbPEttGsDPaWs5GuwKiqP2DijK_P&sz=w2000" alt="Bild 14">
+    <img src="https://drive.google.com/thumbnail?id=1iMXeiHPUB7eO2iAEvG2HXucJDVbA288l&sz=w2000" alt="Bild 15">
+    <img src="https://drive.google.com/thumbnail?id=1Yqg95K1WCX3GPf3tQEalY_d6xGay46bD&sz=w2000" alt="Bild 16">
+    <img src="https://drive.google.com/thumbnail?id=1Z1iNqGkdFrxj8_b03rD9xi9zH2ekTcPz&sz=w2000" alt="Bild 17">
+    <img src="https://drive.google.com/thumbnail?id=1asSFL0ElgjkGRosAQf-MADACGs8dSpXv&sz=w2000" alt="Bild 18">
+    <img src="https://drive.google.com/thumbnail?id=1F88Gr4BoXMKYstFPsyEY3l3Fn3nuIu6T&sz=w2000" alt="Bild 19">
+    <img src="https://drive.google.com/thumbnail?id=1o84UhiDmkWItC1-OS1xlHIiPEe3BB_VG&sz=w2000" alt="Bild 20">
+    <img src="https://drive.google.com/thumbnail?id=1r8qTJCxJupEov06ryS7KhDDm7rMTXrDN&sz=w2000" alt="Bild 21">
+    <img src="https://drive.google.com/thumbnail?id=1yUTL1nn3Du7d9JcGbbIV9NUm_7wPbx8z&sz=w2000" alt="Bild 22">
+    <img src="https://drive.google.com/thumbnail?id=1ImwEGFNTTOXSt09YW2pndPWImuW24PZG&sz=w2000" alt="Bild 23">
   </div>
 
   <script>
