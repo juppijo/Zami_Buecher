@@ -183,7 +183,7 @@ Sie entstehen aus der tiefen Furcht vor Ablehnung, Wertlosigkeit oder davor, nic
 
 ---
 
-### Kapitel 5: Der Schatten der Fehlerangst
+### Der Schatten der Fehlerangst
 
 Während Zaminia dem Schatten der Gier mit offenen, schenkenden Händen begegnete, zog aus den dunklen Winkeln der Gasse eine kühle, gläserne Gestalt herauf. Sie glich einer Figur aus brüchigem Eis, deren Oberfläche von tausend feinen Rissen durchzogen war.
 
@@ -233,14 +233,14 @@ Zaminia drehte sich zu dir um und reichte dir lachend die Hand. „Wir haben dem
 
 ### Bildbeschreibung:
 
-Bild1: Impressionistisch. Das Licht des späten Nachmittags tauchte die Dächer von Paris in ein warmes, goldrotes Meer. Im Atelier herrschte eine Stille, die fast greifbar war. Zaminia mit rotem Haar saß am Fensterbrett, das Haar wie ein feuriger Schleier um ihre Schultern liegend, während Luna die rot-weiße Katze sich leise an ihr Bein schmiegte. Doch die friedliche Kulisse täuschte. In der Luft lag ein seltsames, schweres Flimmern.
+- Bild1: Impressionistisch. Das Licht des späten Nachmittags tauchte die Dächer von Paris in ein warmes, goldrotes Meer. Im Atelier herrschte eine Stille, die fast greifbar war. Zaminia mit rotem Haar saß am Fensterbrett, das Haar wie ein feuriger Schleier um ihre Schultern liegend, während Luna die rot-weiße Katze sich leise an ihr Bein schmiegte. Doch die friedliche Kulisse täuschte. In der Luft lag ein seltsames, schweres Flimmern.
 
-Bild 2: Impressionistisch. Die Luft auf den Pflastersteinen einer kleinen Pariser Gasse wurde eiskalt und scharf. Vor ihnen wuchs eine Gestalt aus rußiger Dunkelheit empor, deren Antlitz ständig flackerte – ein aufgesperrter, wütender Schlund, aus dem ein dröhnender Lärm drang. Es war der Schreihals-Schatten.
+- Bild 2: Impressionistisch. Die Luft auf den Pflastersteinen einer kleinen Pariser Gasse wurde eiskalt und scharf. Vor ihnen wuchs eine Gestalt aus rußiger Dunkelheit empor, deren Antlitz ständig flackerte – ein aufgesperrter, wütender Schlund, aus dem ein dröhnender Lärm drang. Es war der Schreihals-Schatten.
 
-Bild3 : Impressionistisch. Die Luft auf den Pflastersteinen einer kleinen Pariser dunkle Gasse wurde eiskalt und scharf. Vor ihnen wuchs eine Gestalt leuchtend empor, deren Antlitz ständig flackerte.
+- Bild3 : Impressionistisch. Die Luft auf den Pflastersteinen einer kleinen Pariser dunkle Gasse wurde eiskalt und scharf. Vor ihnen wuchs eine Gestalt leuchtend empor, deren Antlitz ständig flackerte.
 
-Bild 4: Impressionistisch. Aus dem Schatten eines alten Torbogens trat eine neue Gestalt hervor. Sie glich einer tiefen, dunklen Wolke, aus der unaufhörlich schwere, gläserne Tropfen zu Boden fielen, leichter Regen, es war der Trauer-Schatten, Trauriges Gesicht, Lila.
+- Bild 4: Impressionistisch. Aus dem Schatten eines alten Torbogens trat eine neue Gestalt hervor. Sie glich einer tiefen, dunklen Wolke, aus der unaufhörlich schwere, gläserne Tropfen zu Boden fielen, leichter Regen, es war der Trauer-Schatten, Trauriges Gesicht, Lila.
 
-Bild 5: Impressionistisch. Die rothaarige Zaminia umarmte den traurigen Menschen (die dunkle schatten gestahlt), sie fingen an zu leuchten und erhellten die ganze enge strasse von Paris.
+- Bild 5: Impressionistisch. Die rothaarige Zaminia umarmte den traurigen Menschen (die dunkle schatten gestahlt), sie fingen an zu leuchten und erhellten die ganze enge strasse von Paris.
 
 🌀 🌌 ✨ © 2026 Jo D. & Zaminia und die Schattenkrieger. Vers 1.01 🌀 🌌 ✨
