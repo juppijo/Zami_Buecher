@@ -79,14 +79,14 @@ def html_zu_markdown_erweitert(html_pfad, md_pfad, bilder_speichern=True, ziel_f
 
 if __name__ == "__main__":
     # Passe hier deine Einstellungen an:
-    html_eingabe = "Mirjam_ha-Magdalit.html"
-    md_ausgabe = "Mirjam_ha-Magdalit.md"
+    html_eingabe = "Zaminia-und-die-Schattenkrieger.html"
+    md_ausgabe = "Zaminia-und-die-Schattenkrieger.md"
     
     # Du kannst hier das Format ("png", "jpg", etc.) und die Bereinigung steuern
     html_zu_markdown_erweitert(
         html_pfad=html_eingabe, 
         md_pfad=md_ausgabe, 
-        bilder_speichern=False, 
+        bilder_speichern=False,   # False oder True
         ziel_format="jpg",       # Konvertiert alle Bilder automatisch einheitlich zu jpg
         css_bereinigen=True      # Befreit das HTML von lästigem CSS und Klassen
     )
