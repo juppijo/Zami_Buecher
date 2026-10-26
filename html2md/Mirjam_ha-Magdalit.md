@@ -1,9 +1,3 @@
-Mirjam ha-Magdalit
-
-
-
-⛶
-
 # Mirjam ha-Magdalit
 
 ## **Kapitel 1: Das Licht über den Türmen von Magdala**
@@ -317,18 +311,10 @@ Für deine Geschichte bedeutet das: Mirjam ha-Magdalit war eine Frau von enormer
 Möchtest du, dass wir für dein Buchprojekt eine Szene entwickeln, in der Mirjam im Kreis ihrer vertrauten Gefährtinnen über genau diese Reise der Seele spricht?
 
 ---
-
-
-
 ---
 
-[📖
+### Maria-Evangelium :
+[📖 Weiter Infos über Maria-Evangelium Jetzt ansehen →](https://juppijo.github.io/Zami_Buecher/Mirjam_ha-Magdalit/Maria-Evangelium.html)
 
-### Maria-Evangelium
-
-Weiter Infos über Maria-Evangelium
-
-Jetzt ansehen →](https://juppijo.github.io/Zami_Buecher/Mirjam_ha-Magdalit/Maria-Evangelium.html)
-
-
+---
 ---
