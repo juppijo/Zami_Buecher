@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ticktick und Krack – Ein Abenteuer im Sonnenschein</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Baloo+2:wght@600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --body:"Andika","Atkinson Hyperlegible","Trebuchet MS",system-ui,sans-serif;
+  --head:"Baloo 2","Arial Rounded MT Bold","Trebuchet MS",sans-serif;
+  --bg1:#f7e7a0;--bg2:#cde6a2;--paper:#fffdf2;--ink:#2b3520;--soft:#78825f;--accent:#e4472f;--chrome:#3a4424;--shadow:rgba(70,60,10,.30);
+}
+[data-theme=wald]{--bg1:#14301e;--bg2:#2d5a3a;--paper:#f2f6e6;--ink:#1c2b1f;--soft:#6a7d6c;--accent:#e2a21f;--chrome:#f2f6e6;--shadow:rgba(0,0,0,.5)}
+[data-theme=abend]{--bg1:#41306b;--bg2:#ea9170;--paper:#fff2e4;--ink:#3b2342;--soft:#8f6a85;--accent:#7b4fd8;--chrome:#fff2e4;--shadow:rgba(30,10,50,.4)}
+[data-theme=teich]{--bg1:#aee0e9;--bg2:#6cbfce;--paper:#f6fcfd;--ink:#0f3743;--soft:#5b8895;--accent:#f0661f;--chrome:#0f3743;--shadow:rgba(10,60,80,.32)}
+[data-theme=nacht]{--bg1:#0c1014;--bg2:#18202a;--paper:#1b2129;--ink:#f1e5c0;--soft:#a79a73;--accent:#e6b450;--chrome:#f1e5c0;--shadow:rgba(0,0,0,.7)}
+*{box-sizing:border-box;margin:0}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{font-family:var(--body);color:var(--ink);background:linear-gradient(160deg,var(--bg1),var(--bg2)) fixed;overflow:hidden;-webkit-tap-highlight-color:transparent;transition:background .4s}
+.app{height:100dvh;display:flex;flex-direction:column;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+.bar{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 12px;min-height:58px}
+.brand{font:800 1.3rem/1 var(--head);color:var(--chrome);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tools{display:flex;gap:8px}
+.pill{display:flex;align-items:center;gap:8px;min-height:44px;padding:0 14px;border-radius:99px;background:var(--paper);color:var(--ink);font:700 .95rem var(--head);box-shadow:0 3px 10px var(--shadow)}
+.pill svg,.round svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.pill span{display:none}
+@media(min-width:560px){.pill span{display:inline}}
+.themewrap{position:relative}
+.menu{position:absolute;right:0;top:calc(100% + 8px);z-index:20;background:var(--paper);border-radius:18px;padding:8px;box-shadow:0 10px 30px var(--shadow);min-width:190px;display:grid;gap:2px}
+.menu button{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;text-align:left;font:700 1rem var(--head)}
+.menu button[aria-pressed=true]{background:color-mix(in srgb,var(--accent) 18%,transparent)}
+.sw{width:26px;height:26px;border-radius:50%;border:2px solid var(--ink);flex:none}
+.immersive .brand{display:none}
+.immersive .bar{justify-content:flex-end;min-height:52px}
+
+.stage{flex:1;min-height:0;container-type:size;display:grid;place-items:center;padding:0 12px}
+.book{container-type:inline-size;width:min(100cqw,calc(100cqh*1.45));aspect-ratio:1.45;display:grid;grid-template-columns:1fr 1fr;border-radius:20px;background:var(--paper);box-shadow:0 18px 44px var(--shadow);overflow:hidden}
+.art{position:relative;overflow:hidden;background:var(--soft)}
+.art img{display:block;width:100%;height:100%;object-fit:cover;object-position:center 30%}
+.txt{position:relative;display:flex;flex-direction:column;justify-content:center;gap:1.2em;padding:6cqw 7cqw 6cqw 6.5cqw;overflow:auto;font-size:clamp(.95rem,2.5cqw,2rem)}
+.txt::before{content:"";position:absolute;inset:0 auto 0 0;width:5%;background:linear-gradient(90deg,rgba(0,0,0,.13),transparent);pointer-events:none}
+.txt p{line-height:1.7;text-wrap:pretty;max-width:34em}
+.ende{font:800 1.5em var(--head);color:var(--accent)}
+.pg{position:absolute;right:5%;bottom:4%;font-size:.8em;color:var(--soft)}
+
+.book.cover{display:flex;flex-direction:column;align-items:center;gap:14px;width:100cqw;height:100cqh;aspect-ratio:auto;background:none;box-shadow:none;overflow:visible}
+.book.cover .art{flex:1;min-height:0;width:100%;display:flex;justify-content:center;background:none;overflow:visible}
+.book.cover img{width:auto;max-width:100%;height:100%;object-fit:contain;border-radius:18px;box-shadow:0 18px 44px var(--shadow)}
+.cta{flex:none;min-height:50px;padding:0 30px;border-radius:99px;background:var(--accent);color:#fff;font:800 1.2rem var(--head);box-shadow:0 5px 14px var(--shadow)}
+[data-theme=nacht] .cta{color:#1b2129}
+
+@media(max-aspect-ratio:1/1),(max-width:640px){
+  .book{width:min(100cqw,680px);height:100cqh;aspect-ratio:auto;grid-template-columns:1fr;grid-template-rows:minmax(0,46%) minmax(0,1fr)}
+  .txt{justify-content:flex-start;padding:20px 22px 34px;font-size:clamp(1.1rem,4.7vw,1.45rem)}
+  .txt::before{display:none}
+  .txt p{line-height:1.6}
+  .pg{right:18px;bottom:8px}
+  .stage{padding:0 8px}
+}
+@media(max-height:480px) and (min-aspect-ratio:1/1){.bar{min-height:46px;padding:4px 10px}.nav{padding:2px 10px 6px!important}.round{width:40px!important;height:40px!important}}
+
+.nav{display:flex;align-items:center;justify-content:center;gap:10px;padding:10px 12px 14px}
+.round{width:54px;height:54px;border-radius:50%;display:grid;place-items:center;background:var(--paper);color:var(--ink);box-shadow:0 3px 10px var(--shadow);flex:none}
+.round:disabled{opacity:.35;cursor:default}
+.dots{display:flex;gap:0;flex-wrap:nowrap}
+.dots button{padding:7px 4px}
+.dots i{display:block;width:10px;height:10px;border-radius:50%;background:var(--chrome);opacity:.35;transition:transform .2s,opacity .2s}
+.dots button[aria-current=true] i{opacity:1;background:var(--accent);transform:scale(1.45)}
+@media(max-width:400px){.dots button{padding:7px 2.5px}.dots i{width:8px;height:8px}}
+</style>
+</head>
+<body data-theme="sonne">
+<div class="app" id="app">
+  <header class="bar">
+    <h1 class="brand">Ticktick und Krack</h1>
+    <div class="tools">
+      <div class="themewrap">
+        <button class="pill" id="themeBtn" aria-haspopup="true" aria-expanded="false" aria-controls="themeMenu">
+          <svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 0 18c1.4 0 2-1 1.5-2.1-.6-1.3.2-2.4 1.6-2.4H17a4 4 0 0 0 4-4C21 6.6 17 3 12 3z"/><circle cx="7.5" cy="11" r="1"/><circle cx="10" cy="7.2" r="1"/><circle cx="14.5" cy="7.2" r="1"/></svg><span>Design</span>
+        </button>
+        <div class="menu" id="themeMenu" role="menu" hidden></div>
+      </div>
+      <button class="pill" id="fsBtn" aria-label="Vollbild">
+        <svg viewBox="0 0 24 24" id="fsIcon"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg><span id="fsLabel">Vollbild</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="stage" id="stage">
+    <article class="book cover" id="book">
+      <figure class="art"><img id="art" alt=""></figure>
+      <button class="cta" id="cta">Geschichte lesen</button>
+      <section class="txt" id="txt" hidden>
+        <p id="text"></p>
+        <span class="ende" id="ende" hidden>Ende</span>
+        <span class="pg" id="pg"></span>
+      </section>
+    </article>
+  </main>
+
+  <nav class="nav" aria-label="Seiten">
+    <button class="round" id="prev" aria-label="Zurück"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <div class="dots" id="dots"></div>
+    <button class="round" id="next" aria-label="Weiter"><svg viewBox="0 0 24 24" id="nextIcon"><path d="M9 5l7 7-7 7"/></svg></button>
+  </nav>
+</div>
+
+<script>
+/* Bilder: Google Drive (storybook_page_0.jpg … storybook_page_10.jpg), Ersatz: gleichnamige Dateien neben der HTML */
+const DRIVE_IDS=["1HuXvDDhcGszwhMbJV_QA1n-YNIvS_KjF", "115NUv3jjTujaNjabeJHh0gplKxL5c8lj", "1l6DhJdbF5qpqw3y6N5qOSDydMe5c3stD", "1qqprvBpkLabZwQWvouDGUopqr3hIRqjb", "1o7-njGmhUKiuR4GN1jR9_rlHEbF3QVy4", "1bnHWzTd2K0M5vFjTgAWSPJkybQ4E8jbF", "1NskQJWklA8MqA9dAYPaXf1eqqO9Y_QdW", "1QJ3N6DCKzGJRc59nhv7J3W2PAviyKrSI", "1ctb0ZJe8GJGaHbOoTQ2AVaGdNF_QqGG1", "1UjqgDqaPTDj0K1QXThrML1ICrqtBrX3n", "106xd5qUFyLdmZwLaMMOzP6KhG6uMooqw"];
+const IMGS=DRIVE_IDS.map(id=>"https://lh3.googleusercontent.com/d/"+id+"=w1400");
+const LOCAL=n=>"storybook_page_"+n+".jpg";
+const ALT=[
+ "Buchcover: Der kleine Specht Ticktick mit roter Haube und die grüne Baumwanze Krack auf einem Ast im Sonnenwald",
+ "Die Eule Uhu mit Brille schaut aus ihrer Baumhöhle, daneben klopft Specht Ticktick an den Stamm",
+ "Uhu rückt streng ihre Brille zurecht, Ticktick flattert vor ihr",
+ "Specht Ticktick trifft auf der mächtigen Eiche den stolzen blauen Kuckuck Kuko",
+ "Kuko breitet die Flügel aus, der traurige Ticktick fliegt davon",
+ "Ticktick klammert am Stamm des alten Nussbaums neben einer fertigen Höhle",
+ "Ticktick begrüßt die kleine grüne Baumwanze Krack in der Höhle",
+ "Ticktick und Krack sitzen glücklich in der Nussbaumhöhle im Abendrot",
+ "Krack sitzt auf einem Seerosenblatt, hinter ihr lauert der Storch Stelz",
+ "Der Storch Stelz erschrickt und hüpft davon, Ticktick stürzt sich auf ihn herab",
+ "Ticktick fliegt mit Krack auf dem Rücken durch den Wald nach Hause"
+];
+const T=["",
+ "Hoch oben im Wald, in einer gemütlichen Baumhöhle, wohnte die kluge Eule Uhu. Sie trug eine große Brille auf ihrer Schnabelspitze und wollte gerade ein Nickerchen machen. Doch plötzlich erklang ein lautes Geräusch: Tick, tick, tick! Draußen auf der Rinde saß der kleine Specht Ticktick und klopfte eifrig an den Stamm.",
+ "„Uhu! Warum klopfst du so laut?“, rief Uhu und rückte ihre Brille zurecht. Sie sah ein wenig streng aus. Ticktick antwortete fröhlich: „Ich bin Ticktick! Ich suche ein Zuhause und wollte mir hier eine Höhle bauen.“ Aber Uhu schüttelte den Kopf. Sie erklärte ihm, dass sie eine Nachteule sei und am Tag ihren Schlaf brauche. „Such dir bitte einen anderen Baum, kleiner Freund“, sagte sie sanft.",
+ "Ticktick flog weiter zu einer mächtigen Eiche. Dort traf er auf Kuko, einen stolzen Kuckuck. Kuko putzte sich gerade eine wunderschöne, blaue Feder an seinem Flügel. Als Ticktick anfing zu klopfen, sah Kuko empört auf. „Kuckuck! Wer stört mich hier an meiner Eiche?“, rief er mit lauter Stimme.",
+ "„Ich bin Ticktick und möchte hier wohnen!“, sagte der kleine Specht. Doch Kuko breitete seine Flügel aus und schüttelte sich. „Kuckuck! Hier ist kein Platz für Spechthöhlen! Ich baue selbst keine Nester, aber ich brauche meine Ruhe. Flieg weiter!“, rief er und zeigte mit dem Schnabel in den Wald. Traurig machte sich Ticktick wieder auf den Weg.",
+ "Ticktick war schon ganz müde, als er einen alten, knorrigen Nussbaum entdeckte. Und siehe da: In dem Stamm war bereits eine perfekte, fertige Höhle! „Was für ein Glück!“, rief Ticktick erleichtert. Er landete auf dem Rand der Öffnung und schaute neugierig hinein. Hier musste er gar nicht erst hämmern.",
+ "Gerade als Ticktick es sich gemütlich machen wollte, krabbelte etwas Kleines aus einer Ritze. Es war Krack, eine winzige Baumwanze. „Krack, krack! Wer bist du?“, fragte sie mit einer feinen Stimme. Ticktick erschrak zuerst, aber Krack lachte freundlich. Sie erzählte ihm, dass sie sich so viel am Holz kratze und deshalb Krack hieße. Sie freute sich sehr über den neuen Mitbewohner.",
+ "Von diesem Moment an waren Ticktick und Krack unzertrennlich. Sie teilten sich die Höhle im Nussbaum und erzählten sich jeden Abend Geschichten. Ticktick war froh, dass er nicht mehr allein war, und Krack genoss die Gesellschaft des großen, starken Vogels. Sie waren die besten Freunde im ganzen Wald.",
+ "Eines Tages machten sie einen Ausflug zum Teich. Während Ticktick am Ufer wartete, saß Krack auf einem grünen Seerosenblatt und genoss die Sonne. Doch plötzlich tauchte der Storch Stelz aus dem hohen Schilf auf. Er klapperte hungrig mit seinem langen, roten Schnabel und fixierte die kleine Wanze mit seinen Augen.",
+ "„Hilfe, Ticktick!“, schrie Krack voller Angst. Der Storch Stelz wollte gerade zuschnappen, doch Ticktick zögerte keine Sekunde. Mit einem mutigen Sturzflug schoss er direkt auf den großen Vogel zu. „Lass meine Freundin in Ruhe!“, rief er tapfer. Stelz war so erschrocken über den kleinen, wilden Specht, dass er verwirrt die Flügel schlug und davonflog.",
+ "Krack atmete tief durch und klammerte sich fest an Tickticks Gefieder, als er sie sicher vom Blatt holte. „Danke, Ticktick! Du bist ein wahrer Held!“, sagte sie glücklich. Gemeinsam flogen die beiden zurück zu ihrem geliebten Nussbaum. Sie wussten nun, dass sie zusammen alles schaffen konnten."
+];
+const THEMES=[["sonne","Sonnenschein","#f7e7a0","#e4472f"],["wald","Wald","#2d5a3a","#e2a21f"],["abend","Abendrot","#ea9170","#7b4fd8"],["teich","Teich","#6cbfce","#f0661f"],["nacht","Nacht","#18202a","#e6b450"]];
+const N=T.length, $=id=>document.getElementById(id);
+const book=$("book"),art=$("art"),txt=$("txt"),dots=$("dots"),prev=$("prev"),next=$("next"),app=$("app");
+const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+let i=0;
+
+/* Seiten */
+for(let n=0;n<N;n++){
+  const b=document.createElement("button");
+  b.innerHTML="<i></i>";b.setAttribute("aria-label",n?"Seite "+n:"Titelseite");
+  b.onclick=()=>go(n);dots.appendChild(b);
+}
+function draw(){
+  const cover=i===0;
+  book.classList.toggle("cover",cover);
+  art.onerror=()=>{art.onerror=null;art.src=LOCAL(i)};art.src=IMGS[i];art.alt=ALT[i];
+  txt.hidden=cover;$("cta").hidden=!cover;
+  $("text").textContent=T[i];$("pg").textContent=cover?"":i+" / "+(N-1);
+  $("ende").hidden=i!==N-1;txt.scrollTop=0;
+  prev.disabled=cover;
+  const last=i===N-1;
+  next.setAttribute("aria-label",last?"Von vorn lesen":"Weiter");
+  $("nextIcon").innerHTML=last?'<path d="M4 12a8 8 0 1 0 3-6.2M4 4v4.5h4.5"/>':'<path d="M9 5l7 7-7 7"/>';
+  [...dots.children].forEach((d,n)=>d.setAttribute("aria-current",n===i));
+}
+function go(n,dir){
+  if(n<0||n>=N||n===i)return;
+  const d=dir??Math.sign(n-i);
+  i=n;draw();
+  if(!reduce)book.animate([{opacity:0,transform:"translateX("+d*30+"px)"},{opacity:1,transform:"none"}],{duration:280,easing:"ease-out"});
+}
+next.onclick=()=>i===N-1?go(0,-1):go(i+1);
+prev.onclick=()=>go(i-1);
+$("cta").onclick=()=>go(1);
+
+/* Wischen */
+let sx=0,sy=0;
+const stage=$("stage");
+stage.addEventListener("touchstart",e=>{sx=e.touches[0].clientX;sy=e.touches[0].clientY},{passive:true});
+stage.addEventListener("touchend",e=>{
+  const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;
+  if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy)*1.4)dx<0?next.click():prev.click();
+},{passive:true});
+
+/* Design (Themes) */
+const menu=$("themeMenu"),tb=$("themeBtn");
+THEMES.forEach(([key,name,c1,c2])=>{
+  const b=document.createElement("button");
+  b.setAttribute("role","menuitemradio");b.dataset.key=key;
+  b.innerHTML='<span class="sw" style="background:linear-gradient(135deg,'+c1+' 50%,'+c2+' 50%)"></span>'+name;
+  b.onclick=()=>{setTheme(key);toggleMenu(false)};menu.appendChild(b);
+});
+function setTheme(k){
+  document.body.dataset.theme=k;
+  [...menu.children].forEach(b=>b.setAttribute("aria-pressed",b.dataset.key===k));
+  try{localStorage.setItem("ticktick-theme",k)}catch(e){}
+}
+function toggleMenu(open){
+  open=open??menu.hidden;menu.hidden=!open;tb.setAttribute("aria-expanded",open);
+}
+tb.onclick=e=>{e.stopPropagation();toggleMenu()};
+document.addEventListener("click",e=>{if(!menu.contains(e.target))toggleMenu(false)});
+let saved="sonne";try{saved=localStorage.getItem("ticktick-theme")||"sonne"}catch(e){}
+setTheme(THEMES.some(t=>t[0]===saved)?saved:"sonne");
+
+/* Vollbild – mit Ersatzmodus für iPhone (kein Fullscreen-API) */
+const root=document.documentElement;
+const isFs=()=>document.fullscreenElement||document.webkitFullscreenElement;
+const canFs=root.requestFullscreen||root.webkitRequestFullscreen;
+function syncFs(){
+  const on=!!isFs()||app.classList.contains("immersive");
+  app.classList.toggle("immersive",on);
+  $("fsLabel").textContent=on?"Beenden":"Vollbild";
+  $("fsBtn").setAttribute("aria-label",on?"Vollbild beenden":"Vollbild");
+  $("fsIcon").innerHTML=on?'<path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/>':'<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>';
+}
+$("fsBtn").onclick=()=>{
+  try{
+    if(canFs){
+      if(isFs())(document.exitFullscreen||document.webkitExitFullscreen).call(document);
+      else (root.requestFullscreen||root.webkitRequestFullscreen).call(root);
+      return;
+    }
+  }catch(e){}
+  app.classList.toggle("immersive");syncFs();
+};
+["fullscreenchange","webkitfullscreenchange"].forEach(ev=>document.addEventListener(ev,()=>{
+  if(!isFs())app.classList.remove("immersive");syncFs();
+}));
+
+/* Tastatur */
+document.addEventListener("keydown",e=>{
+  if(e.key==="ArrowRight"||e.key===" "&&document.activeElement===document.body){e.preventDefault();next.click()}
+  else if(e.key==="ArrowLeft")prev.click();
+  else if(e.key==="Home")go(0,-1);
+  else if(e.key==="End")go(N-1,1);
+  else if(e.key==="f"||e.key==="F")$("fsBtn").click();
+  else if(e.key==="t"||e.key==="T"){const k=THEMES.map(t=>t[0]);setTheme(k[(k.indexOf(document.body.dataset.theme)+1)%k.length])}
+  else if(e.key==="Escape")toggleMenu(false);
+});
+
+draw();syncFs();
+</script>
+</body>
+</html>

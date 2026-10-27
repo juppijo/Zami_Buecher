@@ -79,8 +79,8 @@ def html_zu_markdown_erweitert(html_pfad, md_pfad, bilder_speichern=True, ziel_f
 
 if __name__ == "__main__":
     # Passe hier deine Einstellungen an:
-    html_eingabe = "Zaminia-und-die-Schattenkrieger.html"
-    md_ausgabe = "Zaminia-und-die-Schattenkrieger.md"
+    html_eingabe = "ticktick-und-krack-drive.html"
+    md_ausgabe = "ticktick-und-krack.md"
     
     # Du kannst hier das Format ("png", "jpg", etc.) und die Bereinigung steuern
     html_zu_markdown_erweitert(
