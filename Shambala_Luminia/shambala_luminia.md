@@ -1,6 +1,6 @@
 # 💫 Shambala Luminia
 
-### 🌸 Shambala Luminia – Das Reich des Herzens
+## 🌸 Shambala Luminia – Das Reich des Herzens
 Shambala Luminia ist eine Welt, die wir in unserem Inneren betreten, wenn wir die Augen schließen, von 10 bis 0 zurückzählen, eine Treppe hinabsteigen und eine alte Tür öffnen. Sobald wir hindurchgehen, fallen alle Sorgen, Ängste und Lasten von uns ab – wir treten ein in ein Reich der Liebe, Klarheit und Harmonie.
 
 ### 🌿 Die Landschaft
