@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EPUB Studio & Werkstatt v2</title>
+  
+  <!-- CodeMirror CSS & JS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/theme/material-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/xml/xml.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/htmlmixed/htmlmixed.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/css/css.min.js"></script>
+
+  <!-- JSZip Bibliothek -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #1e1e2e; color: #cdd6f4; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+    
+    header { background: #11111b; padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #313244; }
+    header h1 { font-size: 1.2rem; color: #cba6f7; }
+    
+    .toolbar { display: flex; gap: 10px; align-items: center; }
+    .btn { background: #313244; color: #cdd6f4; border: 1px solid #45475a; padding: 6px 14px; border-radius: 4px; cursor: pointer; font-size: 0.9rem; transition: background 0.2s; }
+    .btn:hover { background: #45475a; }
+    .btn-primary { background: #89b4fa; color: #11111b; border: none; font-weight: bold; }
+    .btn-primary:hover { background: #b4befe; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    
+    input[type="file"] { display: none; }
+    
+    main { display: flex; flex: 1; height: calc(100vh - 50px); }
+    
+    #sidebar { width: 280px; background: #181825; border-right: 1px solid #313244; display: flex; flex-direction: column; }
+    #sidebar h2 { font-size: 0.85rem; text-transform: uppercase; padding: 12px; color: #a6adc8; border-bottom: 1px solid #313244; }
+    #file-tree { list-style: none; overflow-y: auto; flex: 1; }
+    #file-tree li { padding: 8px 12px; font-size: 0.85rem; cursor: pointer; border-bottom: 1px solid #1e1e2e; word-break: break-all; }
+    #file-tree li:hover { background: #313244; }
+    #file-tree li.active { background: #45475a; color: #a6e3a1; font-weight: bold; }
+    #file-tree li.binary { color: #7f849c; font-style: italic; }
+    
+    #workspace { flex: 1; display: flex; flex-direction: row; }
+    .pane { flex: 1; display: flex; flex-direction: column; height: 100%; border-right: 1px solid #313244; }
+    .pane-header { background: #181825; padding: 8px 12px; font-size: 0.85rem; font-weight: bold; color: #a6adc8; border-bottom: 1px solid #313244; }
+    
+    .CodeMirror { flex: 1; height: 100%; font-size: 14px; }
+    
+    iframe { flex: 1; background: #ffffff; border: none; width: 100%; height: 100%; }
+    .binary-notice { padding: 20px; color: #f38ba8; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>EPUB Studio & Werkstatt</h1>
+    <div class="toolbar">
+      <label for="file-input" class="btn">EPUB Öffnen</label>
+      <input type="file" id="file-input" accept=".epub,application/epub+zip">
+      
+      <button class="btn btn-primary" id="save-btn" disabled>EPUB Speichern</button>
+      <button class="btn" id="fullscreen-btn">Vollbild</button>
+    </div>
+  </header>
+
+  <main>
+    <div id="sidebar">
+      <h2>Dateien im EPUB</h2>
+      <ul id="file-tree"></ul>
+    </div>
+
+    <div id="workspace">
+      <div class="pane">
+        <div class="pane-header" id="editor-title">Code Editor</div>
+        <textarea id="editor"></textarea>
+      </div>
+      
+      <div class="pane">
+        <div class="pane-header">Vorschau</div>
+        <iframe id="preview"></iframe>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    let zipContainer = new JSZip();
+    let currentFileName = null;
+    let loadedFiles = {}; // Speicher für Textdateien
+    let binaryFiles = {}; // Speicher für Binärdateien (Bilder, etc.)
+
+    const editor = CodeMirror.fromTextArea(document.getElementById('editor'), {
+      mode: 'htmlmixed',
+      theme: 'material-dark',
+      lineNumbers: true,
+      lineWrapping: true
+    });
+
+    editor.on('change', () => {
+      if (!currentFileName || binaryFiles[currentFileName]) return;
+      const content = editor.getValue();
+      loadedFiles[currentFileName] = content;
+      updatePreview(content);
+    });
+
+    document.getElementById('file-input').addEventListener('change', async function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      try {
+        const arrayBuffer = await file.arrayBuffer();
+        zipContainer = await JSZip.loadAsync(arrayBuffer);
+        
+        loadedFiles = {};
+        binaryFiles = {};
+        const fileTree = document.getElementById('file-tree');
+        fileTree.innerHTML = '';
+
+        const fileKeys = Object.keys(zipContainer.files);
+
+        for (const relativePath of fileKeys) {
+          const zipEntry = zipContainer.files[relativePath];
+          if (!zipEntry.dir) {
+            const isText = isTextFile(relativePath);
+            if (isText) {
+              loadedFiles[relativePath] = await zipEntry.async('string');
+            } else {
+              binaryFiles[relativePath] = await zipEntry.async('uint8array');
+            }
+          }
+        }
+        
+        // Dateiliste sortiert anzeigen
+        const allPaths = [...Object.keys(loadedFiles), ...Object.keys(binaryFiles)].sort();
+        
+        allPaths.forEach(filename => {
+          const li = document.createElement('li');
+          li.textContent = filename;
+          if (binaryFiles[filename]) li.classList.add('binary');
+          li.onclick = () => openFile(filename);
+          fileTree.appendChild(li);
+        });
+
+        document.getElementById('save-btn').disabled = false;
+        
+        // Standardmäßig Startdatei öffnen (OPF oder erstes Kapitel)
+        const startFile = allPaths.find(f => f.endsWith('.opf') || f.endsWith('.xhtml') || f.endsWith('.html'));
+        if (startFile) openFile(startFile);
+
+      } catch (err) {
+        alert("Fehler beim Entpacken der EPUB-Datei: " + err.message);
+      }
+    });
+
+    function isTextFile(filename) {
+      const ext = filename.split('.').pop().toLowerCase();
+      return ['html', 'xhtml', 'xml', 'opf', 'ncx', 'css', 'txt', 'svg', 'json'].includes(ext);
+    }
+
+    function openFile(filename) {
+      currentFileName = filename;
+      document.getElementById('editor-title').textContent = `Code Editor — ${filename}`;
+      
+      const items = document.querySelectorAll('#file-tree li');
+      items.forEach(el => el.classList.toggle('active', el.textContent === filename));
+
+      if (binaryFiles[filename]) {
+        editor.setValue(`<!-- Binärdatei (${filename}) - Bearbeitung im Texteditor nicht möglich -->`);
+        updatePreview(`<div><p style="padding:20px; font-family:sans-serif;">Binärdatei ausgewählt: ${filename}</p></div>`);
+        return;
+      }
+
+      const content = loadedFiles[filename] || '';
+      
+      // Editor-Modus anpassen
+      if (filename.endsWith('.css')) {
+        editor.setOption('mode', 'css');
+      } else {
+        editor.setOption('mode', 'htmlmixed');
+      }
+      
+      editor.setValue(content);
+      updatePreview(content);
+    }
+
+    function updatePreview(content) {
+      const iframe = document.getElementById('preview');
+      const doc = iframe.contentDocument || iframe.contentWindow.document;
+      doc.open();
+      doc.write(content);
+      doc.close();
+    }
+
+    document.getElementById('save-btn').addEventListener('click', async () => {
+      const exportZip = new JSZip();
+
+      // EPUB-Spezifikation: mimetype MUSS unkomprimiert als 1. Datei existieren
+      exportZip.file("mimetype", "application/epub+zip", { compression: "STORE" });
+
+      // Textdateien hinzufügen
+      for (const [path, content] of Object.entries(loadedFiles)) {
+        if (path !== "mimetype") {
+          exportZip.file(path, content, { compression: "DEFLATE" });
+        }
+      }
+
+      // Binärdateien hinzufügen
+      for (const [path, data] of Object.entries(binaryFiles)) {
+        if (path !== "mimetype") {
+          exportZip.file(path, data, { compression: "DEFLATE" });
+        }
+      }
+
+      const blob = await exportZip.generateAsync({ type: "blob", mimeType: "application/epub+zip" });
+      
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = "bearbeitet.epub";
+      link.click();
+      URL.revokeObjectURL(link.href);
+    });
+
+    document.getElementById('fullscreen-btn').addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => {
+          alert(`Vollbild-Fehler: ${err.message}`);
+        });
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    });
+  </script>
+</body>
+</html>
