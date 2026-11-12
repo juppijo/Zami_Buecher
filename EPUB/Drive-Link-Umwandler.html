@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="de"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Drive-Link-Umwandler</title>
+<style>
+:root{--bg:#eef2f7;--card:#fff;--ink:#16202e;--muted:#64748b;--line:#dbe2ec;--acc:#1a73e8;--accink:#fff;--ok:#14803c;--bad:#b3261e;--field:#f6f8fb;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1520;--card:#161f2d;--ink:#e6ecf5;--muted:#8a98ad;--line:#26334a;--acc:#6ea8ff;--accink:#0b1320;--ok:#5fd38d;--bad:#ff8a80;--field:#0f1825;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0e1520;--card:#161f2d;--ink:#e6ecf5;--muted:#8a98ad;--line:#26334a;--acc:#6ea8ff;--accink:#0b1320;--ok:#5fd38d;--bad:#ff8a80;--field:#0f1825;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;display:flex;justify-content:center;padding:clamp(16px,5vw,56px) 16px}
+main{width:100%;max-width:680px}
+header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:22px}
+h1{margin:0;font-size:clamp(24px,5vw,32px);line-height:1.15;letter-spacing:-.02em}
+h1 span{color:var(--acc)}
+.sub{margin:6px 0 0;color:var(--muted)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:clamp(16px,4vw,26px);box-shadow:0 10px 30px -18px rgba(20,40,80,.35)}
+label{display:block;font-weight:600;font-size:14px;margin-bottom:8px}
+.in{display:flex;gap:8px;flex-wrap:wrap}
+input{flex:1;min-width:0;font:inherit;font-size:15px;color:var(--ink);background:var(--field);border:1px solid var(--line);border-radius:12px;padding:13px 14px}
+input:focus{outline:2px solid var(--acc);outline-offset:1px}
+button{font:inherit;font-size:14px;cursor:pointer;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:11px 15px;transition:transform .1s,background .15s}
+button:hover{background:var(--field)}button:active{transform:scale(.97)}
+button.p{background:var(--acc);color:var(--accink);border-color:var(--acc);font-weight:600}
+button.p:hover{filter:brightness(1.07);background:var(--acc)}
+button:focus-visible,a:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.msg{min-height:22px;margin:10px 2px 0;font-size:14px;color:var(--muted)}
+.msg.bad{color:var(--bad)}.msg.ok{color:var(--ok)}
+.res{display:grid;gap:12px;margin-top:8px}
+.item{border:1px solid var(--line);border-radius:14px;padding:12px 14px;background:var(--field)}
+.item h2{margin:0 0 6px;font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.url{font:13px/1.45 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;word-break:break-all;color:var(--ink);margin-bottom:10px}
+.act{display:flex;gap:8px;flex-wrap:wrap}
+.act a{text-decoration:none;display:inline-block;font-size:14px;border-radius:12px;padding:11px 15px;border:1px solid var(--line);color:var(--ink);background:var(--card)}
+.act a.p{background:var(--acc);color:var(--accink);border-color:var(--acc);font-weight:600}
+.hist{margin-top:22px}.hist h2{font-size:14px;margin:0 0 8px;color:var(--muted);font-weight:600}
+.hist button{display:block;width:100%;text-align:left;margin-bottom:6px;font:13px ui-monospace,Menlo,Consolas,monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tip{margin-top:20px;font-size:13px;color:var(--muted)}
+.tip b{color:var(--ink)}
+[hidden]{display:none!important}
+</style></head>
+<body><main>
+<header><div><h1>Drive-Link <span>→ Download</span></h1><p class="sub">Wandle einen Google-Drive-Link in einen direkten Download-Link um.</p></div>
+<button id="th" aria-label="Design wechseln">◐</button></header>
+<div class="card">
+ <label for="in">Google-Drive-Link</label>
+ <div class="in"><input id="in" type="url" inputmode="url" autocomplete="off" spellcheck="false" placeholder="https://drive.google.com/file/d/…/view">
+ <button id="paste">Einfügen</button></div>
+ <div class="msg" id="msg" role="status" aria-live="polite">Link einfügen, die Umwandlung geschieht sofort.</div>
+ <div class="res" id="res" hidden>
+  <div class="item"><h2>Download-Link</h2><div class="url" id="u1"></div><div class="act"><button class="p" data-copy="u1">Kopieren</button><a class="p" id="o1" target="_blank" rel="noopener">Download starten</a></div></div>
+  <div class="item"><h2>Ansichts-Link</h2><div class="url" id="u2"></div><div class="act"><button data-copy="u2">Kopieren</button><a id="o2" target="_blank" rel="noopener">Öffnen</a></div></div>
+ </div>
+ <div class="act" style="margin-top:14px"><button id="ex">Beispiel einfügen</button><button id="clr">Leeren</button></div>
+</div>
+<div class="hist" id="hist" hidden><h2>Zuletzt umgewandelt</h2><div id="hl"></div></div>
+<p class="tip"><b>Wichtig:</b> Die Datei muss in Google Drive auf „Jeder mit dem Link“ freigegeben sein. Bei großen Dateien zeigt Google vor dem Download eine Warnseite. Ordner-Links lassen sich nicht umwandeln.</p>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const ST={get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}};
+const EX='https://drive.google.com/file/d/1_ywTgam9NNgHeZ2hZF2lWlA33qar07a2/view?usp=sharing';
+let hist=[];try{hist=JSON.parse(ST.get('hist')||'[]')}catch(e){}
+const th=ST.get('theme');if(th)document.documentElement.dataset.theme=th;
+function parse(s){
+ s=s.trim();if(!s)return null;
+ let m=s.match(/docs\.google\.com\/(document|spreadsheets|presentation)\/d\/([\w-]+)/);
+ if(m){const f={document:'docx',spreadsheets:'xlsx',presentation:'pptx'}[m[1]];
+  return{id:m[2],dl:`https://docs.google.com/${m[1]}/d/${m[2]}/export?format=${f}`,view:`https://docs.google.com/${m[1]}/d/${m[2]}/edit`,note:'Google-'+({document:'Dokument',spreadsheets:'Tabelle',presentation:'Präsentation'}[m[1]])+' erkannt (Export als .'+f+').'}}
+ if(/drive\.google\.com\/drive\/(u\/\d+\/)?folders\//.test(s))return{err:'Das ist ein Ordner-Link. Ordner lassen sich nicht direkt herunterladen.'};
+ if(!/google\.com/.test(s))return{err:'Das sieht nicht nach einem Google-Drive-Link aus.'};
+ m=s.match(/\/d\/([\w-]+)/)||s.match(/[?&]id=([\w-]+)/);
+ if(!m)return{err:'Keine Datei-ID gefunden. Nutze einen Link wie …/file/d/ID/view.'};
+ return{id:m[1],dl:`https://drive.google.com/uc?export=download&id=${m[1]}`,view:`https://drive.google.com/file/d/${m[1]}/view`,note:'Datei-ID erkannt: '+m[1]}}
+function run(save){
+ const v=$('in').value,r=parse(v),msg=$('msg');
+ $('res').hidden=true;
+ if(!r){msg.className='msg';msg.textContent='Link einfügen, die Umwandlung geschieht sofort.';return}
+ if(r.err){msg.className='msg bad';msg.textContent=r.err;return}
+ msg.className='msg ok';msg.textContent='✓ '+r.note;
+ $('u1').textContent=r.dl;$('o1').href=r.dl;$('u2').textContent=r.view;$('o2').href=r.view;$('res').hidden=false;
+ if(save){hist=[v.trim(),...hist.filter(x=>x!==v.trim())].slice(0,5);ST.set('hist',JSON.stringify(hist));drawHist()}
+}
+function drawHist(){
+ $('hist').hidden=!hist.length;const box=$('hl');box.innerHTML='';
+ hist.forEach(h=>{const b=document.createElement('button');b.textContent=h;b.onclick=()=>{$('in').value=h;run(false)};box.append(b)})}
+$('in').addEventListener('input',()=>run(false));
+$('in').addEventListener('change',()=>run(true));
+$('in').addEventListener('paste',()=>setTimeout(()=>run(true),0));
+$('paste').onclick=async()=>{try{$('in').value=await navigator.clipboard.readText();run(true)}catch(e){$('msg').className='msg bad';$('msg').textContent='Zugriff auf die Zwischenablage nicht erlaubt. Bitte manuell einfügen (Strg+V).'}};
+$('ex').onclick=()=>{$('in').value=EX;run(true)};
+$('clr').onclick=()=>{$('in').value='';run(false);$('in').focus()};
+document.addEventListener('click',async e=>{const b=e.target.closest('[data-copy]');if(!b)return;
+ const t=$(b.dataset.copy).textContent,o=b.textContent;
+ try{await navigator.clipboard.writeText(t);b.textContent='Kopiert ✓'}catch(x){const r=document.createRange();r.selectNodeContents($(b.dataset.copy));getSelection().removeAllRanges();getSelection().addRange(r);b.textContent='Markiert, Strg+C'}
+ setTimeout(()=>b.textContent=o,1600)});
+$('th').onclick=()=>{const d=document.documentElement,dark=matchMedia('(prefers-color-scheme:dark)').matches;
+ const cur=d.dataset.theme||(dark?'dark':'light'),nx=cur==='dark'?'light':'dark';d.dataset.theme=nx;ST.set('theme',nx)};
+drawHist();
+</script></body></html>
