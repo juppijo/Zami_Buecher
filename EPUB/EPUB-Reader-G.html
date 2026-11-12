@@ -133,12 +133,16 @@ body.zen .bar, body.zen .foot { opacity: 0; pointer-events: none; }
 .drop-zone { border: 2px dashed var(--line); border-radius: 12px; padding: 30px 20px; transition: border-color 0.2s, background 0.2s; cursor: pointer; }
 .drop-zone:hover, .drop-zone.dragover { border-color: var(--head); background: rgba(255,255,255,0.03); }
 
+#loader { text-align: center; padding: 60px 20px; }
+#loader b { display: block; font: 600 20px Fraunces, Georgia, serif; color: var(--head); margin-bottom: 8px; }
+#loader p { color: var(--muted); margin: 0; }
+
 /* Library Grid */
 .lib-title { font: 600 20px Fraunces, Georgia, serif; color: var(--head); width: 100%; max-width: 860px; margin: 10px 0 16px; text-align: left; }
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 20px; width: 100%; max-width: 860px; }
 .book-card { background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 10px; display: flex; flex-direction: column; gap: 8px; position: relative; transition: transform 0.2s, box-shadow 0.2s; cursor: pointer; }
 .book-card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px var(--shade); }
-.book-cover { width: 100%; height: 180px; object-fit: cover; border-radius: 4px; background: var(--line); display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 12px; text-align: center; padding: 8px; }
+.book-cover { width: 100%; height: 180px; object-fit: cover; border-radius: 4px; background: var(--line); display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 12px; text-align: center; padding: 8px; box-sizing: border-box; }
 .book-card-title { font-weight: 600; font-size: 13px; color: var(--ink); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.3; }
 .book-card-progress { font-size: 11px; color: var(--muted); }
 .book-card-del { position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.6); color: #fff; border: 0; width: 24px; height: 24px; border-radius: 50%; padding: 0; display: none; }
@@ -231,11 +235,15 @@ body.zen .bar, body.zen .foot { opacity: 0; pointer-events: none; }
 <!-- Reading Viewport Stage -->
 <div id="stage">
  <div id="empty">
-  <div class="empty-box">
+  <div id="loader" hidden>
+   <b>Buch wird verarbeitet …</b>
+   <p>Struktur und Bilder werden extrahiert.</p>
+  </div>
+  <div class="empty-box" id="libIntro">
    <h1>EPUB-Bibliothek</h1>
    <p>Wähle eine EPUB-Datei aus oder ziehe sie per Drag & Drop hierher. Deine Bücher bleiben lokal auf deinem Gerät gespeichert.</p>
    <div class="drop-zone" onclick="$('file').click()">
-    <button style="font-size:15px; font-weight:600;">EPUB-Datei öffnen</button>
+    <button type="button" style="font-size:15px; font-weight:600;">EPUB-Datei öffnen</button>
    </div>
   </div>
   <div class="lib-title" id="libHeader" hidden>Zuletzt gelesene Bücher</div>
@@ -289,9 +297,9 @@ body.zen .bar, body.zen .foot { opacity: 0; pointer-events: none; }
   <button data-lh="1.9">Weit</button>
  </div>
  <div class="row"><span>Ränder</span>
-  <button data-mdf="0.6">Schmal</button>
+  <button data-mdf="0.5">Schmal</button>
   <button data-mdf="1">Normal</button>
-  <button data-mdf="1.4">Breit</button>
+  <button data-mdf="1.7">Breit</button>
  </div>
  <div class="row"><span>Seiten</span>
   <button data-m="auto">Auto</button>
@@ -453,10 +461,18 @@ R.style.setProperty('--margin-factor', mdf);
 let sessionStartTime = Date.now();
 let totalCharsReadEstimate = 0;
 
+function setLoadingState(loading) {
+  $('loader').hidden = !loading;
+  $('libIntro').hidden = loading;
+  $('libGrid').hidden = loading;
+  if (loading) $('libHeader').hidden = true;
+}
+
 /* Main EPUB Parsing Function */
 async function openEpub(data, titleHint = 'Buch', saveToDb = true) {
+  $('paper').hidden = true;
   $('empty').hidden = false;
-  $('empty').innerHTML = '<b>Buch wird verarbeitet …</b><p>Struktur und Bilder werden extrahiert.</p>';
+  setLoadingState(true);
   
   try {
     const zip = await JSZip.loadAsync(data);
@@ -619,6 +635,7 @@ async function openEpub(data, titleHint = 'Buch', saveToDb = true) {
     $('ttl').textContent = title;
     document.title = title;
     
+    setLoadingState(false);
     $('paper').hidden = false;
     $('empty').hidden = true;
 
@@ -649,6 +666,7 @@ async function openEpub(data, titleHint = 'Buch', saveToDb = true) {
   } catch(e) {
     console.error(e);
     alert('Fehler beim Öffnen des EPUBs: ' + e.message);
+    setLoadingState(false);
     loadLibraryUI();
   }
 }
@@ -678,12 +696,20 @@ function layout(frac) {
   const st = $('stage'), vw = innerWidth;
   n = mode === '1' ? 1 : mode === '2' ? 2 : (vw >= 900 ? 2 : 1);
   
-  const baseMargin = (vw >= 900 ? 120 : 16) * parseFloat(getComputedStyle(R).getPropertyValue('--margin-factor') || 1);
-  const aw = Math.max(280, st.clientWidth - baseMargin);
+  const factor = parseFloat(mdf) || 1;
+  const aw = Math.max(280, st.clientWidth - (vw >= 900 ? 120 : 16));
   const ah = st.clientHeight - (vw >= 900 ? 20 : 8);
 
   let pw = Math.min(aw, n == 2 ? 1560 : 760), ph = Math.min(ah, 1100);
-  const p = Math.max(vw < 640 ? 14 : 20, Math.min(56, Math.round(pw * (n == 2 ? .045 : .06)))), pt = 34, pb = 46, gap = 2 * p;
+  const basePad = Math.max(vw < 640 ? 18 : 26, Math.min(56, Math.round(pw * (n == 2 ? .045 : .065))));
+  const minPad = vw < 640 ? 10 : 14;
+  const maxPad = Math.floor((pw / n) * 0.28);
+  const p = Math.max(minPad, Math.min(maxPad, Math.round(basePad * factor)));
+  
+  const pt = Math.max(26, Math.min(48, Math.round(34 * (0.7 + 0.3 * factor))));
+  const pb = Math.max(38, Math.min(58, Math.round(46 * (0.75 + 0.25 * factor))));
+  const gap = 2 * p;
+  
   const cw = Math.floor((pw - 2 * p - (n - 1) * gap) / n), W = n * cw + (n - 1) * gap, H = ph - pt - pb;
   
   pw = W + 2 * p;
@@ -1166,7 +1192,10 @@ $('bFs').onclick = fsToggle;
 
 $('file').onchange = async e => {
   const f = e.target.files[0];
-  if (f) openEpub(await f.arrayBuffer(), f.name.replace(/\.epub$/i, ''));
+  if (f) {
+    await openEpub(await f.arrayBuffer(), f.name.replace(/\.epub$/i, ''));
+    e.target.value = '';
+  }
 };
 $('flow').onclick = e => {
   const a = e.target.closest('a[data-go]');
@@ -1239,6 +1268,7 @@ addEventListener('keydown', wake);
 
 /* IndexedDB Library UI Manager */
 async function loadLibraryUI() {
+  setLoadingState(false);
   const books = await db.getAllBooks();
   const grid = $('libGrid');
   grid.innerHTML = '';
@@ -1286,10 +1316,17 @@ async function loadLibraryUI() {
 }
 
 function showLibrary() {
+  if (busy) busy();
   ready = false;
   $('paper').hidden = true;
   $('empty').hidden = false;
+  $('hit').hidden = true;
   $('ttl').textContent = 'EPUB-Reader';
+  $('ch').textContent = '';
+  $('pg').textContent = '';
+  $('pgSub').textContent = '';
+  $('rng').value = 0;
+  $('rng').max = 0;
   closeAll();
   loadLibraryUI();
 }
