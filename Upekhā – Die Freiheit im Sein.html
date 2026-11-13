@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Upekhā – Die Freiheit im Sein</title>
+
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 40px;
+      color: #112255;
+      background: #ededfd;
+      max-width : 1000px;
+      text-align: justify;
+      padding : auto;
+      margin  : auto;
+      }
+      h1 {
+        color: #112299;
+      }
+      .button-container {
+        display: flex;
+        justify-content: flex-end; 
+        padding: 10px 15px; 
+        gap: 10px; 
+      }
+      .link-box-button {
+        justify-content: flex-end;
+        padding: 10px 18px;
+        background: #112299;
+        color: #eeddff;
+        font-size: 13px;
+        font-weight: 600;
+        border-radius: 8px;
+        white-space: nowrap;
+        flex-shrink: 0;
+        transition: opacity 0.2s ease;
+        cursor: pointer; 
+      }
+      .link-box-button:hover {
+        background: #666688;
+        padding: 10px 19px;
+      }
+  </style>
+</head>
+<body>
+  <div class="button-container">
+    <button class="link-box-button" onclick="toggleFullscreen()">⛶</button>
+  </div>
+
+  <h1><strong>❤️ Upekhā – Die Freiheit im Sein</strong></h1>
+  <p><em>Ein Gedicht über Atem, Liebe und das Einssein</em></p>
+  <p>Einatmen – das Leben strömt durch den Raum,<br>Ausatmen – ich erwache aus dem Traum.<br>Kein Festhalten mehr, kein Suchen nach Sinn,<br>ich spüre nur noch, dass ich friedvoll bin.</p>
+  <p>Wie Wellen im Ozean, weite Natur,<br>schwingen wir sanft auf derselben Spur.<br>Getrennt und doch eins in der Unendlichkeit,<br>öffnen wir das Tor zur Ewigkeit.</p>
+  <p>Ohooo, Upekhā, die Freiheit im Sein,<br>wir lassen uns los und sind niemals allein.<br>Die Liebe ist mehr als ein irdischer Ort,<br>sie trägt uns als Welle durch Raum und Zeit fort.</p>
+  <p>Einatmen – ich schenke mir Güte und Licht,<br>Ausatmen – ich fordere und erwarte nichts.<br>Du bist, wie du bist, und ich bin, wie ich bin,<br>die Liebe fließt frei, ohne Anfang und Sinn.</p>
+  <p>Keine Bedingung, kein Schatten, kein Zwang,<br>nur noch ein leiser, kosmischer Klang.<br>Der Atem verbindet das Hier mit dem Dort,<br>wir tragen das Universum an einen Ort.</p>
+  <p>Wo die Entropie vergeht und das Fühlen beginnt,<br>wo wir wie Wellen im ewigen Winde sind.<br>Wo alles sich löst und nichts mehr getrennt,<br>wo Liebe das ist, was das Wesen erkennt.</p>
+  <p>Ohooo, Upekhā, die Freiheit im Sein,<br>wir lassen uns los und sind niemals allein.<br>Die Liebe ist mehr als ein irdischer Ort,<br>sie trägt uns als Welle durch Raum und Zeit fort.</p>
+  <p>Einatmen …<br>Ausatmen …<br>Güte …<br>Liebe …<br>Freiheit …</p>
+  <p>Und wenn der letzte Atemzug verweht,<br>bleibt die Stille, die niemals vergeht.</p>
+  <p><strong>Es ist nicht die Liebe, die etwas festhalten möchte, sondern die Liebe, die einfach sein darf. ❤️</strong></p>
+
+  <script>
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => {
+          alert("Fehler beim Aktivieren des Vollbildmodus!");
+        });
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    }
+  </script>
+</body>
+</html>
