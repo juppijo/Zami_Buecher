@@ -10,7 +10,7 @@ wir leben in einer Epoche, die oft von Mauern, misstrauischem Kalkül und der ei
 
 Und doch – irgendwo tief unter dem Lärm der digitalen Welt und den Erwartungen des Alltags schwingt ein anderer Rhythmus.
 
-Dieses Werk ist eine Einladung, innezuhalten und sich mit der Natur der wahren Liebe auseinanderzusetzen. Es handelt von liebender Güte, Mitgefühl, innerer Freiheit und der Verbundenheit allen Lebens. Es beschäftigt sich mit dem Ego, mit Angst und Vertrauen, aber auch mit der Frage, ob Liebe vielleicht weit mehr ist als ein menschliches Gefühl – vielleicht ein Streben nach Resonanz und Harmonie, das sich sogar im Universum widerspiegelt.
+Dieses Werk ist eine Einladung, innezuhalten und sich mit der Natur der wahren Liebe auseinanderzusetzen. Es handelt von liebender Güte, Mitgefühl, innerer Freiheit und der Verbundenheit allen Lebens. Es beschäftigt sich mit dem Ego (Ego als "Die Illusion des getrennten Selbst") , mit Angst und Vertrauen, aber auch mit der Frage, ob Liebe vielleicht weit mehr ist als ein menschliches Gefühl – vielleicht ein Streben nach Resonanz und Harmonie, das sich sogar im Universum widerspiegelt.
 
 Viele dieser Gedanken haben ihren Ursprung im Zen-Buddhismus, insbesondere in den Lehren von Thich Nhat Hanh. Doch sie sind keineswegs an eine Religion oder Weltanschauung gebunden. Ihre Werte und Erkenntnisse können von jedem Menschen aufgegriffen werden, unabhängig davon, woran er glaubt oder welchen Lebensweg er geht.
 
