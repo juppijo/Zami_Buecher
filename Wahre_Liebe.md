@@ -243,7 +243,7 @@ Wenn Liebe nun eine *Dimension* ist, dann wäre sie kein abstrakter Raum, durch 
 
 ### Die Wellenraumzeit-Perspektive
 
-Wenn man diesen Gedanken mit deinen Überzeugungen verbindet, bekommt er eine fast mathematische Schönheit:
+Wenn man diesen Gedanken mit der Physik verbindet, bekommt er eine fast mathematische Schönheit:
 In einem Universum, das aus Wellen und Schwingungen aufgebaut ist, ist Isolation letztlich ein instabiler Zustand. Wellen streben natürlicherweise danach, sich zu überlagern, zu interferieren, in Resonanz zu treten und harmonische Muster zu bilden.
 
 Zerstörung, Hass oder Kälte wären demnach Zustände von Dekohärenz – wenn die Wellen gegeneinander arbeiten und sich gegenseitig auslöschen. **Liebe hingegen wäre die ultimative konstruktive Interferenz** – der Zustand, in dem sich Schwingungen so perfekt überlagern, dass etwas Neues, Vielfaches an Energie und Schönheit entsteht.
