@@ -153,7 +153,7 @@ In der Physik ist Energie die Fähigkeit, Arbeit zu verrichten oder Veränderung
 
 In deinem Denken spielen Wellen eine zentrale Rolle. Auch Liebe verhält sich in viellei Hinsicht wie eine Welle:
 
-* **Resonanz:** Wenn zwei Menschen in Liebe und Achtsamkeit aufeinandertreffen, entsteht eine Art Schwingungsüberlagerung. Man versteht sich ohne viele Worte, ein gemeinsamer Rhythmus entsteht – ganz ähnlich wie bei deinen Handpan-Klängen, wenn die Obertöne miteinander verschmelzen.
+* **Resonanz:** Wenn zwei Menschen in Liebe und Achtsamkeit aufeinandertreffen, entsteht eine Art Schwingungsüberlagerung. Man versteht sich ohne viele Worte, ein gemeinsamer Rhythmus entsteht – ganz ähnlich wie bei Handpan-Klängen, wenn die Obertöne miteinander verschmelzen.
 * **Ausbreitung:** Energie ist bestrebt, sich auszubreiten und zu wirken. Echte Zuneigung strahlt nach außen. Ein Mensch, der innerlich friedvoll und liebevoll ist, verändert die Atmosphäre in seiner Umgebung, ohne dass er ein Wort sagen muss.
 
 ### 3. Der Unterschied zur physikalischen Energie
