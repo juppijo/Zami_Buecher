@@ -121,7 +121,7 @@ Das deckt sich exakt mit dem ersten Element der wahren Liebe, dem *Maitri* nach 
 
 Wenn man tiefer blickt – jenseits unseres Ego und unserer Alltagsidentität –, gibt es in der Realität gar keinen echten „Nächsten“, der völlig von dir getrennt ist.
 
-* Erinnerst du dich an den Gedanken mit den Wellen auf dem Ozean? Zwei Wellen mögen auf der Oberfläche unterschiedlich aussehen, aber sie bestehen aus demselben Wasser.
+* Zwei Wellen mögen auf der Oberfläche unterschiedlich aussehen, aber sie bestehen aus demselben Wasser.
 * Wenn du den anderen liebst wie dich selbst, dann erkennst du im Grunde: **Der andere *ist* ein anderer Ausdruck von dir.** Sein Schmerz ist dein Schmerz, sein Glück ist dein Glück. Die Grenze zwischen „Ich“ und „Du“ verschwimmt in einer höheren Dimension der Verbundenheit.
 
 ### 3. Bedingungslos und ohne Zwang
