@@ -102,7 +102,24 @@ body.tts #hit{bottom:calc(112px + env(safe-area-inset-bottom,0px))}
 #tV option,#tV optgroup{background:var(--paper);color:var(--ink)}
 #tR{flex:1;min-width:0;accent-color:var(--head)}#tRv{width:48px;text-align:right;font-size:13px;color:var(--muted);font-weight:400}
 #tH{margin:4px 0 8px;line-height:1.4}
-@media(max-width:640px){#tts{left:auto;right:10px;transform:none}}
+html{overflow:hidden;width:100%;max-width:100%;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{width:100%;max-width:100%;grid-template-columns:minmax(0,1fr);overflow:hidden}
+.bar,.foot,#stage{min-width:0;max-width:100%}
+.bar button{flex:none;white-space:nowrap}.foot input{min-width:0;width:100%}
+@media(max-width:640px){
+ body{grid-template-rows:48px 1fr 46px}
+ .bar{gap:2px;padding:0 4px}.bar button{padding:6px 8px;min-height:38px;min-width:38px;justify-content:center}
+ #bFs{display:none}
+ .bar .ttl{font-size:15px;min-width:0}
+ .foot{gap:6px;padding:0 10px}.foot .pg{min-width:0;white-space:nowrap;font-size:11px}
+ #tts{left:auto;right:8px;transform:none;bottom:calc(54px + env(safe-area-inset-bottom,0px))}
+ #tts button{width:36px;height:36px}#tts #tG{width:40px;height:40px;margin:0 2px}
+ body.tts #hit{bottom:calc(102px + env(safe-area-inset-bottom,0px))}
+ #bk{bottom:calc(54px + env(safe-area-inset-bottom,0px))}
+ #hit{bottom:calc(54px + env(safe-area-inset-bottom,0px));max-width:calc(100vw - 20px)}
+ #empty{max-width:calc(100vw - 32px);padding:0 16px}
+ #toc,#side{width:100vw}
+}
 </style></head>
 <body>
 <div class="bar">
