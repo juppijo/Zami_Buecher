@@ -632,7 +632,7 @@ Ein Kernsatz aus dem Buch lautet sinngemäß:
 2. **Der kollektive Ausweg:** Er betont, dass wir diesen Wandel nicht als einsame Kämpfer erzwingen können, sondern dass wir – wie Wellen im Ozean – gemeinsam eine neue Schwingung, einen kollektiven Bewusstseinswandel erzeugen müssen. Echte Veränderung fängt im stillen, klaren Geist an (durch Achtsamkeit, Entspannung und innere Freiheit wie *Upekhla*).
 3. **Aktivismus aus der Ruhe:** Wahre Veränderung, so sagt er, entsteht nicht aus Wut, Frust oder dem Bekämpfen des Feindes (denn das erzeugt nur die aggressive Verteidigung, über die wir gesprochen haben), sondern aus tiefem Mitgefühl und der klaren Präsenz heraus.
 
-Es ist ein wunderbares, tröstliches und zugleich extrem weckendes Buch – besonders dann, wenn man sich von der Härte und dem Egoismus der modernen Welt mal wieder erschöpft fühlt.
+* Es ist ein wunderbares, tröstliches und zugleich extrem weckendes Buch – besonders dann, wenn man sich von der Härte und dem Egoismus der modernen Welt mal wieder erschöpft fühlt.
 ---
 ### EGO = Die Illusion eines getrennten Selbst
 
@@ -641,7 +641,7 @@ Es ist ein wunderbares, tröstliches und zugleich extrem weckendes Buch – beso
 * Doch wenn wir tiefer blicken, erkennen wir das Wesen des Interseins: Keine Welle auf dem Meer existiert für sich allein. Jede Welle ist untrennbar mit dem Wind, dem Licht und dem gesamten Ozean verbunden. Sobald der Schleier dieses getrennten Selbst fällt, verschwindet die Enge des Egos. Was bleibt, ist ein weites, ruhiges Bewusstsein – das tiefe Erkennen, dass wir Teil eines einzigen, unteilbaren Ganzen sind, in dem alles miteinander schwingt und einander bedingt.
 
 ---
-# **🌊 Upekhā – Die Freiheit im Sein**
+## **🌊 Upekhā – Die Freiheit im Sein**
 
 ### ***Ein Gedicht über Atem, Liebe und das Einssein***
 
