@@ -633,6 +633,12 @@ Ein Kernsatz aus dem Buch lautet sinngemäß:
 3. **Aktivismus aus der Ruhe:** Wahre Veränderung, so sagt er, entsteht nicht aus Wut, Frust oder dem Bekämpfen des Feindes (denn das erzeugt nur die aggressive Verteidigung, über die wir gesprochen haben), sondern aus tiefem Mitgefühl und der klaren Präsenz heraus.
 
 Es ist ein wunderbares, tröstliches und zugleich extrem weckendes Buch – besonders dann, wenn man sich von der Härte und dem Egoismus der modernen Welt mal wieder erschöpft fühlt.
+---
+### EGO = Die Illusion eines getrennten Selbst
+
+* Nach dem Verständnis von Thich Nhat Hanh ist das Ego nichts anderes als die Illusion eines getrennten Selbst – der tief verwurzelte Irrtum, wir seien isolierte Inseln im Ozean des Daseins, losgelöst von der Welt, den anderen und dem Kosmos. Wir klammern uns an dieses scheinbare „Ich“, grenzen uns ab, vergleichen und verteidigen uns, und erschaffen genau dadurch Leid, Angst und Einsamkeit.
+
+* Doch wenn wir tiefer blicken, erkennen wir das Wesen des Interseins: Keine Welle auf dem Meer existiert für sich allein. Jede Welle ist untrennbar mit dem Wind, dem Licht und dem gesamten Ozean verbunden. Sobald der Schleier dieses getrennten Selbst fällt, verschwindet die Enge des Egos. Was bleibt, ist ein weites, ruhiges Bewusstsein – das tiefe Erkennen, dass wir Teil eines einzigen, unteilbaren Ganzen sind, in dem alles miteinander schwingt und einander bedingt.
 
 ---
 # **🌊 Upekhā – Die Freiheit im Sein**
