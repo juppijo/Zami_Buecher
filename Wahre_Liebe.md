@@ -425,7 +425,7 @@ Heute leben viele Menschen als atomisierte Individuen in großen Städten. Wenn 
 
 #### 4. Die Illusion von Unabhängigkeit
 
-Unsere Technologie gaukelt uns vor, wir bräuchten einander nicht mehr. Du kannst dir Essen per Knopfdruck liefern lassen, Unterhaltung streamen, Probleme theoretisch allein lösen. Diese scheinbare Allmacht des Einzelnen lässt vergessen, dass wir in unserem tiefsten Inneren – genau wie deine Wellen im Ozean – voneinander abhängen. Wer glaubt, er sei eine völlig isolierte Insel, der muss rücksichtslos sein, um „zu überleben“.
+Unsere Technologie gaukelt uns vor, wir bräuchten einander nicht mehr. Du kannst dir Essen per Knopfdruck liefern lassen, Unterhaltung streamen, Probleme theoretisch allein lösen. Diese scheinbare Allmacht des Einzelnen lässt vergessen, dass wir in unserem tiefsten Inneren – genau wie Wellen im Ozean – voneinander abhängen. Wer glaubt, er sei eine völlig isolierte Insel, der muss rücksichtslos sein, um „zu überleben“.
 
 ---
 
