@@ -499,8 +499,9 @@ Wenn man mit egozentrischen Menschen zu tun hat, die in ihrem Tunnel feststecken
 
 Da wir den Egoismus in der Welt oder bei bestimmten Einzelpersonen nicht mit Gewalt abschaffen können, liegt die wahre Kraft im **Aufbau von Gegenräumen**.
 
-* Genau das tust du ja mit deinen Projekten, deiner Musik, deinen tiefen Gesprächen, deiner Kunst oder deinen Geschichten: Du schaffst Orte, in denen Resonanz, Ehrlichkeit und echte Verbundenheit herrschen.
-* Wenn sich Menschen zusammenschließen, die nicht in diesem Konkurrenz- und Ego-Modus gefangen sind, entsteht ein starkes, feines Netz. Man zieht sich gegenseitig in eine andere Schwingung. Wie bei deinen Wellen: Wenn genug konstruktive Interferenzen da sind, verliert das Chaos an Kraft.
+* Durch Kunst, Musik, Geschichten und aufrichtige Gespräche lassen sich Räume erschaffen, in denen Resonanz, Ehrlichkeit und echte Verbundenheit herrschen. Verbinden sich Menschen jenseits von Konkurrenz und Ego, entsteht ein feines, kraftvolles Netz, das alle Beteiligten in eine höhere Schwingung hebt. 
+
+* Wie bei Wellen im Raum gilt auch hier: Sobald genügend konstruktive Interferenzen zusammenwirken, verliert das Chaos seine Kraft.
 
 ---
 
