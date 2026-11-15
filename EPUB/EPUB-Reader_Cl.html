@@ -120,6 +120,11 @@ body{width:100%;max-width:100%;grid-template-columns:minmax(0,1fr);overflow:hidd
  #empty{max-width:calc(100vw - 32px);padding:0 16px}
  #toc,#side{width:100vw}
 }
+.flow section.cover{break-after:column;break-inside:avoid;height:var(--H);display:flex;align-items:center;justify-content:center;margin:0!important;padding:10px 0}
+.flow section.cover img{margin:0!important;max-height:calc(var(--H) - 28px)!important;max-width:100%!important;border-radius:3px;box-shadow:0 4px 18px var(--shade)}
+.flow svg{max-width:100%;max-height:calc(var(--H)*.95);height:auto}
+.lbi{display:flex;align-items:center;gap:12px}.lbi .sn{flex:1;min-width:0}
+.lbi .cv{width:48px;height:72px;flex:none;object-fit:cover;border-radius:3px;box-shadow:0 1px 6px var(--shade);cursor:pointer;background:var(--line)}
 </style></head>
 <body>
 <div class="bar">
@@ -176,6 +181,7 @@ let mode=store.get('mode')||'auto',eff=store.get('eff')||'flip',font=store.get('
 let LH=+store.get('lh')||1.6,MG=+store.get('mg')||1,back=0,bkT;
 fs=+store.get('fs')||19;theme=store.get('theme')||'nacht';applyTheme();R.dataset.f=font;
 
+let COVER='';
 async function openEpub(data,opts){
  try{TTS.stop()}catch(e){}
  $('empty').hidden=false;$('empty').innerHTML='<b>Buch wird geladen …</b>';
@@ -192,7 +198,8 @@ async function openEpub(data,opts){
  const lang=(opf.getElementsByTagName('dc:language')[0]||{}).textContent||'de';
  urls.forEach(URL.revokeObjectURL);urls=[];const cache={};
  const flow=$('flow');flow.innerHTML='';flow.lang=lang.trim();
- let css='';const docIdx={};spine.forEach((s,i)=>docIdx[s.p]=i);
+ const blobUrl=async path=>{if(!cache[path]&&zip.file(path)){const b=await zip.file(path).async('blob');cache[path]=URL.createObjectURL(b);urls.push(cache[path])}return cache[path]};
+ const seen=new Set();let css='';const docIdx={};spine.forEach((s,i)=>docIdx[s.p]=i);
  for(let i=0;i<spine.length;i++){
   const d=P.parseFromString(await txt(spine[i].p),'text/html');
   d.querySelectorAll('style').forEach(s=>css+=scope(s.textContent));
@@ -203,16 +210,29 @@ async function openEpub(data,opts){
   sec.querySelectorAll('hr').forEach(e=>e.remove());
   sec.querySelectorAll('p').forEach(p=>{if(!p.id&&!p.querySelector('img')&&!p.textContent.trim())p.remove()});
   for(const im of sec.querySelectorAll('img')){
-   const [path]=res(spine[i].p,im.getAttribute('src')||'');
+   const [path]=res(spine[i].p,im.getAttribute('src')||'');if(i<2)seen.add(path);
    if(!cache[path]&&zip.file(path)){const b=await zip.file(path).async('blob');cache[path]=URL.createObjectURL(b);urls.push(cache[path])}
    if(cache[path])im.src=cache[path];im.removeAttribute('width');im.removeAttribute('height');
   }
+  for(const im of sec.querySelectorAll('image')){const [path]=res(spine[i].p,im.getAttribute('href')||im.getAttribute('xlink:href')||''),u=await blobUrl(path);if(u){im.setAttribute('href',u);im.setAttribute('xlink:href',u)}if(i<2)seen.add(path)}
   sec.querySelectorAll('a[href]').forEach(a=>{const h=a.getAttribute('href');
    if(/^[a-z]+:/i.test(h)){a.target='_blank';a.rel='noopener';return}
    const [p,f]=res(spine[i].p,h);const t=docIdx[p];a.setAttribute('href','#');
    a.dataset.go=t===undefined?'':'d'+t+(f?'__'+f:'')});
   flow.appendChild(sec);
  }
+ COVER='';let addedCover=false;
+ try{
+  const its=[...opf.querySelectorAll('manifest > item')],isImg=i=>/^image\//.test(i.getAttribute('media-type')||'');
+  let ci=its.find(i=>(i.getAttribute('properties')||'').split(/\s+/).includes('cover-image'));
+  if(!ci){const m=[...opf.querySelectorAll('metadata > meta')].find(m=>m.getAttribute('name')==='cover'),id=m&&m.getAttribute('content');ci=id&&its.find(i=>i.getAttribute('id')===id&&isImg(i))}
+  if(!ci)ci=its.find(i=>isImg(i)&&/cover/i.test((i.getAttribute('id')||'')+' '+(i.getAttribute('href')||'')));
+  const cp=ci?res(opfP,ci.getAttribute('href'))[0]:'',cu=cp?await blobUrl(cp):'';
+  if(cu){
+   try{const im=new Image();im.src=cu;await im.decode();const k=Math.min(1,180/im.naturalWidth),c=document.createElement('canvas');c.width=Math.max(1,Math.round(im.naturalWidth*k));c.height=Math.max(1,Math.round(im.naturalHeight*k));c.getContext('2d').drawImage(im,0,0,c.width,c.height);COVER=c.toDataURL('image/jpeg',.82)}catch(e){}
+   if(!seen.has(cp)){const sec=document.createElement('section'),im=document.createElement('img');sec.id='dcover';sec.className='cover';im.src=cu;im.alt='Cover';sec.append(im);flow.prepend(sec);addedCover=true}
+  }
+ }catch(e){console.warn('Cover:',e)}
  let st=$('bookcss');if(!st){st=document.createElement('style');st.id='bookcss';document.head.appendChild(st)}st.textContent=css;
  toc=[];const nv=Object.values(man).find(m=>m.pr.includes('nav'));
  if(nv){const nd=P.parseFromString(await txt(nv.p),'text/html');
@@ -223,7 +243,7 @@ async function openEpub(data,opts){
    const sub=li.querySelector(':scope > ol');if(sub)walk(sub,dep+1)});
   if(root&&root.querySelector('ol'))walk(root.querySelector('ol'),0)}
  if(!toc.length)flow.querySelectorAll('h1,h2,h3').forEach(h=>toc.push({t:h.textContent.trim(),id:h.id||(h.id='h'+toc.length),dep:+h.tagName[1]-1}));
- toc=toc.filter(x=>x.t);
+ toc=toc.filter(x=>x.t);if(addedCover)toc.unshift({t:'Cover',id:'dcover',dep:0});
  key='pos:'+title;bk=title;$('ttl').textContent=title;document.title=title;
  $('paper').hidden=false;$('empty').hidden=true;
  await Promise.all([...flow.querySelectorAll('img')].map(i=>i.decode().catch(()=>0)));
@@ -366,7 +386,7 @@ $('cpN').onclick=async()=>{const b=$('cpN'),o=b.textContent,x=[...hl].sort((a,c)
  try{await navigator.clipboard.writeText(x);b.textContent='Kopiert ✓'}catch(e){b.textContent='Kopieren nicht möglich'}setTimeout(()=>b.textContent=o,1800)};
 const idb=()=>new Promise((ok,no)=>{const r=indexedDB.open('reader',1);r.onupgradeneeded=()=>r.result.createObjectStore('b',{keyPath:'id'});r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)});
 async function lib(op,v){try{const d=await idb(),s=d.transaction('b',op==='all'?'readonly':'readwrite').objectStore('b');return await new Promise((ok,no)=>{const r=op==='all'?s.getAll():op==='put'?s.put(v):s.delete(v);r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)})}catch(e){return null}}
-async function loadFile(f){const buf=await f.arrayBuffer();if(await openEpub(buf))lib('put',{id:bk,title:bk,data:buf,t:Date.now()})}
+async function loadFile(f){const buf=await f.arrayBuffer();if(await openEpub(buf))lib('put',{id:bk,title:bk,data:buf,cov:COVER,t:Date.now()})}
 function gDrive(){const m=($('gl').value.match(/\/d\/([\w-]+)|[?&]id=([\w-]+)/)||[]),id=m[1]||m[2];id?window.open('https://drive.google.com/uc?export=download&id='+id,'_blank','noopener'):alert('Kein gültiger Google-Drive-Link')}
 async function showLib(){
  try{TTS.stop()}catch(e){}
@@ -375,7 +395,8 @@ async function showLib(){
  $('fb').onclick=()=>$('file').click();$('gd').onclick=gDrive;
  const L=(await lib('all'))||[],lb=$('lb');
  if(L.length)lb.append(E('p',{className:'mt',textContent:'Bibliothek (nur in diesem Browser gespeichert)'}));
- [...L].sort((a,b)=>b.t-a.t).forEach(b=>lb.append(E('div',{className:'it'},E('div',{className:'sn',onclick:async()=>{if(await openEpub(b.data))lib('put',{...b,t:Date.now()})}},E('span',{textContent:b.title,style:'font-weight:600'}),E('br'),E('small',{textContent:Math.round(100*(+store.get('pos:'+b.id)||0))+' % gelesen'})),E('button',{textContent:'Entfernen',onclick:async()=>{await lib('del',b.id);showLib()}}))));
+ [...L].sort((a,b)=>b.t-a.t).forEach(b=>{const op=async()=>{if(await openEpub(b.data))lib('put',{...b,cov:COVER||b.cov,t:Date.now()})};
+  lb.append(E('div',{className:'it lbi'},...(b.cov?[E('img',{className:'cv',src:b.cov,alt:'',onclick:op})]:[]),E('div',{className:'sn',onclick:op},E('span',{textContent:b.title,style:'font-weight:600'}),E('br'),E('small',{textContent:Math.round(100*(+store.get('pos:'+b.id)||0))+' % gelesen'})),E('button',{textContent:'Entfernen',onclick:async()=>{await lib('del',b.id);showLib()}})))});
  if(ready)e.append(E('p',{},E('button',{textContent:'Zurück zum Buch',onclick:()=>{e.hidden=true;$('paper').hidden=false;layout()}})))}
 sync();
 $('prev').onclick=()=>go(idx-1);$('next').onclick=()=>go(idx+1);$('rng').oninput=e=>go(+e.target.value);
