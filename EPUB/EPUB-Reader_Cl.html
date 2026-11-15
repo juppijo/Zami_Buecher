@@ -92,11 +92,23 @@ body.zen .bar,body.zen .foot{opacity:0;pointer-events:none}
 #bk{position:fixed;bottom:calc(64px + env(safe-area-inset-bottom,0px));left:14px;z-index:12;background:var(--paper);color:var(--ink);border-radius:999px;box-shadow:0 8px 24px var(--shade),0 0 0 1px var(--line)}
 #set{max-height:80dvh;overflow:auto}#cpN{width:100%;margin-bottom:8px;font-size:13px}#rt{min-width:0!important;margin-right:6px}#lb{margin-top:16px;text-align:left}
 @media(max-width:640px){#rt{display:none}}
+
+::highlight(tts){background:rgba(255,176,32,.22)}::highlight(ttsw){background:rgba(255,176,32,.62)}
+#tts{position:fixed;bottom:calc(64px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:2px;padding:4px 6px;background:var(--paper);color:var(--ink);border-radius:999px;box-shadow:0 8px 24px var(--shade),0 0 0 1px var(--line);z-index:12}
+#tts button{display:flex;align-items:center;justify-content:center;width:40px;height:40px;padding:0;border:0;border-radius:50%}
+#tts #tG{background:var(--head);color:var(--paper);width:44px;height:44px;margin:0 4px}
+body.tts #hit{bottom:calc(112px + env(safe-area-inset-bottom,0px))}
+#tV{flex:1;min-width:0;padding:8px;border-radius:8px;border:1px solid var(--line);background:var(--paper);color:inherit;font:inherit;font-size:13px}
+#tV option,#tV optgroup{background:var(--paper);color:var(--ink)}
+#tR{flex:1;min-width:0;accent-color:var(--head)}#tRv{width:48px;text-align:right;font-size:13px;color:var(--muted);font-weight:400}
+#tH{margin:4px 0 8px;line-height:1.4}
+@media(max-width:640px){#tts{left:auto;right:10px;transform:none}}
 </style></head>
 <body>
 <div class="bar">
  <button id="bToc" aria-label="Inhalt"><i>☰</i><span>Inhalt</span></button><div class="ttl" id="ttl">EPUB-Reader</div>
  <button id="bSearch" aria-label="Suche"><i>⌕</i><span>Suche</span></button>
+ <button id="bTts" aria-label="Vorlesen"><i>♪</i><span>Vorlesen</span></button>
  <button id="bNotes" aria-label="Lesezeichen und Markierungen"><i>✎</i><span>Notizen</span></button>
  <button id="bSet" aria-label="Darstellung"><i>Aa</i><span>Darstellung</span></button>
  <button id="bFs" aria-label="Vollbild"><i>⛶</i><span>Vollbild</span></button>
@@ -117,6 +129,10 @@ body.zen .bar,body.zen .foot{opacity:0;pointer-events:none}
  <div class="row"><span>Zeilen</span><button data-lh="1.4">Eng</button><button data-lh="1.6">Normal</button><button data-lh="1.85">Weit</button></div>
  <div class="row"><span>Rand</span><button data-mg="0.7">Schmal</button><button data-mg="1">Normal</button><button data-mg="1.4">Breit</button></div>
  <div class="row"><span>Design</span><button data-t="auto">Auto</button><button data-t="nacht">Nacht</button><button data-t="tag">Tag</button><button data-t="sepia">Sepia</button></div>
+ <div class="row"><span>Stimme</span><select id="tV" aria-label="Stimme zum Vorlesen"></select></div>
+ <div class="row"><span>Tempo</span><input type="range" id="tR" min="0.6" max="2" step="0.05" aria-label="Sprechtempo"><b id="tRv"></b></div>
+ <div class="row"><span>Timer</span><button data-sl="0">Aus</button><button data-sl="15">15</button><button data-sl="30">30</button><button data-sl="60">60 Min</button></div>
+ <p class="mt" id="tH"></p>
  <div class="row"><button id="so">Bibliothek</button></div>
 </div>
 <aside id="side" aria-label="Suche und Notizen"><div class="tabs"><button data-tab="s">Suche</button><button data-tab="b">Lesezeichen</button><button data-tab="n">Markierungen</button><button id="sX" aria-label="Schließen">✕</button></div>
@@ -125,6 +141,13 @@ body.zen .bar,body.zen .foot{opacity:0;pointer-events:none}
  <div id="pn" hidden><button id="cpN">Markierungen und Notizen kopieren</button><div id="nl"></div></div></aside>
 <div id="tb" hidden><button class="d c0" data-c="0" aria-label="Gelb markieren"></button><button class="d c1" data-c="1" aria-label="Grün markieren"></button><button class="d c2" data-c="2" aria-label="Rosa markieren"></button><button id="tbN">Notiz</button></div>
 <div id="hit" hidden><button id="hp" aria-label="Voriger Treffer">‹</button><span id="hc"></span><button id="hn" aria-label="Nächster Treffer">›</button><button id="hx" aria-label="Suche beenden">✕</button></div>
+<div id="tts" hidden role="group" aria-label="Vorlesen">
+ <button id="tP" aria-label="Voriger Satz"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 6h2v12H6zM9.5 12 18 18V6z"/></svg></button>
+ <button id="tG" aria-label="Pause"></button>
+ <button id="tN" aria-label="Nächster Satz"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16 6h2v12h-2zM6 18l8.5-6L6 6z"/></svg></button>
+ <button id="tS" aria-label="Vorlesen beenden"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 7h10v10H7z"/></svg></button>
+ <button id="tO" aria-label="Vorlese-Einstellungen"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h8M20 7h-2M4 17h2M20 17H12"/><circle cx="15" cy="7" r="2.2"/><circle cx="9" cy="17" r="2.2"/></svg></button>
+</div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script>
 const $=s=>document.getElementById(s),R=document.documentElement;
@@ -137,6 +160,7 @@ let LH=+store.get('lh')||1.6,MG=+store.get('mg')||1,back=0,bkT;
 fs=+store.get('fs')||19;theme=store.get('theme')||'nacht';applyTheme();R.dataset.f=font;
 
 async function openEpub(data,opts){
+ try{TTS.stop()}catch(e){}
  $('empty').hidden=false;$('empty').innerHTML='<b>Buch wird geladen …</b>';
  try{
  const zip=await JSZip.loadAsync(data,opts),P=new DOMParser();
@@ -232,6 +256,7 @@ function go(i,anim=true){
  $('prev').style.visibility=idx?'':'hidden';$('next').style.visibility=idx<total-1?'':'hidden';
  $('rib').classList.toggle('on',bm.some(b=>b.pg===idx));
  store.set(key,idx/total);
+ if(anim&&idx!==o&&TTS.play&&!TTS.nav)TTS.moved();
 }
 function buildToc(){const tl=$('tl');tl.innerHTML='';toc.forEach((t,k)=>{const a=document.createElement('a');a.textContent=t.t;a.style.paddingLeft=12+t.dep*16+'px';a.onclick=()=>{jump(t.id);openToc(false)};tl.appendChild(a)});go(idx,false)}
 function jump(id){const e=id&&$(id);if(!e){go(0);return}const f=$('flow');const t=f.style.transform;f.style.transition='none';f.style.transform='none';
@@ -311,7 +336,7 @@ $('set').onclick=e=>{const b=e.target.closest('button');if(!b)return;const d=b.d
  else if(b.id==='sm')setFs(-1);else if(b.id==='sp')setFs(1);else if(b.id==='so'){showLib();$('set').hidden=true}
  sync()};
 $('bSet').onclick=e=>{const o=$('set').hidden;closeAll();$('set').hidden=!o;sync()};
-document.addEventListener('click',e=>{if(!$('set').hidden&&!e.target.closest('#set,#bSet'))$('set').hidden=true});
+document.addEventListener('click',e=>{if(!$('set').hidden&&!e.target.closest('#set,#bSet,#tO'))$('set').hidden=true});
 $('bSearch').onclick=()=>openSide('s');$('bNotes').onclick=()=>openSide('n');
 document.querySelectorAll('.tabs [data-tab]').forEach(b=>b.onclick=()=>openSide(b.dataset.tab));$('sX').onclick=closeAll;
 $('sf').onsubmit=e=>{e.preventDefault();if(ready)doSearch($('q').value.trim())};
@@ -327,6 +352,7 @@ async function lib(op,v){try{const d=await idb(),s=d.transaction('b',op==='all'?
 async function loadFile(f){const buf=await f.arrayBuffer();if(await openEpub(buf))lib('put',{id:bk,title:bk,data:buf,t:Date.now()})}
 function gDrive(){const m=($('gl').value.match(/\/d\/([\w-]+)|[?&]id=([\w-]+)/)||[]),id=m[1]||m[2];id?window.open('https://drive.google.com/uc?export=download&id='+id,'_blank','noopener'):alert('Kein gültiger Google-Drive-Link')}
 async function showLib(){
+ try{TTS.stop()}catch(e){}
  const e=$('empty');e.hidden=false;$('paper').hidden=true;
  e.innerHTML=`<b>EPUB öffnen</b>Wähle eine Datei oder ziehe sie hierher.<br><br><button id="fb">Datei auswählen</button><br><br><small style="color:var(--muted)">Oder Google-Drive-Link: Download starten, danach die Datei hier auswählen oder hineinziehen.</small><br><input id="gl" placeholder="Google-Drive-Link einfügen" style="width:100%;margin:8px 0;padding:9px;border-radius:8px;border:1px solid var(--line);background:transparent;color:inherit;font:inherit"><button id="gd">Download starten</button><div id="lb"></div>`;
  $('fb').onclick=()=>$('file').click();$('gd').onclick=gDrive;
@@ -343,11 +369,11 @@ $('file').onchange=e=>{const f=e.target.files[0];if(f)loadFile(f);e.target.value
 $('flow').onclick=e=>{const a=e.target.closest('a[data-go]');if(a){e.preventDefault();jump(a.dataset.go)}};
 addEventListener('dragover',e=>e.preventDefault());
 addEventListener('drop',e=>{e.preventDefault();const f=e.dataTransfer.files[0];if(f)loadFile(f)});
-addEventListener('keydown',e=>{if(e.target.tagName==='TEXTAREA'||(e.target.tagName==='INPUT'&&e.target.type!=='range'))return;const k=e.key;
+addEventListener('keydown',e=>{if(/^(TEXTAREA|SELECT)$/.test(e.target.tagName)||e.target.id==='tR'||(e.target.tagName==='INPUT'&&e.target.type!=='range'))return;const k=e.key;
  if(k==='ArrowRight'||k==='PageDown'||k===' ')go(idx+1);else if(k==='ArrowLeft'||k==='PageUp')go(idx-1);
  else if(k==='Home')go(0);else if(k==='End')go(total-1);else if(k==='f'||k==='F')fsToggle();
  else if(k==='t'||k==='T')openToc(!$('toc').classList.contains('open'));else if(k==='Escape')closeAll();
- else if(k==='+')setFs(1);else if(k==='-')setFs(-1);else if(k==='b'||k==='B')toggleBm();else if(k==='/'){e.preventDefault();openSide('s')}else return;if(k===' ')e.preventDefault()});
+ else if(k==='+')setFs(1);else if(k==='-')setFs(-1);else if(k==='b'||k==='B')toggleBm();else if(k==='v'||k==='V')TTS.key();else if(k==='/'){e.preventDefault();openSide('s')}else return;if(k===' ')e.preventDefault()});
 let sx=0,sy=0;$('stage').addEventListener('pointerdown',e=>{sx=e.clientX;sy=e.clientY});
 $('stage').addEventListener('pointerup',e=>{
  if(e.target.closest('button,a,textarea,#tb'))return;
@@ -364,5 +390,107 @@ let it;const wake=()=>{document.body.classList.remove('idle');clearTimeout(it);i
 addEventListener('mousemove',wake);addEventListener('keydown',wake);
 document.addEventListener('fullscreenchange',()=>{$('bFs').lastChild.textContent=document.fullscreenElement?'Beenden':'Vollbild';wake();setTimeout(layout,80)});
 document.fonts&&document.fonts.ready.then(()=>layout());
+/* ===== Vorlesen (Web Speech API) ===== */
+const SY=window.speechSynthesis,TTS={on:0,play:0,list:null,i:0,nq:0,q:0,gen:0,hold:0,nav:0,u:[],v:null,pt:0,mt:0,slt:0,sl:0,rate:+store.get('tts:rate')||1};
+const voices=()=>SY?SY.getVoices():[],vl=v=>(v.lang||'').toLowerCase().replace('_','-'),blang=()=>($('flow').lang||'de').toLowerCase().replace('_','-');
+const BADV=/^(Albert|Bad News|Bahh|Bells|Boing|Bubbles|Cellos|Deranged|Good News|Jester|Organ|Superstar|Trinoids|Whisper|Wobble|Zarvox|Fred|Junior|Ralph|Kathy|Princess)\b|espeak/i;
+function vscore(v){const n=v.name+' '+(v.voiceURI||'');let s=0;
+ if(/natural|neural|online/i.test(n))s+=60;if(/premium|enhanced|erweitert|siri/i.test(n))s+=45;if(/google/i.test(n))s+=30;
+ if(/compact/i.test(n))s-=20;if(BADV.test(v.name))s-=100;if(!v.localService)s+=4;if(v.default)s+=2;return s}
+const ownV=()=>{const r=blang(),b=r.slice(0,2),sc=v=>vscore(v)+(vl(v)===r?6:0);return voices().filter(v=>vl(v).startsWith(b)&&vscore(v)>-50).sort((x,y)=>sc(y)-sc(x))};
+function pickVoice(){const sv=store.get('tts:v:'+blang().slice(0,2));return(sv&&voices().find(v=>v.voiceURI===sv))||ownV()[0]||null}
+function fillVoices(){
+ const sel=$('tV'),V=voices(),own=ownV(),oth=V.filter(v=>!own.includes(v)&&vscore(v)>-50).sort((a,b)=>a.lang.localeCompare(b.lang)||a.name.localeCompare(b.name)),
+  sv=store.get('tts:v:'+blang().slice(0,2));sel.innerHTML='';
+ sel.append(E('option',{value:'',textContent:'Automatisch'+(own[0]?' – '+own[0].name:'')}));
+ const grp=(l,a)=>{if(!a.length)return;const g=E('optgroup',{label:l});a.forEach(v=>g.append(E('option',{value:v.voiceURI,textContent:(vscore(v)>=40?'★ ':'')+v.name+' ('+v.lang+')'})));sel.append(g)};
+ grp('Passend zur Buchsprache',own);grp('Andere Sprachen',oth);
+ sel.value=sv&&V.some(v=>v.voiceURI===sv)?sv:'';
+ $('tH').textContent=!V.length?'Es sind noch keine Stimmen geladen …':!own.length?'Für die Sprache des Buches ('+blang()+') ist keine Stimme installiert. Bitte in den Systemeinstellungen eine passende Stimme hinzufügen.':vscore(own[0])<40?'Tipp: Besonders natürlich klingen die „Natürlich“-Stimmen in Microsoft Edge sowie die Premium-/Erweitert-Stimmen unter iOS und macOS (mit ★ markiert).':''}
+
+/* Text in Sätze zerlegen (mit Offsets in den Buchtext) */
+const ABBR=/(?:^|[\s(„"»“])(?:z|B|bzw|usw|ca|Dr|Prof|Nr|Hr|Fr|Frl|St|vgl|d|h|u|a|o|evtl|etc|Mr|Mrs|Ms|Mio|Mrd|ff|f|S|Abb|Kap|geb|gest|ggf|inkl|sog|Std|Str|Tel|Jh|Jhd|bes|engl|frz|ital|lat|dt|int|max|min|resp|Hrsg|Ed|Vol|vs|No|Jr|Sr|Mt|Bd|Hg|Anm|Dipl|Ing)$/;
+function split(t){
+ const r=[],re=/[.!?…]+["“”„»«'’)\]]*(?:\s+|$)/g;let a=0,m;
+ const chunk=(x,y)=>{while(y-x>240){const w=t.slice(x,x+220);let k=Math.max(w.lastIndexOf(', '),w.lastIndexOf('; '),w.lastIndexOf(': '),w.lastIndexOf(' – '),w.lastIndexOf(' — '));if(k<80)k=w.lastIndexOf(' ');if(k<20)k=219;r.push([x,x+k+1]);x+=k+1;while(t[x]===' ')x++}if(y>x)r.push([x,y])};
+ while(m=re.exec(t)){const e=m.index+m[0].length;
+  if(e<t.length){if(!/[A-ZÄÖÜ0-9„“"»«‚‘'(\[–—-]/.test(t[e]))continue;
+   if(m[0].replace(/\s+$/,'')==='.'){const pre=t.slice(a,m.index);if(/(?:^|\s)\d{1,2}$/.test(pre)||ABBR.test(pre)||/(?:^|\s)[A-ZÄÖÜ]$/.test(pre))continue}}
+  chunk(a,e);a=e}
+ if(a<t.length)chunk(a,t.length);return r}
+function ttsBuild(){
+ if(TX.sent)return TX.sent;
+ const out=[],BS='p,h1,h2,h3,h4,h5,h6,li,blockquote,div,section,td,th,dt,dd,figcaption,pre';
+ let blk=null,txt='',map=[],ls=true;
+ const flush=()=>{
+  if(blk&&/[\p{L}\p{N}]/u.test(txt)){
+   const h=/^H\d$/.test(blk.tagName)||blk.classList.contains('title'),sp=split(txt).map(([a,b])=>{while(b>a&&txt[b-1]===' ')b--;return[a,b]}).filter(([a,b])=>b>a&&/[\p{L}\p{N}]/u.test(txt.slice(a,b)));
+   sp.forEach(([a,b],j)=>out.push({s:map[a],e:map[b-1]+1,t:txt.slice(a,b),m:map,a,brk:j===sp.length-1,pz:h?800:450}))}
+  blk=null;txt='';map=[];ls=true};
+ for(const x of TX.a){
+  const nd=x.nd,par=nd.parentElement;if(!par)continue;const d=nd.data;
+  if(par.closest('sup')&&/^[\s\[\(]*\d+[\s\]\)]*$/.test(d))continue;
+  const b=par.closest(BS)||par;if(b!==blk){flush();blk=b}
+  if(!ls&&nd.previousSibling&&nd.previousSibling.nodeName==='BR'){txt+=' ';map.push(x.o);ls=true}
+  for(let i=0;i<d.length;i++){const c=d[i];
+   if(c==='\u00AD'||(c>='\u200B'&&c<='\u200D')||c==='\uFEFF')continue;
+   if(/\s/.test(c)){if(ls)continue;txt+=' ';map.push(x.o+i);ls=true}else{txt+=c;map.push(x.o+i);ls=false}}}
+ flush();return TX.sent=out}
+
+/* Position / Seiten */
+function firstOn(pg){const L=TTS.list||ttsBuild();let lo=0,hi=L.length;while(lo<hi){const m=(lo+hi)>>1;if(pageOf(mk(L[m].s,L[m].s+1))>=pg)hi=m;else lo=m+1}return Math.min(lo,L.length-1)}
+const vis=k=>{const it=TTS.list[k];return[pageOf(mk(it.s,it.s+1)),pageOf(mk(it.e-1,it.e))]};
+function follow(k){const[ps,pe]=vis(k);if(ps>idx||pe<idx){TTS.nav=1;try{go(ps)}finally{TTS.nav=0}}}
+function mark(k){const it=TTS.list[k];if(HLA){const h=new Highlight(mk(it.s,it.e));h.priority=1;HLA.set('tts',h);HLA.delete('ttsw')}follow(k)}
+
+/* Wiedergabe */
+const IC={play:'<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>',pause:'<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>'};
+function ui(){$('tts').hidden=!TTS.on;document.body.classList.toggle('tts',!!TTS.on);$('bTts').classList.toggle('on',!!TTS.on);
+ $('tG').innerHTML=TTS.play?IC.pause:IC.play;$('tG').setAttribute('aria-label',TTS.play?'Pause':'Wiedergabe')}
+let WL=null;const lock=async on=>{try{if(on&&navigator.wakeLock&&!WL){WL=await navigator.wakeLock.request('screen');WL.addEventListener('release',()=>WL=null)}else if(!on&&WL){const w=WL;WL=null;await w.release()}}catch(e){}};
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&TTS.play)lock(true)});
+function hush(){clearTimeout(TTS.pt);clearTimeout(TTS.mt);TTS.gen++;TTS.u=[];let act=false;try{act=SY.speaking||SY.pending;SY.cancel()}catch(e){}return act}
+function start(k){
+ const L=ttsBuild();if(!L.length)return;k=Math.max(0,Math.min(L.length-1,k));TTS.list=L;
+ const act=hush();Object.assign(TTS,{on:1,play:1,i:k,nq:k,q:0,hold:0});fillVoices();TTS.v=pickVoice();mark(k);ui();lock(true);
+ if(act)TTS.pt=setTimeout(pump,80);else pump()}
+function pump(){const L=TTS.list,g=TTS.gen;
+ while(TTS.play&&!TTS.hold&&TTS.q<3&&TTS.nq<L.length){const k=TTS.nq++;TTS.q++;speak(k,g);if(L[k].brk)TTS.hold=1}}
+function speak(k,g){
+ const L=TTS.list,it=L[k],u=new SpeechSynthesisUtterance(it.t);
+ if(TTS.v){u.voice=TTS.v;u.lang=TTS.v.lang}else u.lang=blang();u.rate=TTS.rate;
+ u.onstart=()=>{if(g!==TTS.gen)return;TTS.i=k;mark(k)};
+ u.onboundary=ev=>{if(g!==TTS.gen||ev.name==='sentence'||!HLA)return;let a=ev.charIndex,t=it.t;while(a<t.length&&t[a]===' ')a++;
+  const w=/^[\p{L}\p{N}'’\-]+/u.exec(t.slice(a)),b=a+(ev.charLength||(w?w[0].length:1)),s=it.m[it.a+a],e=it.m[it.a+b-1];if(s===undefined||e===undefined)return;
+  const r=mk(s,e+1),h=new Highlight(r);h.priority=2;HLA.set('ttsw',h);const p=pageOf(r);if(p>idx){TTS.nav=1;try{go(p)}finally{TTS.nav=0}}};
+ u.onend=()=>{if(g!==TTS.gen)return;TTS.u=TTS.u.filter(x=>x!==u);TTS.q--;if(k>=L.length-1){stop();return}
+  if(it.brk)TTS.pt=setTimeout(()=>{if(g===TTS.gen){TTS.hold=0;pump()}},it.pz/TTS.rate);else pump()};
+ u.onerror=ev=>{if(g!==TTS.gen||/cancel|interrupt/i.test(ev.error||''))return;pause();
+  $('tH').textContent='Die Sprachausgabe meldet einen Fehler ('+ev.error+'). Bitte eine andere Stimme wählen.';$('set').hidden=false};
+ TTS.u.push(u);SY.speak(u)}
+function pause(){hush();TTS.play=0;ui();lock(false)}
+function resume(){if(!ready)return;TTS.list=ttsBuild();const k=Math.min(TTS.i,TTS.list.length-1),[ps,pe]=vis(k);start(ps<=idx&&pe>=idx?k:firstOn(idx))}
+function stop(){hush();TTS.on=0;TTS.play=0;if(HLA){HLA.delete('tts');HLA.delete('ttsw')}setSleep(0);ui();lock(false)}
+function begin(){
+ if(!ready||!SY)return;const L=ttsBuild();if(!L.length)return;TTS.list=L;let k=-1;const g=getSelection();
+ if(g.rangeCount&&!g.isCollapsed&&$('flow').contains(g.anchorNode)){const r=g.getRangeAt(0),o=off(r.startContainer,r.startOffset);k=L.findIndex(x=>x.e>o);g.removeAllRanges();$('tb').hidden=true}
+ start(k>=0?k:firstOn(idx))}
+function setSleep(m){clearTimeout(TTS.slt);TTS.sl=m;document.querySelectorAll('#set [data-sl]').forEach(b=>b.classList.toggle('on',+b.dataset.sl===m));if(m)TTS.slt=setTimeout(stop,m*60000)}
+const rateTxt=()=>TTS.rate.toLocaleString('de-DE',{maximumFractionDigits:2})+'×';
+TTS.stop=stop;TTS.key=()=>TTS.on?(TTS.play?pause():resume()):begin();
+TTS.moved=()=>{hush();TTS.mt=setTimeout(()=>{if(TTS.play)start(firstOn(idx))},450)};
+if(!SY){$('bTts').hidden=true}else{
+ SY.addEventListener&&SY.addEventListener('voiceschanged',fillVoices);fillVoices();
+ $('bTts').onpointerdown=e=>e.preventDefault();$('bTts').onclick=()=>TTS.on?stop():begin();
+ $('tG').onclick=()=>TTS.play?pause():resume();$('tS').onclick=stop;
+ $('tP').onclick=()=>start(TTS.i-1);$('tN').onclick=()=>start(TTS.i+1);
+ $('tO').onclick=()=>{const o=$('set').hidden;closeAll();$('set').hidden=!o;sync();fillVoices()};
+ $('bSet').addEventListener('click',fillVoices);
+ $('tV').onchange=e=>{store.set('tts:v:'+blang().slice(0,2),e.target.value);if(TTS.play)start(TTS.i)};
+ $('tR').value=TTS.rate;$('tRv').textContent=rateTxt();
+ $('tR').oninput=e=>{TTS.rate=+e.target.value;$('tRv').textContent=rateTxt();store.set('tts:rate',TTS.rate)};
+ $('tR').onchange=()=>{if(TTS.play)start(TTS.i)};
+ document.querySelectorAll('#set [data-sl]').forEach(b=>b.addEventListener('click',()=>setSleep(+b.dataset.sl)));
+ setSleep(0);ui()}
 showLib();
 </script></body></html>

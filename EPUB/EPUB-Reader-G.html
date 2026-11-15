@@ -188,12 +188,48 @@ body.zen .bar, body.zen .foot { opacity: 0; pointer-events: none; }
 #tb .d { width: 34px; height: 34px; border-radius: 50%; padding: 0; }
 #hit { position: fixed; bottom: calc(64px + env(safe-area-inset-bottom, 0px)); left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 8px; padding: 4px 12px; background: var(--paper); color: var(--ink); border-radius: 999px; box-shadow: 0 8px 24px var(--shade), 0 0 0 1px var(--line); z-index: 15; font-size: 13px; }
 
+/* TTS Audio Bar */
+#ttsBar {
+  position: fixed;
+  bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: var(--paper);
+  color: var(--ink);
+  border-radius: 16px;
+  box-shadow: 0 14px 36px var(--shade), 0 0 0 1px var(--line);
+  z-index: 18;
+  max-width: calc(100vw - 24px);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+#ttsBar button { padding: 6px 10px; font-size: 13px; min-width: 34px; }
+#ttsPlay { background: var(--head); color: var(--paper); border-color: var(--head); font-weight: 600; min-width: 42px; }
+#ttsPlay:hover { opacity: 0.9; background: var(--head); }
+#ttsBar select {
+  background: var(--bg);
+  color: var(--ui);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 5px 8px;
+  font-size: 12px;
+  cursor: pointer;
+}
+#ttsVoice { max-width: 170px; text-overflow: ellipsis; }
+#bTts.active { background: var(--head); color: var(--paper); border-color: var(--head); font-weight: 600; }
+
 /* Highlights Styling */
 ::highlight(h0) { background: rgba(255, 214, 10, 0.4); }
 ::highlight(h1) { background: rgba(80, 200, 120, 0.4); }
 ::highlight(h2) { background: rgba(255, 120, 170, 0.4); }
 ::highlight(sr) { background: rgba(120, 170, 255, 0.38); }
 ::highlight(cur) { background: #ffb020; color: #111; }
+::highlight(tts) { background: rgba(230, 200, 138, 0.34); text-decoration: underline; text-decoration-color: var(--head); text-underline-offset: 3px; }
+:root[data-t="tag"] ::highlight(tts) { background: rgba(31, 78, 95, 0.2); }
 .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; }
 .c0 { background: #ffd60a; } .c1 { background: #50c878; } .c2 { background: #ff78aa; }
 
@@ -213,6 +249,7 @@ body.zen .bar, body.zen .foot { opacity: 0; pointer-events: none; }
   .foot { padding: 0 10px; }
   .foot .ch { display: none; }
   .foot .pg-info { min-width: 100px; font-size: 11px; }
+  #ttsVoice { max-width: 120px; }
 }
 @media(prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 [hidden] { display: none !important; }
@@ -224,6 +261,7 @@ body.zen .bar, body.zen .foot { opacity: 0; pointer-events: none; }
 <div class="bar">
  <button id="bToc" aria-label="Inhalt"><i>☰</i><span>Inhalt</span></button>
  <div class="ttl" id="ttl">EPUB-Reader</div>
+ <button id="bTts" aria-label="Vorlesen"><i>🎧</i><span>Vorlesen</span></button>
  <button id="bLib" aria-label="Bibliothek"><i>📚</i><span>Bibliothek</span></button>
  <button id="bSearch" aria-label="Suche"><i>⌕</i><span>Suche</span></button>
  <button id="bNotes" aria-label="Notizen"><i>✎</i><span>Notizen</span></button>
@@ -360,6 +398,7 @@ body.zen .bar, body.zen .foot { opacity: 0; pointer-events: none; }
  <button class="d c1" data-c="1" aria-label="Grün markieren"></button>
  <button class="d c2" data-c="2" aria-label="Rosa markieren"></button>
  <button id="tbN">Notiz</button>
+ <button id="tbRead" title="Ab dieser Stelle vorlesen">▶ Vorlesen</button>
 </div>
 
 <!-- Search Bar Navigation Indicator -->
@@ -368,6 +407,24 @@ body.zen .bar, body.zen .foot { opacity: 0; pointer-events: none; }
  <span id="hc"></span>
  <button id="hn" aria-label="Nächster Treffer">›</button>
  <button id="hx" aria-label="Suche beenden">✕</button>
+</div>
+
+<!-- TTS Floating Audio Player -->
+<div id="ttsBar" hidden>
+ <button id="ttsPrev" aria-label="Vorheriger Satz" title="Vorheriger Satz">⏮</button>
+ <button id="ttsPlay" aria-label="Abspielen / Pause" title="Abspielen / Pause">▶</button>
+ <button id="ttsNext" aria-label="Nächster Satz" title="Nächster Satz">⏭</button>
+ <select id="ttsRate" aria-label="Lesegeschwindigkeit" title="Geschwindigkeit">
+  <option value="0.75">0.75×</option>
+  <option value="0.9">0.9×</option>
+  <option value="1" selected>1.0×</option>
+  <option value="1.15">1.15×</option>
+  <option value="1.3">1.3×</option>
+  <option value="1.5">1.5×</option>
+  <option value="1.75">1.75×</option>
+ </select>
+ <select id="ttsVoice" aria-label="Stimme auswählen" title="Stimme"></select>
+ <button id="ttsClose" aria-label="Vorlesen beenden" title="Schließen">✕</button>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -470,6 +527,7 @@ function setLoadingState(loading) {
 
 /* Main EPUB Parsing Function */
 async function openEpub(data, titleHint = 'Buch', saveToDb = true) {
+  TTS.stop();
   $('paper').hidden = true;
   $('empty').hidden = false;
   setLoadingState(true);
@@ -661,6 +719,7 @@ async function openEpub(data, titleHint = 'Buch', saveToDb = true) {
     paint();
     paintS();
     renderNotes();
+    TTS.prepare();
     sessionStartTime = Date.now();
 
   } catch(e) {
@@ -1111,8 +1170,293 @@ $('tb').onpointerdown = e => e.preventDefault();
 $('tb').onclick = e => {
   const b = e.target.closest('button');
   if (!b) return;
+  if (b.id === 'tbRead') {
+    if (sel) {
+      const startOff = Math.min(...sel);
+      getSelection().removeAllRanges();
+      $('tb').hidden = true;
+      TTS.startFromOffset(startOff);
+    }
+    return;
+  }
   if (b.dataset.c) addHl(+b.dataset.c);
   else addHl(0, true);
+};
+
+/* =========================================================
+   HIGH-QUALITY TEXT-TO-SPEECH (TTS) ENGINE
+   ========================================================= */
+const TTS = {
+  sentences: [],
+  curIdx: -1,
+  playing: false,
+  paused: false,
+  voices: [],
+  rate: +(store.get('ttsRate') || 1),
+  voiceURI: store.get('ttsVoice') || '',
+  wakeLock: null,
+  utt: null,
+
+  init() {
+    if (!('speechSynthesis' in window)) {
+      $('bTts').hidden = true;
+      return;
+    }
+    $('ttsRate').value = String(this.rate);
+    const loadVoices = () => {
+      this.voices = speechSynthesis.getVoices();
+      this.populateVoices();
+    };
+    loadVoices();
+    speechSynthesis.onvoiceschanged = loadVoices;
+
+    $('bTts').onclick = () => this.toggleBar();
+    $('ttsPlay').onclick = () => this.togglePlay();
+    $('ttsPrev').onclick = () => this.step(-1);
+    $('ttsNext').onclick = () => this.step(1);
+    $('ttsClose').onclick = () => this.close();
+    $('ttsRate').onchange = e => {
+      this.rate = +e.target.value;
+      store.set('ttsRate', this.rate);
+      if (this.playing && !this.paused) this.speakCurrent();
+    };
+    $('ttsVoice').onchange = e => {
+      this.voiceURI = e.target.value;
+      store.set('ttsVoice', this.voiceURI);
+      if (this.playing && !this.paused) this.speakCurrent();
+    };
+    addEventListener('beforeunload', () => speechSynthesis.cancel());
+  },
+
+  populateVoices() {
+    const sel = $('ttsVoice');
+    if (!this.voices.length) return;
+    const bookLang = ($('flow').lang || 'de').slice(0, 2).toLowerCase();
+
+    // Sort voices: Book language first -> Natural/Online/Premium voices -> Alphabetical
+    const score = v => {
+      let s = 0;
+      if (v.lang.toLowerCase().startsWith(bookLang)) s += 100;
+      else if (v.lang.toLowerCase().startsWith('de')) s += 50;
+      if (/natural|online|premium|enhanced|google|wavenet|neural/i.test(v.name)) s += 20;
+      return s;
+    };
+
+    const sorted = [...this.voices].sort((a, b) => score(b) - score(a) || a.name.localeCompare(b.name));
+    sel.innerHTML = '';
+    sorted.forEach(v => {
+      const opt = document.createElement('option');
+      opt.value = v.voiceURI;
+      const cleanName = v.name.replace(/Microsoft |Google |Apple /g, '').replace(/Online \(Natural\)/g, '★');
+      opt.textContent = `${cleanName} (${v.lang})`;
+      sel.appendChild(opt);
+    });
+
+    if (this.voiceURI && sorted.some(v => v.voiceURI === this.voiceURI)) {
+      sel.value = this.voiceURI;
+    } else if (sorted.length) {
+      sel.value = sorted[0].voiceURI;
+      this.voiceURI = sorted[0].voiceURI;
+    }
+  },
+
+  prepare() {
+    this.stop();
+    this.sentences = [];
+    this.curIdx = -1;
+    if (!TX || !TX.s) return;
+
+    const lang = ($('flow').lang || 'de').trim() || 'de';
+    if (typeof Intl !== 'undefined' && Intl.Segmenter) {
+      const seg = new Intl.Segmenter(lang, { granularity: 'sentence' });
+      for (const part of seg.segment(TX.s)) {
+        const clean = part.segment.replace(/\s+/g, ' ').trim();
+        if (clean.length > 0 && /[\p{L}\p{N}]/u.test(clean)) {
+          this.sentences.push({
+            s: part.index,
+            e: part.index + part.segment.length,
+            text: clean
+          });
+        }
+      }
+    } else {
+      // Fallback regex sentence splitter
+      const re = /[^.!?…\n]+[.!?…\n]*/g;
+      let m;
+      while ((m = re.exec(TX.s)) !== null) {
+        const clean = m[0].replace(/\s+/g, ' ').trim();
+        if (clean.length > 0 && /[\p{L}\p{N}]/u.test(clean)) {
+          this.sentences.push({ s: m.index, e: m.index + m[0].length, text: clean });
+        }
+      }
+    }
+    this.populateVoices();
+  },
+
+  findSentenceAtOffset(offset) {
+    if (!this.sentences.length) return 0;
+    let lo = 0, hi = this.sentences.length - 1;
+    while (lo < hi) {
+      const mid = (lo + hi) >> 1;
+      if (this.sentences[mid].e <= offset) lo = mid + 1;
+      else hi = mid;
+    }
+    return lo;
+  },
+
+  toggleBar() {
+    if (!ready) return;
+    const bar = $('ttsBar');
+    if (bar.hidden) {
+      closeAll();
+      bar.hidden = false;
+      $('bTts').classList.add('active');
+      if (this.curIdx < 0) {
+        this.curIdx = this.findSentenceAtOffset(pageStart());
+      }
+      this.togglePlay();
+    } else {
+      this.close();
+    }
+  },
+
+  close() {
+    this.stop();
+    $('ttsBar').hidden = true;
+    $('bTts').classList.remove('active');
+  },
+
+  startFromOffset(offset) {
+    if (!ready) return;
+    closeAll();
+    $('ttsBar').hidden = false;
+    $('bTts').classList.add('active');
+    this.curIdx = this.findSentenceAtOffset(offset);
+    this.playing = true;
+    this.paused = false;
+    this.speakCurrent();
+  },
+
+  togglePlay() {
+    if (!this.sentences.length) return;
+    if (this.playing && !this.paused) {
+      this.paused = true;
+      speechSynthesis.cancel();
+      this.updateUI();
+      this.releaseWakeLock();
+    } else {
+      if (this.curIdx < 0 || this.curIdx >= this.sentences.length) {
+        this.curIdx = this.findSentenceAtOffset(pageStart());
+      }
+      this.playing = true;
+      this.paused = false;
+      this.speakCurrent();
+    }
+  },
+
+  step(delta) {
+    if (!this.sentences.length) return;
+    if (this.curIdx < 0) this.curIdx = this.findSentenceAtOffset(pageStart());
+    this.curIdx = Math.max(0, Math.min(this.sentences.length - 1, this.curIdx + delta));
+    this.highlightCurrent();
+    if (this.playing && !this.paused) {
+      this.speakCurrent();
+    }
+  },
+
+  highlightCurrent() {
+    if (!HLA) return;
+    if (this.curIdx < 0 || this.curIdx >= this.sentences.length) {
+      HLA.delete('tts');
+      return;
+    }
+    const item = this.sentences[this.curIdx];
+    const range = mk(item.s, item.e);
+    HLA.set('tts', new Highlight(range));
+
+    // Automatically turn page if sentence is not on the current spread
+    const targetPg = pageOf(range);
+    if (targetPg !== idx) {
+      go(targetPg);
+    }
+  },
+
+  speakCurrent() {
+    speechSynthesis.cancel();
+    if (this.curIdx < 0 || this.curIdx >= this.sentences.length) {
+      this.stop();
+      return;
+    }
+
+    const item = this.sentences[this.curIdx];
+    this.highlightCurrent();
+    this.updateUI();
+    this.requestWakeLock();
+
+    const u = new SpeechSynthesisUtterance(item.text);
+    const v = this.voices.find(x => x.voiceURI === this.voiceURI);
+    if (v) u.voice = v;
+    u.lang = v ? v.lang : ($('flow').lang || 'de-DE');
+    u.rate = this.rate;
+
+    const token = Symbol();
+    this.utt = token;
+
+    u.onend = () => {
+      if (this.utt !== token || !this.playing || this.paused) return;
+      this.curIdx++;
+      if (this.curIdx < this.sentences.length) {
+        this.speakCurrent();
+      } else {
+        this.stop();
+      }
+    };
+
+    u.onerror = e => {
+      if (e.error === 'interrupted' || e.error === 'canceled') return;
+      console.warn('TTS Fehler:', e.error);
+      this.stop();
+    };
+
+    speechSynthesis.speak(u);
+  },
+
+  stop() {
+    this.utt = null;
+    this.playing = false;
+    this.paused = false;
+    if ('speechSynthesis' in window) speechSynthesis.cancel();
+    if (HLA) HLA.delete('tts');
+    this.updateUI();
+    this.releaseWakeLock();
+  },
+
+  updateUI() {
+    const btn = $('ttsPlay');
+    if (this.playing && !this.paused) {
+      btn.textContent = '⏸';
+      btn.title = 'Pause';
+    } else {
+      btn.textContent = '▶';
+      btn.title = 'Vorlesen starten';
+    }
+  },
+
+  async requestWakeLock() {
+    try {
+      if ('wakeLock' in navigator && !this.wakeLock) {
+        this.wakeLock = await navigator.wakeLock.request('screen');
+        this.wakeLock.addEventListener('release', () => { this.wakeLock = null; });
+      }
+    } catch(e) {}
+  },
+
+  releaseWakeLock() {
+    if (this.wakeLock) {
+      this.wakeLock.release().catch(() => {});
+      this.wakeLock = null;
+    }
+  }
 };
 
 /* 3D Page Turn Animation */
@@ -1233,7 +1577,7 @@ addEventListener('keydown', e => {
 let sx = 0, sy = 0;
 $('stage').addEventListener('pointerdown', e => { sx = e.clientX; sy = e.clientY; });
 $('stage').addEventListener('pointerup', e => {
-  if (e.target.closest('button,a,textarea,#tb')) return;
+  if (e.target.closest('button,a,textarea,#tb,#ttsBar')) return;
   const dx = e.clientX - sx, dy = e.clientY - sy, s = getSelection();
   if (e.pointerType !== 'mouse' && Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) {
     go(idx + (dx < 0 ? 1 : -1));
@@ -1316,6 +1660,7 @@ async function loadLibraryUI() {
 }
 
 function showLibrary() {
+  TTS.close();
   if (busy) busy();
   ready = false;
   $('paper').hidden = true;
@@ -1332,6 +1677,7 @@ function showLibrary() {
 }
 
 // Initial Loading Setup
+TTS.init();
 db.init().then(() => loadLibraryUI()).catch(console.error);
 document.fonts && document.fonts.ready.then(() => { if (ready) layout(); });
 </script>
