@@ -95,25 +95,42 @@ body.zen .bar, body.zen .foot { opacity: 0; pointer-events: none; }
 
 /* Stage & Paper */
 #stage { position: relative; display: flex; align-items: center; justify-content: center; min-height: 0; width: 100%; touch-action: pan-y; -webkit-user-select: text; overflow: hidden; }
-.paper { position: relative; background: var(--paper); border-radius: 6px; box-shadow: 0 30px 60px -20px var(--shade), 0 0 0 1px var(--line); transition: background 0.4s; perspective: 2600px; max-width: 100%; max-height: 100%; }
-.paper.two::before { content: ""; position: absolute; inset: 0 auto 0 50%; width: 70px; margin-left: -35px; pointer-events: none; background: linear-gradient(90deg, transparent, var(--shade), transparent); opacity: 0.5; z-index: 2; }
+.paper { position: relative; background: var(--paper); border-radius: 6px; box-shadow: 0 30px 60px -20px var(--shade), 0 0 0 1px var(--line); transition: background 0.4s; perspective: 2600px; overflow: hidden; }
+.paper.two::before { content: ""; position: absolute; inset: 0 auto 0 50%; width: 64px; margin-left: -32px; pointer-events: none; background: linear-gradient(90deg, transparent, var(--shade), transparent); opacity: 0.45; z-index: 2; }
+.paper.two::after { content: ""; position: absolute; top: 0; bottom: 0; left: 50%; width: 1px; background: var(--line); pointer-events: none; z-index: 2; }
 .view { position: absolute; overflow: hidden; }
 
 /* Dynamic Flow Content */
-.flow { color: var(--ink); font-family: var(--bf); line-height: var(--lh); column-fill: auto; transition: transform 0.45s cubic-bezier(.3,.7,.2,1); hyphens: auto; -webkit-hyphens: auto; text-align: justify; }
+.flow {
+  color: var(--ink);
+  font-family: var(--bf);
+  line-height: var(--lh);
+  column-fill: auto;
+  transition: transform 0.45s cubic-bezier(.3,.7,.2,1);
+  hyphens: auto;
+  -webkit-hyphens: auto;
+  text-align: justify;
+  will-change: transform;
+}
 .flow * { font-family: inherit !important; color: inherit !important; background: none !important; line-height: inherit !important; text-indent: 0 !important; max-width: 100% !important; box-sizing: border-box; }
 .flow span { font-size: inherit !important; }
 .flow p { margin: 0 0 0.85em !important; padding: 0 !important; font-size: 1em !important; orphans: 2; widows: 2; }
 .flow p.title { font: 600 1.5em var(--hf) !important; text-align: center; color: var(--head) !important; }
 .flow h1, .flow h2, .flow h3, .flow h4, .flow h5 { font-family: var(--hf) !important; color: var(--head) !important; font-weight: 600 !important; text-align: left; margin: 1.2em 0 0.6em !important; break-after: avoid; hyphens: manual; }
-.flow h1 { font-size: 1.9em !important; break-before: column; } .flow h2 { font-size: 1.5em !important; break-before: column; } .flow h3 { font-size: 1.25em !important; } .flow h4, .flow h5 { font-size: 1.08em !important; }
+.flow h1 { font-size: 1.9em !important; }
+.flow h2 { font-size: 1.5em !important; }
+.flow section:not(:first-child) h1,
+.flow section:not(:first-child) h2 { break-before: column; }
+.flow h3 { font-size: 1.25em !important; }
+.flow h4, .flow h5 { font-size: 1.08em !important; }
 .flow a { color: var(--head) !important; text-decoration: underline; text-underline-offset: 3px; }
 .flow img { display: block; margin: 0.8em auto; width: auto; height: auto; max-height: calc(var(--H) * 0.72) !important; object-fit: contain; break-inside: avoid; border-radius: 4px; }
 .flow p:has(img) { text-align: center; break-inside: avoid; }
-.flow hr { display: none; } .flow li { margin-bottom: 0.4em; }
+.flow hr { display: none; }
+.flow li { margin-bottom: 0.4em; }
 
 /* Page Indicators & Controls */
-.fl, .fr { position: absolute; bottom: 14px; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.fl, .fr { position: absolute; bottom: 14px; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; pointer-events: none; }
 .nav { position: absolute; top: 0; bottom: 0; width: 52px; border: 0; border-radius: 0; font-size: 32px; color: var(--muted); opacity: 0.6; z-index: 5; }
 .nav:hover { background: none; opacity: 1; color: var(--head); }
 #prev { left: 0; } #next { right: 0; }
@@ -517,10 +534,6 @@ R.dataset.f = font;
 R.style.setProperty('--lh', lh);
 R.style.setProperty('--margin-factor', mdf);
 
-// Reading metrics state
-let sessionStartTime = Date.now();
-let totalCharsReadEstimate = 0;
-
 function setLoadingState(loading) {
   $('loader').hidden = !loading;
   $('libIntro').hidden = loading;
@@ -723,7 +736,6 @@ async function openEpub(data, titleHint = 'Buch', saveToDb = true) {
     paintS();
     renderNotes();
     TTS.prepare();
-    sessionStartTime = Date.now();
 
   } catch(e) {
     console.error(e);
@@ -749,58 +761,78 @@ function scope(css) {
   return o;
 }
 
-/* Layout Engine */
+/* Improved Layout Engine (Fixes Double-Page Spread Alignment & Sizing) */
 function layout(frac) {
   if (!ready) return;
-  if (frac === undefined) frac = idx / total;
+  if (frac === undefined) frac = total > 1 ? idx / total : 0;
   if (busy) busy();
 
   const st = $('stage'), vw = innerWidth;
   n = mode === '1' ? 1 : mode === '2' ? 2 : (vw >= 900 ? 2 : 1);
-  
-  const factor = parseFloat(mdf) || 1;
-  const aw = Math.max(280, st.clientWidth - (vw >= 900 ? 120 : 16));
-  const ah = st.clientHeight - (vw >= 900 ? 20 : 8);
 
-  let pw = Math.min(aw, n == 2 ? 1560 : 760), ph = Math.min(ah, 1100);
-  const basePad = Math.max(vw < 640 ? 18 : 26, Math.min(56, Math.round(pw * (n == 2 ? .045 : .065))));
+  const factor = parseFloat(mdf) || 1;
+  // Reserve space for navigation arrows on pointer devices
+  const navSpace = matchMedia('(pointer: coarse)').matches ? 16 : 112;
+  const aw = Math.max(260, st.clientWidth - navSpace);
+  const ah = Math.max(240, st.clientHeight - (vw >= 900 ? 24 : 10));
+
+  // 1. Constrain outer paper dimensions FIRST so inner columns never overflow
+  const targetPw = Math.min(aw, n === 2 ? 1560 : 760);
+  const ph = Math.min(ah, 1100);
+
+  // 2. Calculate padding & column gap proportionally to the actual constrained width
+  const singlePageW = targetPw / n;
+  const basePad = Math.max(vw < 640 ? 14 : 22, Math.min(54, Math.round(singlePageW * 0.085)));
   const minPad = vw < 640 ? 10 : 14;
-  const maxPad = Math.floor((pw / n) * 0.28);
+  const maxPad = Math.floor(singlePageW * 0.24);
   const p = Math.max(minPad, Math.min(maxPad, Math.round(basePad * factor)));
-  
+
   const pt = Math.max(26, Math.min(48, Math.round(34 * (0.7 + 0.3 * factor))));
-  const pb = Math.max(38, Math.min(58, Math.round(46 * (0.75 + 0.25 * factor))));
-  const gap = 2 * p;
-  
-  const cw = Math.floor((pw - 2 * p - (n - 1) * gap) / n), W = n * cw + (n - 1) * gap, H = ph - pt - pb;
-  
-  pw = W + 2 * p;
+  const pb = Math.max(36, Math.min(56, Math.round(44 * (0.75 + 0.25 * factor))));
+  const gap = 2 * p; // Center spine gutter equals outer left + right margins
+
+  // 3. Calculate exact integer column width (cw) and derive exact paper width (pw)
+  const cw = Math.max(100, Math.floor((targetPw - 2 * p - (n - 1) * gap) / n));
+  const W = n * cw + (n - 1) * gap;
+  const H = Math.max(120, ph - pt - pb);
+  const pw = W + 2 * p;
+
+  // One full spread advance equals W + gap (= n * (cw + gap))
   step = W + gap;
-  M = { p, pt, W, H, pw };
+  M = { p, pt, W, H, pw, cw, gap };
 
   const pa = $('paper'), v = $('view'), f = $('flow');
-  pa.style.width = Math.min(pw, vw - (vw < 640 ? 8 : 16)) + 'px'; 
+  pa.style.width = pw + 'px';
   pa.style.height = ph + 'px';
-  pa.className = 'paper' + (n == 2 ? ' two' : '');
-  
-  v.style.cssText = `left:${p}px;top:${pt}px;width:${W}px;height:${H}px`;
-  f.style.cssText = `width:${W}px;height:${H}px;column-count:${n};column-gap:${gap}px;font-size:${fs}px;--H:${H}px;transition:none;transform:none`;
+  pa.className = 'paper' + (n === 2 ? ' two' : '');
+
+  v.style.cssText = `left:${p}px;top:${pt}px;width:${W}px;height:${H}px;`;
+  f.style.cssText = `width:${W}px;height:${H}px;column-count:${n};column-width:${cw}px;column-gap:${gap}px;font-size:${fs}px;--H:${H}px;transition:none;transform:none;`;
   R.style.setProperty('--H', H + 'px');
 
-  total = Math.max(1, Math.ceil((f.scrollWidth + gap - 1) / step));
+  // Force synchronous reflow so scrollWidth reflects the exact column layout
+  void f.offsetWidth;
+
+  // Calculate total spreads accurately using column stride (cw + gap)
+  const colStride = cw + gap;
+  const totalCols = Math.max(1, Math.round((f.scrollWidth + gap) / colStride));
+  total = Math.max(1, Math.ceil(totalCols / n));
+
   const fl = f.getBoundingClientRect().left;
-  
   toc.forEach(t => {
     const e = t.id && $(t.id);
-    t.pg = e ? Math.max(0, Math.floor((e.getBoundingClientRect().left - fl + 2) / step)) : 0;
+    if (!e) { t.pg = 0; return; }
+    const rect = e.getBoundingClientRect();
+    const relX = rect.left - fl + 4;
+    t.pg = Math.max(0, Math.min(total - 1, Math.floor(relX / step)));
   });
 
   $('fl').style.left = p + 'px';
   $('rib').style.right = Math.max(10, p - 12) + 'px';
-  $('fr').style.cssText = n == 2 ? `right:${p}px` : 'left:0;right:0;text-align:center';
-  $('fl').hidden = (n == 1);
-  $('rng').max = total - 1;
-  
+  $('fr').style.cssText = n === 2 ? `right:${p}px` : 'left:0;right:0;text-align:center';
+  $('fl').hidden = (n === 1);
+  $('rng').max = Math.max(0, total - 1);
+
   bm.forEach(b => b.pg = pageOf(mk(b.o, b.o + 1)));
   go(Math.round(frac * total), false);
   requestAnimationFrame(() => f.style.transition = '');
@@ -813,7 +845,7 @@ function go(i, anim = true) {
   idx = Math.max(0, Math.min(total - 1, i));
   const f = $('flow'), tr = `translateX(${-idx * step}px)`;
 
-  if (anim && eff === 'flip' && n == 2 && Math.abs(idx - o) == 1 && !matchMedia('(prefers-reduced-motion:reduce)').matches) {
+  if (anim && eff === 'flip' && n === 2 && Math.abs(idx - o) === 1 && !matchMedia('(prefers-reduced-motion:reduce)').matches) {
     turn(o, tr);
   } else {
     if (!anim) f.style.transition = 'none';
@@ -822,31 +854,32 @@ function go(i, anim = true) {
   }
 
   const a = idx * n + 1;
+  const totalPages = total * n;
   $('fl').textContent = a;
-  $('fr').textContent = (n == 2 ? a + 1 : a);
-  $('fr').hidden = (n == 2 && a + 1 > total * n);
+  $('fr').textContent = (n === 2 ? a + 1 : a);
+  $('fr').hidden = (n === 2 && a + 1 > totalPages);
   $('rng').value = idx;
 
   // Percentage & Reading speed estimate
   const pct = Math.round(((idx + 1) / total) * 100);
   const totalChars = TX ? TX.len : 100000;
-  const charsPerSec = 25; // Average adult reading speed (~250 wpm)
+  const charsPerSec = 25;
   const remainingChars = Math.max(0, totalChars * (1 - (idx + 1) / total));
   const remainingMins = Math.ceil(remainingChars / (charsPerSec * 60));
 
-  $('pg').textContent = n == 2 ? `S. ${a}–${a + 1}/${total * 2}` : `S. ${a}/${total}`;
+  $('pg').textContent = n === 2 ? `S. ${a}–${a + 1}/${totalPages}` : `S. ${a}/${total}`;
   $('pgSub').textContent = `${pct}% · ca. ${remainingMins} Min.`;
 
   let cur = -1;
   toc.forEach((t, k) => { if (t.pg <= idx && t.id) cur = k; });
   $('ch').textContent = cur >= 0 ? toc[cur].t : '';
-  
+
   document.querySelectorAll('#tl a').forEach((x, k) => x.classList.toggle('cur', k === cur));
-  $('prev').style.visibility = idx ? '' : 'hidden';
+  $('prev').style.visibility = idx > 0 ? '' : 'hidden';
   $('next').style.visibility = idx < total - 1 ? '' : 'hidden';
   $('rib').classList.toggle('on', bm.some(b => b.pg === idx));
-  
-  store.set(key, idx / total);
+
+  store.set(key, total > 1 ? idx / total : 0);
 }
 
 function buildToc() {
@@ -881,7 +914,7 @@ function jump(id) {
   const x = e.getBoundingClientRect().left - f.getBoundingClientRect().left;
   f.style.transform = t;
   requestAnimationFrame(() => f.style.transition = '');
-  go(Math.floor((x + 2) / step));
+  go(Math.floor((x + 4) / step));
 }
 
 function openToc(o) {
@@ -965,7 +998,7 @@ function caretAt(x, y) {
 
 function pageOf(r) {
   const c = r.getClientRects()[0];
-  return c ? Math.max(0, Math.floor((c.left - $('flow').getBoundingClientRect().left + 2) / step)) : idx;
+  return c ? Math.max(0, Math.min(total - 1, Math.floor((c.left - $('flow').getBoundingClientRect().left + 4) / step))) : idx;
 }
 
 function showAt(s, e, close) {
@@ -1237,7 +1270,6 @@ const TTS = {
     if (!this.voices.length) return;
     const bookLang = ($('flow').lang || 'de').slice(0, 2).toLowerCase();
 
-    // Sort voices: Book language first -> Natural/Online/Premium voices -> Alphabetical
     const score = v => {
       let s = 0;
       if (v.lang.toLowerCase().startsWith(bookLang)) s += 100;
@@ -1284,7 +1316,6 @@ const TTS = {
         }
       }
     } else {
-      // Fallback regex sentence splitter
       const re = /[^.!?…\n]+[.!?…\n]*/g;
       let m;
       while ((m = re.exec(TX.s)) !== null) {
@@ -1378,7 +1409,6 @@ const TTS = {
     const range = mk(item.s, item.e);
     HLA.set('tts', new Highlight(range));
 
-    // Automatically turn page if sentence is not on the current spread
     const targetPg = pageOf(range);
     if (targetPg !== idx) {
       go(targetPg);
@@ -1466,29 +1496,30 @@ const TTS = {
 /* 3D Page Turn Animation */
 function turn(o, tr) {
   const d = idx > o ? 1 : -1, { p, pt, W, H, pw } = M, f = $('flow');
+  const halfW = pw / 2;
   const L = E('div', { className: 'leaf ' + (d > 0 ? 'r' : 'l') });
-  L.style.cssText = `left:${d > 0 ? pw / 2 : 0}px;width:${pw / 2}px`;
-  
+  L.style.cssText = `left:${d > 0 ? halfW : 0}px;width:${halfW}px`;
+
   const fr = E('div', { className: 'face' }), v = E('div', { className: 'view' }), bkf = E('div', { className: 'face back' });
-  v.style.cssText = `left:${d > 0 ? p - pw / 2 : p}px;top:${pt}px;width:${W}px;height:${H}px`;
-  
+  v.style.cssText = `left:${d > 0 ? p - halfW : p}px;top:${pt}px;width:${W}px;height:${H}px`;
+
   const c = f.cloneNode(true);
   c.removeAttribute('id');
   c.style.transition = 'none';
   c.style.transform = `translateX(${-o * step}px)`;
-  
+
   v.append(c); fr.append(v); L.append(fr, bkf); $('paper').append(L);
-  
-  const A = L.animate([{ transform: 'rotateY(0deg)' }, { transform: `rotateY(${-180 * d}deg)` }], { duration: 600, easing: 'cubic-bezier(.45,.05,.3,1)', fill: 'forwards' });
-  fr.animate([{ filter: 'brightness(1)' }, { filter: 'brightness(.8)' }], { duration: 300, fill: 'forwards' });
-  bkf.animate([{ filter: 'brightness(.8)' }, { filter: 'brightness(1)' }], { duration: 600 });
-  
+
+  const A = L.animate([{ transform: 'rotateY(0deg)' }, { transform: `rotateY(${-180 * d}deg)` }], { duration: 550, easing: 'cubic-bezier(.45,.05,.3,1)', fill: 'forwards' });
+  fr.animate([{ filter: 'brightness(1)' }, { filter: 'brightness(.8)' }], { duration: 275, fill: 'forwards' });
+  bkf.animate([{ filter: 'brightness(.8)' }, { filter: 'brightness(1)' }], { duration: 550 });
+
   const snap = () => {
     f.style.transition = 'none';
     f.style.transform = tr;
     requestAnimationFrame(() => f.style.transition = '');
   };
-  const t = setTimeout(snap, 300);
+  const t = setTimeout(snap, 275);
   busy = () => { clearTimeout(t); snap(); L.remove(); busy = null; };
   A.onfinish = () => { if (busy) { L.remove(); busy = null; } };
 }
